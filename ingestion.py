@@ -19,11 +19,33 @@ FILES = [
     "data/EPL1415.csv",
 ]
 
+def parse_date(value):
+    if pd.isna(value):
+        return None
+    ts = pd.to_datetime(value, errors="coerce", dayfirst=True)
+    if pd.isna(ts):
+        return None
+    return ts.date()
+
+
+def parse_time(value):
+    if pd.isna(value):
+        return None
+    ts = pd.to_datetime(value, errors="coerce", dayfirst=True)
+    if pd.isna(ts):
+        return None
+    return ts.time()
+
+
+def as_null(value):
+    return None if pd.isna(value) else value
+
+
 def clean_row(row):
-    return (
+    values = (
         row["Div"],
-        pd.to_datetime(row["Date"]).date(),
-        pd.to_datetime(row["Time"], errors="coerce").time(),
+        parse_date(row.get("Date")),
+        parse_time(row.get("Time")),
 
         row["HomeTeam"],
         row["AwayTeam"],
@@ -203,6 +225,7 @@ def clean_row(row):
         row.get("BFECAHH"),
         row.get("BFECAHA")
     )
+    return tuple(as_null(v) for v in values)
 
 SQL = """
 INSERT INTO raw.matches (
@@ -253,7 +276,7 @@ INSERT INTO raw.matches (
     psch, pscd, psca,
     maxch, maxcd, maxca,
     avgch, avgcd, avgca,
-    bfech, bfecd, bfe_ca_hh,
+    bfech, bfecd, bfeca,
 
     b365c_over25, b365c_under25,
     pc_over25, pc_under25,
@@ -269,7 +292,7 @@ INSERT INTO raw.matches (
     bfe_ca_hh, bfe_ca_ha
 )
 VALUES (
-    """ + ",".join(["%s"] * 120) + """
+    """ + ",".join(["%s"] * 132) + """
 )
 """
 
