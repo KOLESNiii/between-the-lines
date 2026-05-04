@@ -291,8 +291,13 @@ INSERT INTO raw.matches (
     avgca_hh, avgca_ha,
     bfe_ca_hh, bfe_ca_ha
 )
-VALUES (
-    """ + ",".join(["%s"] * 132) + """
+SELECT """ + ",".join(["%s"] * 132) + """
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM raw.matches m
+    WHERE m.match_date = %s
+      AND m.hometeam = %s
+      AND m.awayteam = %s
 )
 """
 
@@ -301,7 +306,9 @@ def ingest_file(conn, path):
 
     with conn.cursor() as cur:
         for _, row in df.iterrows():
-            cur.execute(SQL, clean_row(row))
+            values = clean_row(row)
+            key = (values[1], values[3], values[4])
+            cur.execute(SQL, values + key)
 
     conn.commit()
     print(f"Ingested {path} ({len(df)} rows)")
