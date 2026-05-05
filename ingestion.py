@@ -227,10 +227,35 @@ def clean_row(row):
     )
     return tuple(as_null(v) for v in values)
 
+def get_team_aliases(conn):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT source_team_name, team_id
+            FROM raw.team_name_aliases
+            """
+        )
+        return dict(cur.fetchall())
+
+
+def add_team_ids(values, aliases):
+    home_team = values[3]
+    away_team = values[4]
+    home_team_id = aliases.get(home_team) if home_team is not None else None
+    away_team_id = aliases.get(away_team) if away_team is not None else None
+
+    if home_team is not None and home_team_id is None:
+        raise ValueError(f"No team alias found for home team: {home_team}")
+    if away_team is not None and away_team_id is None:
+        raise ValueError(f"No team alias found for away team: {away_team}")
+
+    return values[:5] + (home_team_id, away_team_id) + values[5:]
+
 SQL = """
 INSERT INTO raw.matches (
     div, match_date, match_time,
     hometeam, awayteam,
+    home_team_id, away_team_id,
 
     fthg, ftag, ftr,
     hthg, htag, htr,
@@ -291,7 +316,7 @@ INSERT INTO raw.matches (
     avgca_hh, avgca_ha,
     bfe_ca_hh, bfe_ca_ha
 )
-SELECT """ + ",".join(["%s"] * 132) + """
+SELECT """ + ",".join(["%s"] * 134) + """
 WHERE NOT EXISTS (
     SELECT 1
     FROM raw.matches m
@@ -303,12 +328,14 @@ WHERE NOT EXISTS (
 
 def ingest_file(conn, path):
     df = pd.read_csv(path)
+    aliases = get_team_aliases(conn)
 
     with conn.cursor() as cur:
         for _, row in df.iterrows():
             values = clean_row(row)
-            key = (values[1], values[3], values[4])
-            cur.execute(SQL, values + key)
+            values_with_team_ids = add_team_ids(values, aliases)
+            key = (values_with_team_ids[1], values_with_team_ids[3], values_with_team_ids[4])
+            cur.execute(SQL, values_with_team_ids + key)
 
     conn.commit()
     print(f"Ingested {path} ({len(df)} rows)")

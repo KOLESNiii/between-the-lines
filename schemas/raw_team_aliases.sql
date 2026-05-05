@@ -1,0 +1,42 @@
+-- Team-name bridge between football-data.co.uk raw.matches names and Sofascore teams.
+
+INSERT INTO raw.team_name_aliases (source_team_name, team_id)
+VALUES
+    ('Arsenal', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 42)),
+    ('Aston Villa', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 40)),
+    ('Bournemouth', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 60)),
+    ('Brentford', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 50)),
+    ('Brighton', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 30)),
+    ('Burnley', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 6)),
+    ('Cardiff', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 61)),
+    ('Chelsea', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 38)),
+    ('Crystal Palace', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 7)),
+    ('Everton', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 48)),
+    ('Fulham', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 43)),
+    ('Huddersfield', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 59)),
+    ('Hull', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 96)),
+    ('Ipswich', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 32)),
+    ('Leeds', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 34)),
+    ('Leicester', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 31)),
+    ('Liverpool', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 44)),
+    ('Luton', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 72)),
+    ('Man City', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 17)),
+    ('Man United', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 35)),
+    ('Middlesbrough', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 36)),
+    ('Newcastle', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 39)),
+    ('Norwich', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 263)),
+    ('Nott''m Forest', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 14)),
+    ('QPR', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 1)),
+    ('Sheffield United', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 15)),
+    ('Southampton', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 45)),
+    ('Stoke', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 29)),
+    ('Sunderland', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 41)),
+    ('Swansea', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 74)),
+    ('Tottenham', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 33)),
+    ('Watford', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 24)),
+    ('West Brom', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 8)),
+    ('West Ham', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 37)),
+    ('Wolves', (SELECT id FROM raw.sofascore_teams WHERE sofascore_team_id = 3))
+ON CONFLICT (source_team_name) DO UPDATE SET
+    team_id = EXCLUDED.team_id,
+    updated_at = now();

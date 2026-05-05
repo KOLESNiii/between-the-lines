@@ -1,0 +1,53 @@
+        stat_name        | count 
+-------------------------+-------
+ Accurate passes         | 25252
+ Aerial duels            | 25250
+ Ball possession         | 25852
+ Big chances             | 20946
+ Big chances missed      | 19086
+ Big chances scored      | 17244
+ Big saves               |  1076
+ Blocked shots           | 25312
+ Clearances              | 21546
+ Corner kicks            | 25852
+ Crosses                 | 21546
+ Dispossessed            | 21546
+ Dribbles                | 21546
+ Duels                   | 25250
+ Errors lead to a goal   |   566
+ Errors lead to a shot   |   998
+ Expected goals          |  8924
+ Final third entries     | 21546
+ Final third phase       |  1514
+ Fouled in final third   | 21306
+ Fouls                   | 10172
+ Free kicks              | 25852
+ Goalkeeper saves        | 25742
+ Goal kicks              | 25846
+ Goals prevented         |  2976
+ Ground duels            | 25252
+ High claims             |  1202
+ Hit woodwork            | 25312
+ Interceptions           | 21546
+ Long balls              | 21546
+ Offsides                | 24714
+ Passes                  | 25252
+ Penalty saves           |    48
+ Punches                 |   984
+ Recoveries              | 10428
+ Red cards               |  3428
+ Shots inside box        | 25312
+ Shots off target        | 25852
+ Shots on target         | 25852
+ Shots outside box       | 25312
+ Tackles                 | 21546
+ Tackles won             | 21546
+ Through balls           | 16394
+ Throw-ins               | 25846
+ Total saves             | 25742
+ Total shots             | 50564
+ Total tackles           | 21546
+ Touches in penalty area |  1512
+ Yellow cards            | 24508
+(49 rows)
+
