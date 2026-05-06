@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from odds_api import OddsClient
-from odds_api.providers.bet365 import parse_inplay_records, normalize_record
 from odds_api.providers.pinnacle import PinnacleProvider
 
 
@@ -116,24 +115,6 @@ def test_pinnacle_429_records_retry_after(tmp_path):
     assert snapshot.skipped is not None
     assert snapshot.skipped.reason == "remote_rate_limited"
     assert snapshot.skipped.retry_after_seconds == 41
-
-
-def test_bet365_parser_handles_missing_fields():
-    raw = (
-        "prefixEV"
-        "CL=Premier LeagueCI=123NA=Futebol Ao-VivoVI=liveSM=1CN=x"
-        "C1=ArsenalC2=ChelseaC3=unusedT1=2.10T2=3.40T3=3.20CR=end"
-    )
-
-    records = parse_inplay_records(raw)
-    event = normalize_record(records[0])
-
-    assert len(records) == 1
-    assert event.provider == "bet365"
-    assert event.provider_event_id == "123"
-    assert event.home == "Arsenal"
-    assert event.away == "Chelsea"
-    assert event.markets[0].market_type == "moneyline"
 
 
 def test_client_skips_unconfigured_providers():

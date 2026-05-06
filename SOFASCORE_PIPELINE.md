@@ -22,6 +22,18 @@ Run the full backfill / incremental ingestion:
 python3 sofascore_ingestion.py
 ```
 
+Build the player-derived team feature tables:
+
+```bash
+python3 team_feature_pipeline.py --create-schema --refresh
+```
+
+Use a different rolling window if needed:
+
+```bash
+python3 team_feature_pipeline.py --refresh --rolling-window 10
+```
+
 The default database URL is:
 
 ```text
@@ -65,6 +77,31 @@ The long-format stat tables store query-friendly rows. The raw Sofascore payload
 `raw.sofascore_player_match_appearances` stores one row for every player listed in the lineup payload, including players from older matches where Sofascore does not provide per-player stat keys.
 
 `raw.matches.home_team_id` and `raw.matches.away_team_id` reference `raw.sofascore_teams(id)`. The `raw.team_name_aliases` table maps historical CSV names such as `Man United` and `Nott'm Forest` to the canonical Sofascore team rows.
+
+## Team Feature Tables
+
+`team_feature_pipeline.py` creates the `features` schema and rebuilds two derived tables from player-level Sofascore stats:
+
+- `features.sofascore_team_match_aggregates`
+- `features.sofascore_team_match_features`
+
+The aggregate table has one row per `(match_id, team_id)`. It excludes unused players by requiring `minutesPlayed > 0`, normalises volume stats to a full 11-player match baseline of `990` team minutes, and carries stat availability flags plus player counts for each engineered input.
+
+The final feature table carries the aggregate columns forward and adds leak-free rolling form. Rolling features are season-scoped and use only previous matches with a SQL frame equivalent to:
+
+```sql
+ROWS BETWEEN 5 PRECEDING AND 1 PRECEDING
+```
+
+With the default `--rolling-window 5`, rolling feature values stay `NULL` until the team has five prior same-season matches with the required source feature available.
+
+Engineered feature groups include attack (`xg`, `xa`, shots, key passes, big chances), defence (tackles, interceptions, blocks, aerials), control (passes, touches, possession proxy), transition (progressive carries, possession lost), and goalkeeping (saves, goals prevented).
+
+Opponent-adjusted columns include:
+
+- `adj_attack_xg`
+- `adj_defence_xg`
+- `adj_shot_volume`
 
 ## Idempotency
 
@@ -186,4 +223,59 @@ Confirm FK-backed player/team stats exist:
 SELECT count(*) FROM raw.sofascore_team_match_stats;
 SELECT count(*) FROM raw.sofascore_player_match_appearances;
 SELECT count(*) FROM raw.sofascore_player_match_stats;
+```
+
+Confirm feature row counts match two team rows per match:
+
+```sql
+SELECT
+    (SELECT count(*) FROM features.sofascore_team_match_features) AS feature_rows,
+    (SELECT 2 * count(*) FROM raw.sofascore_matches) AS expected_rows;
+```
+
+Confirm no duplicate team-match feature rows:
+
+```sql
+SELECT match_id, team_id, count(*)
+FROM features.sofascore_team_match_features
+GROUP BY match_id, team_id
+HAVING count(*) > 1;
+```
+
+Check sparse xG/xA coverage by season:
+
+```sql
+SELECT
+    season_year,
+    count(*) AS rows,
+    count(xg) AS xg_rows,
+    count(xa) AS xa_rows,
+    count(rolling_xg_for) AS rolling_xg_rows
+FROM features.sofascore_team_match_features
+GROUP BY season_year
+ORDER BY season_year;
+```
+
+Inspect rolling leakage behavior for one team:
+
+```sql
+WITH ranked AS (
+    SELECT
+        team_name,
+        season_year,
+        match_date,
+        history_match_count,
+        rolling_shots_for,
+        row_number() OVER (
+            PARTITION BY team_id, season_year
+            ORDER BY start_datetime, match_id
+        ) AS team_match_no
+    FROM features.sofascore_team_match_features
+)
+SELECT team_name, season_year, team_match_no, history_match_count, rolling_shots_for
+FROM ranked
+WHERE season_year = '24/25'
+  AND team_name = 'Arsenal'
+  AND team_match_no <= 7
+ORDER BY team_match_no;
 ```

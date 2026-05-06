@@ -281,3 +281,314 @@ team-level features ready for:
 * XGBoost
 * Bayesian goal models
 * Monte Carlo simulation
+
+# Step 2: XGBoost Modelling Plan (Inputs, Outputs, Forms)
+
+## 🎯 Objective
+
+Train an XGBoost model to predict **team-level expected goals created (xG_for)** for a given match, using lineup-aware, leak-free features derived from player data.
+
+---
+
+## 🧾 Data Units & Shapes
+
+### Unit of observation (row)
+
+match_id | team | opponent | home_away | date | features... | target
+
+- Granularity: one row per (team, match) → 2 rows per match
+- Primary target: xG_for
+
+---
+
+## 🎯 Target Definition
+
+xG_for = sum of shot-level expected goals for this team in the match
+
+This is the **true label** you train on.
+
+---
+
+## 🧱 Inputs (Features)
+
+All features MUST be known **before the match starts**.
+
+---
+
+### 1) Team Attacking Form (rolling)
+
+- rolling_xg_for_3
+- rolling_xg_for_5
+- rolling_xg_for_10
+- rolling_shots_5
+- rolling_big_chances_5
+- shot_accuracy_5
+
+Form:
+- per-90
+- shifted by 1 match (no leakage)
+
+---
+
+### 2) Team Defensive Form (rolling)
+
+- rolling_xg_against_5
+- rolling_shots_against_5
+- tackles_won_5
+- interceptions_5
+- blocks_5
+
+---
+
+### 3) Opponent Features (CRITICAL)
+
+Join opponent stats onto each row:
+
+- opp_rolling_xg_for_5
+- opp_rolling_xg_against_5
+- opp_shot_accuracy_5
+
+This allows the model to learn:
+
+> attack vs defence interaction
+
+---
+
+### 4) Lineup / Player Aggregation (YOUR EDGE)
+
+From player data (projected XI or proxy):
+
+- xi_xg_sum
+- xi_xa_sum
+- xi_key_pass_sum
+- xi_progressive_carries
+- xi_def_actions (tackles + interceptions)
+- xi_goalkeeper_strength
+
+Notes:
+- per-90 normalised
+- optionally weighted by recency
+- if XI unknown → use last match XI or minutes-weighted squad
+
+---
+
+### 5) Control & Tempo
+
+- possession_proxy_5
+- passes_per90_5
+- final_third_entries_5
+- touches_in_box_5
+
+---
+
+### 6) Context Features
+
+- home_away (binary)
+- rest_days
+- fixture_congestion (matches in last 7/14 days)
+- optional: derby flag
+
+---
+
+## 🧮 Feature Rules (IMPORTANT)
+
+- All stats → per 90
+- All rolling features → shift(1)
+- No current match data
+- Opponent features must also be pre-match
+
+---
+
+## 🎯 Model Output
+
+Primary output:
+
+xG_hat_for
+
+A single continuous value per team-match row.
+
+---
+
+## 🔁 Match-Level Outputs
+
+For each match:
+
+xG_home = prediction(home row)
+xG_away = prediction(away row)
+
+---
+
+## 🔄 Pipeline Flow
+
+Player data
+    ↓
+Per-90 normalisation
+    ↓
+Team aggregation
+    ↓
+Rolling features (shifted)
+    ↓
+Opponent join
+    ↓
+Lineup aggregation
+    ↓
+Final dataset (team-match rows)
+    ↓
+XGBoost → predict xG_for
+
+---
+
+## ⚙️ XGBoost Setup
+
+Objective:
+- reg:squarederror
+
+Evaluation:
+- RMSE
+- MAE
+
+Do NOT:
+- predict goals
+- use classification objectives
+
+---
+
+## 🔁 Train / Validation
+
+Use time-based split:
+
+- Train: past seasons
+- Validate: future season
+
+Never random split.
+
+---
+
+## 🔗 Integration with Bayesian Model
+
+Convert predictions into:
+
+λ_home = xG_home  
+λ_away = xG_away  
+
+Then:
+
+- apply Dixon-Coles correction
+- simulate scorelines
+- compute betting EV
+
+---
+
+## ⚠️ Common Mistakes
+
+### Data leakage
+- forgetting shift(1)
+- using current match stats
+
+### Double counting
+- mixing player + team stats incorrectly
+
+### Ignoring lineups
+- using only team averages
+
+### Predicting goals
+- too noisy → poor generalisation
+
+---
+
+## ✅ Summary
+
+- Input: team-match row
+- Target: xG_for
+- Model: XGBoost regression
+- Output: expected goals created
+- Usage: feed into Bayesian goal model
+
+## 🛠️ Implementation Commands
+
+Install the modelling dependencies:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+Refresh the team feature tables first:
+
+```bash
+python3 team_feature_pipeline.py --create-schema --refresh
+```
+
+Train the default time-split model:
+
+```bash
+python3 xgboost_xg_model.py train
+```
+
+Fit the final production model after validation:
+
+```bash
+python3 xgboost_xg_model.py train-final
+```
+
+`train-final` reads the validated `train` metadata to reuse the best boosting round from early stopping, then fits on all labelled seasons with no validation holdout. If the validated metadata is missing or stale, rerun it first:
+
+```bash
+python3 xgboost_xg_model.py train-final --refresh-source-train
+```
+
+Default split:
+
+- Train: `22/23`, `23/24`, `24/25`
+- Validate: `25/26`
+
+Run rolling-origin cross-validation for evaluation:
+
+```bash
+python3 xgboost_xg_model.py cross-validate
+```
+
+Default CV folds:
+
+- Train `22/23`, validate `23/24`
+- Train `22/23`-`23/24`, validate `24/25`
+- Train `22/23`-`24/25`, validate `25/26`
+
+Artifacts are written to:
+
+```text
+models/xgboost_xg_for/
+```
+
+Final all-data model artifacts are written to:
+
+```text
+models/xgboost_xg_for_final/
+```
+
+Historical audit predictions:
+
+```bash
+python3 xgboost_xg_model.py predict-history
+```
+
+Predict both team rows for one match:
+
+```bash
+python3 xgboost_xg_model.py predict-match --match-id 123
+```
+
+Validation output reports:
+
+- model RMSE
+- model MAE
+- baseline RMSE/MAE using `rolling_xg_for_5`
+- train/validation row counts in `metadata.json`
+
+---
+
+## 🚀 Future Upgrades
+
+- minute-split features (0–75 vs 75+)
+- red card modelling
+- player embeddings
+- uncertainty-aware models
