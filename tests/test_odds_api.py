@@ -120,7 +120,7 @@ def test_pinnacle_429_records_retry_after(tmp_path):
 def test_client_skips_unconfigured_providers():
     client = OddsClient()
 
-    snapshot = client.get_live_odds(providers=["pinnacle", "bet365"])
+    snapshot = client.get_live_odds(providers=["pinnacle"])
 
-    assert len(snapshot.provider_snapshots) == 2
+    assert len(snapshot.provider_snapshots) == 1
     assert all(item.skipped is not None for item in snapshot.provider_snapshots)

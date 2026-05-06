@@ -3,12 +3,14 @@ from pathlib import Path
 import pytest
 
 from xgboost_xg_model import (
+    BASELINE_COLUMN,
     DEFAULT_CV_VALIDATION_SEASONS,
     DEFAULT_FINAL_MODEL_DIR,
     DEFAULT_TRAIN_SEASONS,
     DEFAULT_VALIDATION_SEASON,
     FEATURE_COLUMNS,
     META_COLUMNS,
+    MODEL_SPECS,
     TARGET_COLUMN,
     artifact_paths,
     best_iteration_count,
@@ -16,6 +18,7 @@ from xgboost_xg_model import (
     build_model_dataset_sql,
     build_where_clause,
     parse_seasons,
+    resolve_model_spec,
 )
 
 
@@ -31,11 +34,66 @@ def test_target_is_label_not_feature():
     assert "goals_against" not in FEATURE_COLUMNS
 
 
+def test_model_specs_define_independent_targets_and_outputs():
+    assert MODEL_SPECS["xg_for"].target_column == "target_xg_for"
+    assert MODEL_SPECS["xg_for"].prediction_column == "xg_hat_for"
+    assert MODEL_SPECS["shot_quality"].target_column == "target_shot_quality"
+    assert MODEL_SPECS["shot_quality"].prediction_column == "shot_quality_hat"
+    assert MODEL_SPECS["fragility"].target_column == "target_fragility"
+    assert MODEL_SPECS["fragility"].prediction_column == "fragility_hat"
+    assert len({spec.prediction_column for spec in MODEL_SPECS.values()}) == 3
+
+
+def test_model_specs_define_default_artifact_directories():
+    assert MODEL_SPECS["xg_for"].default_model_dir == Path("models/xgboost_xg_for")
+    assert MODEL_SPECS["shot_quality"].default_model_dir == Path(
+        "models/xgboost_shot_quality"
+    )
+    assert MODEL_SPECS["fragility"].default_model_dir == Path("models/xgboost_fragility")
+    assert MODEL_SPECS["shot_quality"].default_final_model_dir == Path(
+        "models/xgboost_shot_quality_final"
+    )
+    assert MODEL_SPECS["fragility"].default_final_model_dir == Path(
+        "models/xgboost_fragility_final"
+    )
+
+
 def test_dataset_sql_labels_target_from_current_xg_only():
     sql = compact_sql(build_model_dataset_sql(labelled_only=True))
 
     assert "f.xg AS target_xg_for" in sql
     assert "WHERE f.xg IS NOT NULL" in sql
+    assert f"AS {BASELINE_COLUMN}" in sql
+
+
+def test_shot_quality_sql_uses_direct_target_and_low_shot_filter():
+    sql = compact_sql(
+        build_model_dataset_sql(
+            labelled_only=True,
+            model_spec=MODEL_SPECS["shot_quality"],
+        )
+    )
+
+    assert "f.xg / GREATEST(f.total_shots, 1)" in sql
+    assert "AS target_shot_quality" in sql
+    assert "AS baseline_prediction" in sql
+    assert "f.total_shots >= 3" in sql
+    assert "xg_hat_for" not in sql
+
+
+def test_fragility_sql_uses_direct_target_and_low_shot_filter():
+    sql = compact_sql(
+        build_model_dataset_sql(
+            labelled_only=True,
+            model_spec=MODEL_SPECS["fragility"],
+        )
+    )
+
+    assert "f.xg_against / GREATEST(f.shots_against, 1)" in sql
+    assert "AS target_fragility" in sql
+    assert "AS baseline_prediction" in sql
+    assert "f.shots_against >= 3" in sql
+    assert "xg_hat_for" not in sql
 
 
 def test_dataset_sql_uses_season_scoped_leak_free_windows():
@@ -61,6 +119,24 @@ def test_where_clause_filters_match_identifiers():
         build_where_clause(labelled_only=True, sofascore_event_id=456)
         == "WHERE f.xg IS NOT NULL AND f.sofascore_event_id = 456"
     )
+
+
+def test_where_clause_uses_target_specific_label_filters():
+    assert (
+        build_where_clause(labelled_only=True, model_spec=MODEL_SPECS["shot_quality"])
+        == "WHERE f.xg IS NOT NULL AND f.total_shots IS NOT NULL AND f.total_shots >= 3"
+    )
+    assert (
+        build_where_clause(labelled_only=True, model_spec=MODEL_SPECS["fragility"])
+        == "WHERE f.xg_against IS NOT NULL AND f.shots_against IS NOT NULL "
+        "AND f.shots_against >= 3"
+    )
+
+
+def test_resolve_model_spec_rejects_unknown_model():
+    assert resolve_model_spec("xg_for") == MODEL_SPECS["xg_for"]
+    with pytest.raises(ValueError):
+        resolve_model_spec("goals")
 
 
 def test_default_split_is_time_ordered_by_season_label():

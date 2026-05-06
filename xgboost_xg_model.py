@@ -2,6 +2,7 @@ import argparse
 import csv
 import json
 import os
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,52 @@ TARGET_COLUMN = "target_xg_for"
 PREDICTION_COLUMN = "xg_hat_for"
 DEFAULT_CLIP_RANGE = (0.05, 5.0)
 DEFAULT_FINAL_MODEL_DIR = Path("models/xgboost_xg_for_final")
+BASELINE_COLUMN = "baseline_prediction"
+
+
+@dataclass(frozen=True)
+class ModelSpec:
+    name: str
+    target_column: str
+    prediction_column: str
+    default_model_dir: Path
+    default_final_model_dir: Path
+    clip_min: float
+    clip_max: float
+    default_min_shots: int | None = None
+
+
+MODEL_SPECS = {
+    "xg_for": ModelSpec(
+        name="xg_for",
+        target_column=TARGET_COLUMN,
+        prediction_column=PREDICTION_COLUMN,
+        default_model_dir=DEFAULT_MODEL_DIR,
+        default_final_model_dir=DEFAULT_FINAL_MODEL_DIR,
+        clip_min=DEFAULT_CLIP_RANGE[0],
+        clip_max=DEFAULT_CLIP_RANGE[1],
+    ),
+    "shot_quality": ModelSpec(
+        name="shot_quality",
+        target_column="target_shot_quality",
+        prediction_column="shot_quality_hat",
+        default_model_dir=Path("models/xgboost_shot_quality"),
+        default_final_model_dir=Path("models/xgboost_shot_quality_final"),
+        clip_min=0.0,
+        clip_max=0.5,
+        default_min_shots=3,
+    ),
+    "fragility": ModelSpec(
+        name="fragility",
+        target_column="target_fragility",
+        prediction_column="fragility_hat",
+        default_model_dir=Path("models/xgboost_fragility"),
+        default_final_model_dir=Path("models/xgboost_fragility_final"),
+        clip_min=0.0,
+        clip_max=0.5,
+        default_min_shots=3,
+    ),
+}
 
 META_COLUMNS = [
     "match_id",
@@ -292,7 +339,8 @@ SELECT
     f.team_name,
     f.opponent_name,
     f.side,
-    f.xg AS target_xg_for,
+    {target_expression} AS {target_column},
+    {baseline_expression} AS baseline_prediction,
     CASE WHEN f.side = 'home' THEN 1 ELSE 0 END AS is_home,
     context.rest_days,
     context.matches_last_7_days,
@@ -361,6 +409,75 @@ def artifact_paths(model_dir: Path) -> dict[str, Path]:
     }
 
 
+def resolve_model_spec(model_name: str = "xg_for") -> ModelSpec:
+    try:
+        return MODEL_SPECS[model_name]
+    except KeyError as exc:
+        choices = ", ".join(sorted(MODEL_SPECS))
+        raise ValueError(f"Unknown model '{model_name}'. Choose one of: {choices}") from exc
+
+
+def effective_min_shots(model_spec: ModelSpec, min_shots: int | None = None) -> int | None:
+    if model_spec.default_min_shots is None:
+        return None
+    return model_spec.default_min_shots if min_shots is None else min_shots
+
+
+def target_expression(model_spec: ModelSpec) -> str:
+    if model_spec.name == "xg_for":
+        return "f.xg"
+    if model_spec.name == "shot_quality":
+        return (
+            "CASE WHEN f.xg IS NOT NULL AND f.total_shots IS NOT NULL "
+            "THEN LEAST(GREATEST(f.xg / GREATEST(f.total_shots, 1), 0.0), 0.5) END"
+        )
+    if model_spec.name == "fragility":
+        return (
+            "CASE WHEN f.xg_against IS NOT NULL AND f.shots_against IS NOT NULL "
+            "THEN LEAST(GREATEST(f.xg_against / GREATEST(f.shots_against, 1), 0.0), 0.5) END"
+        )
+    raise ValueError(f"Unsupported model spec: {model_spec.name}")
+
+
+def baseline_expression(model_spec: ModelSpec) -> str:
+    if model_spec.name == "xg_for":
+        return "rolling.rolling_xg_for_5"
+    if model_spec.name == "shot_quality":
+        return (
+            "CASE WHEN rolling.rolling_xg_for_5 IS NOT NULL "
+            "AND rolling.rolling_shots_5 IS NOT NULL "
+            "THEN LEAST(GREATEST(rolling.rolling_xg_for_5 / "
+            "GREATEST(rolling.rolling_shots_5, 1), 0.0), 0.5) END"
+        )
+    if model_spec.name == "fragility":
+        return (
+            "CASE WHEN rolling.rolling_xg_against_5 IS NOT NULL "
+            "AND rolling.rolling_shots_against_5 IS NOT NULL "
+            "THEN LEAST(GREATEST(rolling.rolling_xg_against_5 / "
+            "GREATEST(rolling.rolling_shots_against_5, 1), 0.0), 0.5) END"
+        )
+    raise ValueError(f"Unsupported model spec: {model_spec.name}")
+
+
+def labelled_filter(model_spec: ModelSpec, min_shots: int | None = None) -> str:
+    if model_spec.name == "xg_for":
+        return "f.xg IS NOT NULL"
+    min_shots = effective_min_shots(model_spec, min_shots)
+    if model_spec.name == "shot_quality":
+        return (
+            "f.xg IS NOT NULL "
+            "AND f.total_shots IS NOT NULL "
+            f"AND f.total_shots >= {int(min_shots)}"
+        )
+    if model_spec.name == "fragility":
+        return (
+            "f.xg_against IS NOT NULL "
+            "AND f.shots_against IS NOT NULL "
+            f"AND f.shots_against >= {int(min_shots)}"
+        )
+    raise ValueError(f"Unsupported model spec: {model_spec.name}")
+
+
 def best_iteration_count(model) -> int:
     best_iteration = getattr(model, "best_iteration", None)
     if best_iteration is None:
@@ -372,10 +489,13 @@ def build_where_clause(
     labelled_only: bool = False,
     match_id: int | None = None,
     sofascore_event_id: int | None = None,
+    model_spec: ModelSpec | None = None,
+    min_shots: int | None = None,
 ) -> str:
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
     filters = []
     if labelled_only:
-        filters.append("f.xg IS NOT NULL")
+        filters.append(labelled_filter(model_spec, min_shots=min_shots))
     if match_id is not None:
         filters.append(f"f.match_id = {int(match_id)}")
     if sofascore_event_id is not None:
@@ -387,14 +507,24 @@ def build_model_dataset_sql(
     labelled_only: bool = False,
     match_id: int | None = None,
     sofascore_event_id: int | None = None,
+    model_spec: ModelSpec | None = None,
+    min_shots: int | None = None,
 ) -> str:
-    return MODEL_DATASET_SQL.replace(
-        "{where_clause}",
-        build_where_clause(
-            labelled_only=labelled_only,
-            match_id=match_id,
-            sofascore_event_id=sofascore_event_id,
-        ),
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
+    return (
+        MODEL_DATASET_SQL.replace("{target_expression}", target_expression(model_spec))
+        .replace("{target_column}", model_spec.target_column)
+        .replace("{baseline_expression}", baseline_expression(model_spec))
+        .replace(
+            "{where_clause}",
+            build_where_clause(
+                labelled_only=labelled_only,
+                match_id=match_id,
+                sofascore_event_id=sofascore_event_id,
+                model_spec=model_spec,
+                min_shots=min_shots,
+            ),
+        )
     )
 
 
@@ -416,6 +546,8 @@ def load_dataset(
     labelled_only: bool = False,
     match_id: int | None = None,
     sofascore_event_id: int | None = None,
+    model_spec: ModelSpec | None = None,
+    min_shots: int | None = None,
 ):
     _, pd, _ = require_runtime_dependencies()
     try:
@@ -431,6 +563,8 @@ def load_dataset(
         labelled_only=labelled_only,
         match_id=match_id,
         sofascore_event_id=sofascore_event_id,
+        model_spec=model_spec,
+        min_shots=min_shots,
     )
     with psycopg.connect(db_url, row_factory=dict_row) as conn:
         with conn.cursor() as cur:
@@ -494,10 +628,15 @@ def build_cross_validation_folds(
     return folds
 
 
-def prepare_model_dataframe(df, pd):
+def prepare_model_dataframe(df, pd, model_spec: ModelSpec | None = None):
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
     df = df.copy()
     df[FEATURE_COLUMNS] = df[FEATURE_COLUMNS].apply(pd.to_numeric, errors="coerce")
-    df[TARGET_COLUMN] = pd.to_numeric(df[TARGET_COLUMN], errors="coerce")
+    df[model_spec.target_column] = pd.to_numeric(
+        df[model_spec.target_column],
+        errors="coerce",
+    )
+    df[BASELINE_COLUMN] = pd.to_numeric(df[BASELINE_COLUMN], errors="coerce")
     return df
 
 
@@ -541,26 +680,44 @@ def save_feature_importance(path: Path, model, feature_columns: list[str]) -> No
             writer.writerow({"feature": feature, "gain": scores.get(feature, 0.0)})
 
 
-def fit_regressor(XGBRegressor, train, validation, early_stopping_rounds: int):
+def fit_regressor(
+    XGBRegressor,
+    train,
+    validation,
+    early_stopping_rounds: int,
+    model_spec: ModelSpec | None = None,
+):
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
     params = dict(MODEL_PARAMS)
     params["early_stopping_rounds"] = early_stopping_rounds
     model = XGBRegressor(**params)
     model.fit(
         train[FEATURE_COLUMNS],
-        train[TARGET_COLUMN].astype(float),
-        eval_set=[(validation[FEATURE_COLUMNS], validation[TARGET_COLUMN].astype(float))],
+        train[model_spec.target_column].astype(float),
+        eval_set=[
+            (
+                validation[FEATURE_COLUMNS],
+                validation[model_spec.target_column].astype(float),
+            )
+        ],
         verbose=False,
     )
     return model, params
 
 
-def fit_final_regressor(XGBRegressor, df, n_estimators: int):
+def fit_final_regressor(
+    XGBRegressor,
+    df,
+    n_estimators: int,
+    model_spec: ModelSpec | None = None,
+):
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
     params = dict(MODEL_PARAMS)
     params["n_estimators"] = int(n_estimators)
     model = XGBRegressor(**params)
     model.fit(
         df[FEATURE_COLUMNS],
-        df[TARGET_COLUMN].astype(float),
+        df[model_spec.target_column].astype(float),
         verbose=False,
     )
     return model, params
@@ -574,19 +731,32 @@ def train_model(
     clip_min: float,
     clip_max: float,
     early_stopping_rounds: int,
+    model_spec: ModelSpec | None = None,
+    min_shots: int | None = None,
 ) -> dict[str, Any]:
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
     np, pd, XGBRegressor = require_runtime_dependencies()
-    df = prepare_model_dataframe(load_dataset(db_url, labelled_only=True), pd)
+    df = prepare_model_dataframe(
+        load_dataset(
+            db_url,
+            labelled_only=True,
+            model_spec=model_spec,
+            min_shots=min_shots,
+        ),
+        pd,
+        model_spec=model_spec,
+    )
     train, validation = train_validation_split(df, train_seasons, validation_season)
 
     x_validation = validation[FEATURE_COLUMNS]
-    y_validation = validation[TARGET_COLUMN].astype(float)
+    y_validation = validation[model_spec.target_column].astype(float)
 
     model, params = fit_regressor(
         XGBRegressor,
         train=train,
         validation=validation,
         early_stopping_rounds=early_stopping_rounds,
+        model_spec=model_spec,
     )
 
     validation_predictions = clip_predictions(
@@ -598,7 +768,7 @@ def train_model(
     metrics = metric_summary(
         actual=y_validation,
         predicted=validation_predictions,
-        baseline=validation["rolling_xg_for_5"].astype(float),
+        baseline=validation[BASELINE_COLUMN].astype(float),
         np=np,
     )
 
@@ -607,16 +777,20 @@ def train_model(
     model.save_model(paths["model"])
     save_json(paths["feature_columns"], FEATURE_COLUMNS)
 
-    output = validation[META_COLUMNS + [TARGET_COLUMN, "rolling_xg_for_5"]].copy()
-    output[PREDICTION_COLUMN] = validation_predictions
-    output["prediction_error"] = output[PREDICTION_COLUMN] - output[TARGET_COLUMN]
+    output = validation[META_COLUMNS + [model_spec.target_column, BASELINE_COLUMN]].copy()
+    output[model_spec.prediction_column] = validation_predictions
+    output["prediction_error"] = (
+        output[model_spec.prediction_column] - output[model_spec.target_column]
+    )
     output.to_csv(paths["validation_predictions"], index=False)
     save_feature_importance(paths["feature_importance"], model, FEATURE_COLUMNS)
 
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "target_column": TARGET_COLUMN,
-        "prediction_column": PREDICTION_COLUMN,
+        "model_name": model_spec.name,
+        "target_column": model_spec.target_column,
+        "prediction_column": model_spec.prediction_column,
+        "baseline_column": BASELINE_COLUMN,
         "train_seasons": list(train_seasons),
         "validation_season": validation_season,
         "train_rows": int(len(train)),
@@ -630,6 +804,7 @@ def train_model(
         "best_score": getattr(model, "best_score", None),
         "clip_min": clip_min,
         "clip_max": clip_max,
+        "min_shots": effective_min_shots(model_spec, min_shots),
         "metrics": metrics,
     }
     save_json(paths["metadata"], metadata)
@@ -644,7 +819,10 @@ def train_final_model(
     clip_max: float,
     early_stopping_rounds: int,
     refresh_source_train: bool,
+    model_spec: ModelSpec | None = None,
+    min_shots: int | None = None,
 ) -> dict[str, Any]:
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
     _, pd, XGBRegressor = require_runtime_dependencies()
     source_paths = artifact_paths(source_model_dir)
     source_metadata: dict[str, Any] = {}
@@ -657,6 +835,8 @@ def train_final_model(
             clip_min=clip_min,
             clip_max=clip_max,
             early_stopping_rounds=early_stopping_rounds,
+            model_spec=model_spec,
+            min_shots=min_shots,
         )
     else:
         source_metadata = json.loads(source_paths["metadata"].read_text(encoding="utf-8"))
@@ -671,14 +851,26 @@ def train_final_model(
             clip_min=clip_min,
             clip_max=clip_max,
             early_stopping_rounds=early_stopping_rounds,
+            model_spec=model_spec,
+            min_shots=min_shots,
         )
         best_rounds = source_metadata["best_iteration_count"]
 
-    df = prepare_model_dataframe(load_dataset(db_url, labelled_only=True), pd)
+    df = prepare_model_dataframe(
+        load_dataset(
+            db_url,
+            labelled_only=True,
+            model_spec=model_spec,
+            min_shots=min_shots,
+        ),
+        pd,
+        model_spec=model_spec,
+    )
     model, params = fit_final_regressor(
         XGBRegressor,
         df=df,
         n_estimators=int(best_rounds),
+        model_spec=model_spec,
     )
 
     model_dir.mkdir(parents=True, exist_ok=True)
@@ -690,8 +882,10 @@ def train_final_model(
     metadata = {
         "created_at": datetime.now(timezone.utc).isoformat(),
         "mode": "final",
-        "target_column": TARGET_COLUMN,
-        "prediction_column": PREDICTION_COLUMN,
+        "model_name": model_spec.name,
+        "target_column": model_spec.target_column,
+        "prediction_column": model_spec.prediction_column,
+        "baseline_column": BASELINE_COLUMN,
         "train_seasons": list(ordered_seasons(df["season_year"].unique())),
         "train_rows": int(len(df)),
         "feature_count": len(FEATURE_COLUMNS),
@@ -705,6 +899,7 @@ def train_final_model(
         "source_best_score": source_metadata.get("best_score"),
         "clip_min": clip_min,
         "clip_max": clip_max,
+        "min_shots": effective_min_shots(model_spec, min_shots),
     }
     save_json(paths["metadata"], metadata)
     return metadata
@@ -742,9 +937,21 @@ def cross_validate_model(
     clip_max: float,
     early_stopping_rounds: int,
     min_train_seasons: int,
+    model_spec: ModelSpec | None = None,
+    min_shots: int | None = None,
 ) -> dict[str, Any]:
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
     np, pd, XGBRegressor = require_runtime_dependencies()
-    df = prepare_model_dataframe(load_dataset(db_url, labelled_only=True), pd)
+    df = prepare_model_dataframe(
+        load_dataset(
+            db_url,
+            labelled_only=True,
+            model_spec=model_spec,
+            min_shots=min_shots,
+        ),
+        pd,
+        model_spec=model_spec,
+    )
     folds = build_cross_validation_folds(
         df["season_year"].unique(),
         validation_seasons=validation_seasons,
@@ -763,6 +970,7 @@ def cross_validate_model(
             train=train,
             validation=validation,
             early_stopping_rounds=early_stopping_rounds,
+            model_spec=model_spec,
         )
         predictions = clip_predictions(
             model.predict(validation[FEATURE_COLUMNS]),
@@ -771,9 +979,9 @@ def cross_validate_model(
             np=np,
         )
         metrics = metric_summary(
-            actual=validation[TARGET_COLUMN].astype(float),
+            actual=validation[model_spec.target_column].astype(float),
             predicted=predictions,
-            baseline=validation["rolling_xg_for_5"].astype(float),
+            baseline=validation[BASELINE_COLUMN].astype(float),
             np=np,
         )
         rows.append(
@@ -805,6 +1013,10 @@ def cross_validate_model(
 
     return {
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "model_name": model_spec.name,
+        "target_column": model_spec.target_column,
+        "prediction_column": model_spec.prediction_column,
+        "min_shots": effective_min_shots(model_spec, min_shots),
         "folds": rows,
         "weighted_average": aggregate_fold_metrics(rows),
         "output_path": str(output_path),
@@ -832,21 +1044,53 @@ def predict_dataset(df, model, feature_columns: list[str], clip_min: float, clip
     return clip_predictions(predictions, clip_min=clip_min, clip_max=clip_max, np=np)
 
 
-def predict_history(db_url: str, model_dir: Path, output_path: Path) -> int:
+def validate_loaded_model_spec(metadata: dict[str, Any], model_spec: ModelSpec) -> None:
+    metadata_model = metadata.get("model_name")
+    if metadata_model and metadata_model != model_spec.name:
+        raise SystemExit(
+            f"Loaded model is for '{metadata_model}', but --model is '{model_spec.name}'."
+        )
+
+
+def predict_history(
+    db_url: str,
+    model_dir: Path,
+    output_path: Path,
+    model_spec: ModelSpec | None = None,
+    min_shots: int | None = None,
+) -> int:
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
     _, pd, _ = require_runtime_dependencies()
     model, feature_columns, metadata = load_model_and_features(model_dir)
-    clip_min = float(metadata.get("clip_min", DEFAULT_CLIP_RANGE[0]))
-    clip_max = float(metadata.get("clip_max", DEFAULT_CLIP_RANGE[1]))
-    df = load_dataset(db_url, labelled_only=True)
-    df[PREDICTION_COLUMN] = predict_dataset(df, model, feature_columns, clip_min, clip_max)
-    if TARGET_COLUMN in df:
-        df[TARGET_COLUMN] = pd.to_numeric(df[TARGET_COLUMN], errors="coerce")
-        df["prediction_error"] = df[PREDICTION_COLUMN] - df[TARGET_COLUMN]
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    df[META_COLUMNS + [TARGET_COLUMN, PREDICTION_COLUMN, "prediction_error"]].to_csv(
-        output_path,
-        index=False,
+    validate_loaded_model_spec(metadata, model_spec)
+    clip_min = float(metadata.get("clip_min", model_spec.clip_min))
+    clip_max = float(metadata.get("clip_max", model_spec.clip_max))
+    df = load_dataset(
+        db_url,
+        labelled_only=True,
+        model_spec=model_spec,
+        min_shots=min_shots,
     )
+    df[model_spec.prediction_column] = predict_dataset(
+        df,
+        model,
+        feature_columns,
+        clip_min,
+        clip_max,
+    )
+    if model_spec.target_column in df:
+        df[model_spec.target_column] = pd.to_numeric(
+            df[model_spec.target_column],
+            errors="coerce",
+        )
+        df["prediction_error"] = (
+            df[model_spec.prediction_column] - df[model_spec.target_column]
+        )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    df[
+        META_COLUMNS
+        + [model_spec.target_column, model_spec.prediction_column, "prediction_error"]
+    ].to_csv(output_path, index=False)
     return len(df)
 
 
@@ -856,22 +1100,34 @@ def predict_match(
     output_path: Path | None,
     match_id: int | None,
     sofascore_event_id: int | None,
+    model_spec: ModelSpec | None = None,
+    min_shots: int | None = None,
 ) -> int:
+    model_spec = model_spec or MODEL_SPECS["xg_for"]
     if match_id is None and sofascore_event_id is None:
         raise SystemExit("predict-match requires --match-id or --sofascore-event-id")
     model, feature_columns, metadata = load_model_and_features(model_dir)
-    clip_min = float(metadata.get("clip_min", DEFAULT_CLIP_RANGE[0]))
-    clip_max = float(metadata.get("clip_max", DEFAULT_CLIP_RANGE[1]))
+    validate_loaded_model_spec(metadata, model_spec)
+    clip_min = float(metadata.get("clip_min", model_spec.clip_min))
+    clip_max = float(metadata.get("clip_max", model_spec.clip_max))
     df = load_dataset(
         db_url,
         labelled_only=False,
         match_id=match_id,
         sofascore_event_id=sofascore_event_id,
+        model_spec=model_spec,
+        min_shots=min_shots,
     )
     if df.empty:
         raise SystemExit("No feature rows found for requested match")
-    df[PREDICTION_COLUMN] = predict_dataset(df, model, feature_columns, clip_min, clip_max)
-    columns = META_COLUMNS + [TARGET_COLUMN, PREDICTION_COLUMN]
+    df[model_spec.prediction_column] = predict_dataset(
+        df,
+        model,
+        feature_columns,
+        clip_min,
+        clip_max,
+    )
+    columns = META_COLUMNS + [model_spec.target_column, model_spec.prediction_column]
     if output_path is not None:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         df[columns].to_csv(output_path, index=False)
@@ -882,7 +1138,13 @@ def predict_match(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Train and run the XGBoost xG-for regression model."
+        description="Train and run XGBoost football signal regression models."
+    )
+    parser.add_argument(
+        "--model",
+        choices=sorted(MODEL_SPECS),
+        default="xg_for",
+        help="Model target to train or score. Defaults to xg_for.",
     )
     parser.add_argument(
         "--db-url",
@@ -892,12 +1154,21 @@ def main() -> None:
     parser.add_argument(
         "--model-dir",
         type=Path,
-        default=DEFAULT_MODEL_DIR,
-        help="Directory for model artifacts. Defaults to the validation model directory.",
+        default=None,
+        help="Directory for model artifacts. Defaults to the selected model directory.",
+    )
+    parser.add_argument(
+        "--min-shots",
+        type=int,
+        default=None,
+        help="Minimum shots for shot_quality/fragility labelled rows. Defaults to 3.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    train_parser = subparsers.add_parser("train", help="Train and save the xG model.")
+    train_parser = subparsers.add_parser(
+        "train",
+        help="Train and save the selected validation model.",
+    )
     train_parser.add_argument(
         "--train-seasons",
         default=",".join(DEFAULT_TRAIN_SEASONS),
@@ -908,8 +1179,8 @@ def main() -> None:
         default=DEFAULT_VALIDATION_SEASON,
         help="Future season_year used for validation.",
     )
-    train_parser.add_argument("--clip-min", type=float, default=DEFAULT_CLIP_RANGE[0])
-    train_parser.add_argument("--clip-max", type=float, default=DEFAULT_CLIP_RANGE[1])
+    train_parser.add_argument("--clip-min", type=float, default=None)
+    train_parser.add_argument("--clip-max", type=float, default=None)
     train_parser.add_argument("--early-stopping-rounds", type=int, default=50)
 
     final_parser = subparsers.add_parser(
@@ -922,13 +1193,13 @@ def main() -> None:
     final_parser.add_argument(
         "--source-model-dir",
         type=Path,
-        default=DEFAULT_MODEL_DIR,
+        default=None,
         help="Validated train artifact directory used to read or create best_iteration_count.",
     )
     final_parser.add_argument(
         "--final-model-dir",
         type=Path,
-        default=DEFAULT_FINAL_MODEL_DIR,
+        default=None,
         help="Output directory for the final all-data model.",
     )
     final_parser.add_argument(
@@ -936,8 +1207,8 @@ def main() -> None:
         action="store_true",
         help="Rerun the validated train command before fitting the final model.",
     )
-    final_parser.add_argument("--clip-min", type=float, default=DEFAULT_CLIP_RANGE[0])
-    final_parser.add_argument("--clip-max", type=float, default=DEFAULT_CLIP_RANGE[1])
+    final_parser.add_argument("--clip-min", type=float, default=None)
+    final_parser.add_argument("--clip-max", type=float, default=None)
     final_parser.add_argument("--early-stopping-rounds", type=int, default=50)
 
     cv_parser = subparsers.add_parser(
@@ -955,13 +1226,13 @@ def main() -> None:
         default=1,
         help="Minimum number of prior seasons required before a validation fold.",
     )
-    cv_parser.add_argument("--clip-min", type=float, default=DEFAULT_CLIP_RANGE[0])
-    cv_parser.add_argument("--clip-max", type=float, default=DEFAULT_CLIP_RANGE[1])
+    cv_parser.add_argument("--clip-min", type=float, default=None)
+    cv_parser.add_argument("--clip-max", type=float, default=None)
     cv_parser.add_argument("--early-stopping-rounds", type=int, default=50)
     cv_parser.add_argument(
         "--output",
         type=Path,
-        default=DEFAULT_MODEL_DIR / "cross_validation_results.csv",
+        default=None,
     )
 
     history_parser = subparsers.add_parser(
@@ -971,7 +1242,7 @@ def main() -> None:
     history_parser.add_argument(
         "--output",
         type=Path,
-        default=DEFAULT_MODEL_DIR / "history_predictions.csv",
+        default=None,
     )
 
     match_parser = subparsers.add_parser(
@@ -983,56 +1254,82 @@ def main() -> None:
     match_parser.add_argument("--output", type=Path)
 
     args = parser.parse_args()
+    model_spec = resolve_model_spec(args.model)
+    model_dir = args.model_dir or model_spec.default_model_dir
+    clip_min = (
+        model_spec.clip_min
+        if getattr(args, "clip_min", None) is None
+        else args.clip_min
+    )
+    clip_max = (
+        model_spec.clip_max
+        if getattr(args, "clip_max", None) is None
+        else args.clip_max
+    )
 
     if args.command == "train":
         metadata = train_model(
             db_url=args.db_url,
-            model_dir=args.model_dir,
+            model_dir=model_dir,
             train_seasons=parse_seasons(args.train_seasons),
             validation_season=args.validation_season,
-            clip_min=args.clip_min,
-            clip_max=args.clip_max,
+            clip_min=clip_min,
+            clip_max=clip_max,
             early_stopping_rounds=args.early_stopping_rounds,
+            model_spec=model_spec,
+            min_shots=args.min_shots,
         )
         print(json.dumps(metadata["metrics"], indent=2, sort_keys=True))
-        print(f"Saved model artifacts to {args.model_dir}")
+        print(f"Saved model artifacts to {model_dir}")
     elif args.command == "train-final":
+        source_model_dir = args.source_model_dir or model_spec.default_model_dir
+        final_model_dir = args.final_model_dir or model_spec.default_final_model_dir
         metadata = train_final_model(
             db_url=args.db_url,
-            model_dir=args.final_model_dir,
-            source_model_dir=args.source_model_dir,
-            clip_min=args.clip_min,
-            clip_max=args.clip_max,
+            model_dir=final_model_dir,
+            source_model_dir=source_model_dir,
+            clip_min=clip_min,
+            clip_max=clip_max,
             early_stopping_rounds=args.early_stopping_rounds,
             refresh_source_train=args.refresh_source_train,
+            model_spec=model_spec,
+            min_shots=args.min_shots,
         )
         print(json.dumps(metadata, indent=2, sort_keys=True))
-        print(f"Saved final model artifacts to {args.final_model_dir}")
+        print(f"Saved final model artifacts to {final_model_dir}")
     elif args.command == "cross-validate":
+        output = args.output or model_dir / "cross_validation_results.csv"
         results = cross_validate_model(
             db_url=args.db_url,
-            output_path=args.output,
+            output_path=output,
             validation_seasons=parse_seasons(args.validation_seasons),
-            clip_min=args.clip_min,
-            clip_max=args.clip_max,
+            clip_min=clip_min,
+            clip_max=clip_max,
             early_stopping_rounds=args.early_stopping_rounds,
             min_train_seasons=args.min_train_seasons,
+            model_spec=model_spec,
+            min_shots=args.min_shots,
         )
         print(json.dumps(results, indent=2, sort_keys=True))
     elif args.command == "predict-history":
+        output = args.output or model_dir / "history_predictions.csv"
         rows = predict_history(
             db_url=args.db_url,
-            model_dir=args.model_dir,
-            output_path=args.output,
+            model_dir=model_dir,
+            output_path=output,
+            model_spec=model_spec,
+            min_shots=args.min_shots,
         )
-        print(f"Wrote {rows} historical predictions to {args.output}")
+        print(f"Wrote {rows} historical predictions to {output}")
     elif args.command == "predict-match":
         rows = predict_match(
             db_url=args.db_url,
-            model_dir=args.model_dir,
+            model_dir=model_dir,
             output_path=args.output,
             match_id=args.match_id,
             sofascore_event_id=args.sofascore_event_id,
+            model_spec=model_spec,
+            min_shots=args.min_shots,
         )
         if args.output is not None:
             print(f"Wrote {rows} match predictions to {args.output}")
