@@ -1,0 +1,22 @@
+{
+  "baseline": {
+    "btts_brier": 0.2454216235279277,
+    "btts_log_loss": 0.6838730183750253,
+    "matches": 348,
+    "one_x_two_brier": 0.6253545863516898,
+    "one_x_two_log_loss": 1.0398054155578038,
+    "over_2_5_brier": 0.24418537776995755,
+    "over_2_5_log_loss": 0.6814584866225908,
+    "scoreline_nll": 2.9056993930924806
+  },
+  "validation": {
+    "btts_brier": 0.24528811619041277,
+    "btts_log_loss": 0.6835675270212781,
+    "matches": 348,
+    "one_x_two_brier": 0.6227705419645043,
+    "one_x_two_log_loss": 1.0362192918791349,
+    "over_2_5_brier": 0.2437233815503832,
+    "over_2_5_log_loss": 0.6805211837528845,
+    "scoreline_nll": 2.9009823923991953
+  }
+}

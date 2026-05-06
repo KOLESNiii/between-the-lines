@@ -1,0 +1,51 @@
+{
+  "created_at": "2026-05-06T15:10:50.739936+00:00",
+  "metadata": {
+    "artifact_dir": "models/probabilistic_markets_final",
+    "db_run_id": 6,
+    "max_goals": 12
+  },
+  "metrics": {
+    "training": {
+      "btts_brier": 0.24883330621001465,
+      "btts_log_loss": 0.6907429845906677,
+      "matches": 4516,
+      "one_x_two_brier": 0.6207395808310157,
+      "one_x_two_log_loss": 1.0332921636123582,
+      "over_2_5_brier": 0.24475147952180654,
+      "over_2_5_log_loss": 0.6824415938491656,
+      "scoreline_nll": 3.0069108219504974
+    }
+  },
+  "mode": "final",
+  "parameters": {
+    "alpha": 5.0,
+    "away_multiplier": 0.95,
+    "home_multiplier": 1.0350000000000001,
+    "lambda_max": 5.5,
+    "lambda_min": 0.05,
+    "league_avg_fragility": 0.11426294582134543,
+    "rho": -0.015000000000000001
+  },
+  "run_name": "final_2026-05-06T15:10:50.739936+00:00",
+  "source_model_dirs": {
+    "fragility": "models/xgboost_fragility_final",
+    "shot_quality": "models/xgboost_shot_quality_final",
+    "xg_for": "models/xgboost_xg_for_final"
+  },
+  "train_seasons": [
+    "14/15",
+    "15/16",
+    "16/17",
+    "17/18",
+    "18/19",
+    "19/20",
+    "20/21",
+    "21/22",
+    "22/23",
+    "23/24",
+    "24/25",
+    "25/26"
+  ],
+  "validation_season": null
+}

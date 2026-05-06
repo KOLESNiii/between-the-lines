@@ -1159,5 +1159,48 @@ EV calculation
 
 This is the standard architecture used in serious sports betting systems.
 
+## 🛠️ Team Market Implementation Commands
+
+Create the output schema and fit the held-out calibration run:
+
+```bash
+./venv/bin/python probabilistic_markets.py --create-schema fit-calibration
+```
+
+Fit the final all-history probability calibration:
+
+```bash
+./venv/bin/python probabilistic_markets.py fit-final
+```
+
+Generate historical probability outputs:
+
+```bash
+./venv/bin/python probabilistic_markets.py predict-history
+```
+
+Score a single match:
+
+```bash
+./venv/bin/python probabilistic_markets.py predict-match --match-id 4171
+```
+
+Default artifacts:
+
+```text
+models/probabilistic_markets/
+models/probabilistic_markets_final/
+```
+
+Default DB outputs:
+
+```text
+model_outputs.market_probability_runs
+model_outputs.match_probability_inputs
+model_outputs.market_probabilities
+```
+
+The v1 team-market layer outputs 1X2, BTTS, exact-score, and total-goals probabilities. It does not yet join bookmaker odds or calculate EV.
+
 
 ---
