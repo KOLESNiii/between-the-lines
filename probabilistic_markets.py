@@ -3,7 +3,7 @@ import csv
 import json
 import math
 import os
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -21,6 +21,37 @@ DEFAULT_TOTAL_LINES = (0.5, 1.5, 2.5, 3.5, 4.5)
 DEFAULT_MAX_GOALS = 12
 LAMBDA_CLIP_RANGE = (0.05, 5.5)
 EPSILON = 1e-12
+OUTCOME_LABELS = ("home", "draw", "away")
+MARKET_FEATURE_NAMES = [
+    "base_home_win",
+    "base_draw",
+    "base_away_win",
+    "base_btts_yes",
+    "base_over_probability",
+    "line",
+    "lambda_home",
+    "lambda_away",
+    "lambda_total",
+    "lambda_diff",
+    "xg_home",
+    "xg_away",
+    "xg_total",
+    "xg_diff",
+    "shot_quality_home",
+    "shot_quality_away",
+    "shot_quality_diff",
+    "fragility_home",
+    "fragility_away",
+    "fragility_diff",
+    "feature_coverage_home",
+    "feature_coverage_away",
+    "feature_coverage_diff",
+    "tempo_feature_coverage_home",
+    "tempo_feature_coverage_away",
+    "tempo_feature_coverage_diff",
+    "match_tempo_index",
+    "tempo_multiplier",
+]
 
 
 @dataclass(frozen=True)
@@ -30,8 +61,13 @@ class CalibrationParams:
     away_multiplier: float
     rho: float
     league_avg_fragility: float
+    tempo_beta: float = 0.0
+    league_avg_tempo_index: float = 1.0
+    tempo_multiplier_min: float = 0.75
+    tempo_multiplier_max: float = 1.30
     lambda_min: float = LAMBDA_CLIP_RANGE[0]
     lambda_max: float = LAMBDA_CLIP_RANGE[1]
+    market_calibrators: dict[str, Any] = field(default_factory=dict)
 
 
 def require_pandas():
@@ -224,16 +260,393 @@ def top_scorelines(rows: list[dict[str, Any]], limit: int = 5) -> list[dict[str,
     return sorted(exact_scores, key=lambda row: row["probability"], reverse=True)[:limit]
 
 
+def require_sklearn_logistic():
+    try:
+        import numpy as np
+        from sklearn.linear_model import LogisticRegression
+    except ImportError as exc:
+        raise SystemExit(
+            "Missing calibration dependency. Install requirements first: "
+            "python3 -m pip install -r requirements.txt"
+        ) from exc
+    return np, LogisticRegression
+
+
+def base_market_context(
+    match: dict[str, Any],
+    params: CalibrationParams,
+    max_goals: int = DEFAULT_MAX_GOALS,
+) -> dict[str, Any]:
+    lambda_home, lambda_away = construct_lambdas(match, params)
+    tempo_multiplier = tempo_multiplier_for_match(match, params)
+    rows = derive_market_probabilities(
+        scoreline_grid(lambda_home, lambda_away, params.rho, max_goals=max_goals)
+    )
+    return {
+        "lambda_home": lambda_home,
+        "lambda_away": lambda_away,
+        "tempo_multiplier": tempo_multiplier,
+        "rows": rows,
+        "lookup": market_probability_lookup(rows),
+    }
+
+
+def market_feature_values(
+    match: dict[str, Any],
+    params: CalibrationParams,
+    line: float,
+    context: dict[str, Any] | None = None,
+    max_goals: int = DEFAULT_MAX_GOALS,
+) -> list[float]:
+    context = context or base_market_context(match, params, max_goals=max_goals)
+    lookup = context["lookup"]
+    lambda_home = float(context["lambda_home"])
+    lambda_away = float(context["lambda_away"])
+    xg_home = coalesce_float(match.get("xg_home"), 0.0)
+    xg_away = coalesce_float(match.get("xg_away"), 0.0)
+    shot_quality_home = coalesce_float(match.get("shot_quality_home"), 0.0)
+    shot_quality_away = coalesce_float(match.get("shot_quality_away"), 0.0)
+    fragility_home = coalesce_float(match.get("fragility_home"), params.league_avg_fragility)
+    fragility_away = coalesce_float(match.get("fragility_away"), params.league_avg_fragility)
+    feature_coverage_home = coalesce_float(match.get("feature_coverage_score_home"), 0.0)
+    feature_coverage_away = coalesce_float(match.get("feature_coverage_score_away"), 0.0)
+    tempo_feature_coverage_home = coalesce_float(
+        match.get("tempo_feature_coverage_score_home"),
+        0.0,
+    )
+    tempo_feature_coverage_away = coalesce_float(
+        match.get("tempo_feature_coverage_score_away"),
+        0.0,
+    )
+    match_tempo_index = coalesce_float(
+        match.get("match_tempo_index"),
+        params.league_avg_tempo_index,
+    )
+    tempo_multiplier = float(context["tempo_multiplier"])
+    return [
+        lookup[("1x2", "home", None)],
+        lookup[("1x2", "draw", None)],
+        lookup[("1x2", "away", None)],
+        lookup[("btts", "yes", None)],
+        lookup[("total_goals", "over", line)],
+        float(line),
+        lambda_home,
+        lambda_away,
+        lambda_home + lambda_away,
+        lambda_home - lambda_away,
+        xg_home,
+        xg_away,
+        xg_home + xg_away,
+        xg_home - xg_away,
+        shot_quality_home,
+        shot_quality_away,
+        shot_quality_home - shot_quality_away,
+        fragility_home,
+        fragility_away,
+        fragility_home - fragility_away,
+        feature_coverage_home,
+        feature_coverage_away,
+        feature_coverage_home - feature_coverage_away,
+        tempo_feature_coverage_home,
+        tempo_feature_coverage_away,
+        tempo_feature_coverage_home - tempo_feature_coverage_away,
+        match_tempo_index,
+        tempo_multiplier,
+    ]
+
+
+def serialize_logistic_model(model, feature_names: list[str], class_labels: tuple[str, ...]) -> dict[str, Any]:
+    classes = [class_labels[int(class_index)] for class_index in model.classes_]
+    return {
+        "type": "logistic_regression",
+        "feature_names": feature_names,
+        "classes": classes,
+        "coef": model.coef_.tolist(),
+        "intercept": model.intercept_.tolist(),
+    }
+
+
+def fit_serialized_logistic(
+    X,
+    y,
+    class_labels: tuple[str, ...],
+    feature_names: list[str],
+):
+    unique_classes = sorted(set(y))
+    if len(unique_classes) < 2:
+        return None
+    _, LogisticRegression = require_sklearn_logistic()
+    model = LogisticRegression(C=0.05, max_iter=1000, random_state=42)
+    model.fit(X, y)
+    return serialize_logistic_model(model, feature_names, class_labels)
+
+
+def sigmoid(value: float) -> float:
+    if value >= 0:
+        z = math.exp(-value)
+        return 1.0 / (1.0 + z)
+    z = math.exp(value)
+    return z / (1.0 + z)
+
+
+def softmax(values: list[float]) -> list[float]:
+    offset = max(values)
+    exps = [math.exp(value - offset) for value in values]
+    total = sum(exps)
+    return [value / total for value in exps]
+
+
+def predict_serialized_logistic(calibrator: dict[str, Any], features: list[float]) -> dict[str, float]:
+    classes = calibrator["classes"]
+    coefficients = calibrator["coef"]
+    intercepts = calibrator["intercept"]
+    logits = [
+        sum(coef * feature for coef, feature in zip(row, features)) + intercept
+        for row, intercept in zip(coefficients, intercepts)
+    ]
+    if len(classes) == 2 and len(logits) == 1:
+        positive_probability = sigmoid(logits[0])
+        return {
+            classes[0]: 1.0 - positive_probability,
+            classes[1]: positive_probability,
+        }
+    probabilities = softmax(logits)
+    return dict(zip(classes, probabilities))
+
+
+def fit_market_calibrators(
+    matches: list[dict[str, Any]],
+    params: CalibrationParams,
+    max_goals: int = DEFAULT_MAX_GOALS,
+) -> CalibrationParams:
+    np, _ = require_sklearn_logistic()
+    contexts = [base_market_context(match, params, max_goals=max_goals) for match in matches]
+    x_base = np.asarray(
+        [
+            market_feature_values(
+                match,
+                params,
+                line=2.5,
+                context=context,
+                max_goals=max_goals,
+            )
+            for match, context in zip(matches, contexts)
+        ],
+        dtype=float,
+    )
+    outcome_targets = [
+        0 if match["home_goals"] > match["away_goals"]
+        else 2 if match["away_goals"] > match["home_goals"]
+        else 1
+        for match in matches
+    ]
+    btts_targets = [
+        int(match["home_goals"] > 0 and match["away_goals"] > 0)
+        for match in matches
+    ]
+    calibrators: dict[str, Any] = {}
+    outcome_calibrator = fit_serialized_logistic(
+        x_base,
+        outcome_targets,
+        class_labels=OUTCOME_LABELS,
+        feature_names=MARKET_FEATURE_NAMES,
+    )
+    if outcome_calibrator is not None:
+        calibrators["1x2"] = outcome_calibrator
+    btts_calibrator = fit_serialized_logistic(
+        x_base,
+        btts_targets,
+        class_labels=("no", "yes"),
+        feature_names=MARKET_FEATURE_NAMES,
+    )
+    if btts_calibrator is not None:
+        calibrators["btts"] = btts_calibrator
+
+    total_calibrators = {}
+    for line in DEFAULT_TOTAL_LINES:
+        x_total = np.asarray(
+            [
+                market_feature_values(
+                    match,
+                    params,
+                    line=line,
+                    context=context,
+                    max_goals=max_goals,
+                )
+                for match, context in zip(matches, contexts)
+            ],
+            dtype=float,
+        )
+        total_targets = [
+            int(match["home_goals"] + match["away_goals"] > line)
+            for match in matches
+        ]
+        total_calibrator = fit_serialized_logistic(
+            x_total,
+            total_targets,
+            class_labels=("under", "over"),
+            feature_names=MARKET_FEATURE_NAMES,
+        )
+        if total_calibrator is not None:
+            total_calibrators[str(line)] = total_calibrator
+    if total_calibrators:
+        calibrators["total_goals"] = total_calibrators
+    return replace_param(params, "market_calibrators", calibrators)
+
+
+def filter_market_calibrators(
+    params: CalibrationParams,
+    selected_markets: set[str],
+) -> CalibrationParams:
+    calibrators = params.market_calibrators or {}
+    return replace_param(
+        params,
+        "market_calibrators",
+        {
+            market: calibrator
+            for market, calibrator in calibrators.items()
+            if market in selected_markets
+        },
+    )
+
+
+def fit_validated_market_calibrators(
+    train: list[dict[str, Any]],
+    validation: list[dict[str, Any]],
+    params: CalibrationParams,
+    max_goals: int = DEFAULT_MAX_GOALS,
+) -> tuple[CalibrationParams, dict[str, Any]]:
+    candidate = fit_market_calibrators(train, params, max_goals=max_goals)
+    base_metrics = evaluate_matches(validation, params, max_goals=max_goals)
+    candidate_metrics = evaluate_matches(validation, candidate, max_goals=max_goals)
+    selected: set[str] = set()
+    comparisons = {
+        "1x2": ("one_x_two_log_loss", "1x2"),
+        "btts": ("btts_log_loss", "btts"),
+        "total_goals_2_5": ("over_2_5_log_loss", "total_goals"),
+    }
+    details = {}
+    for metric_name, market_key in comparisons.values():
+        base_value = base_metrics[metric_name]
+        candidate_value = candidate_metrics[metric_name]
+        improved = candidate_value + 1e-12 < base_value
+        if improved:
+            selected.add(market_key)
+        details[metric_name] = {
+            "base": base_value,
+            "candidate": candidate_value,
+            "selected": improved,
+        }
+    return (
+        filter_market_calibrators(candidate, selected),
+        {
+            "selected_market_calibrators": sorted(selected),
+            "comparisons": details,
+        },
+    )
+
+
+def validated_market_families(path: Path = DEFAULT_MODEL_DIR / "calibration.json") -> set[str] | None:
+    if not path.exists():
+        return None
+    calibration = load_json(path)
+    selected = calibration.get("metadata", {}).get("selected_market_calibrators")
+    if selected is None:
+        return None
+    return set(selected)
+
+
+def calibrated_market_rows_for_match(
+    match: dict[str, Any],
+    params: CalibrationParams,
+    max_goals: int = DEFAULT_MAX_GOALS,
+) -> list[dict[str, Any]]:
+    context = base_market_context(match, params, max_goals=max_goals)
+    rows = [dict(row) for row in context["rows"]]
+    overrides: dict[tuple[str, str, Any], float] = {}
+    calibrators = params.market_calibrators or {}
+
+    outcome_calibrator = calibrators.get("1x2")
+    if outcome_calibrator:
+        probabilities = predict_serialized_logistic(
+            outcome_calibrator,
+            market_feature_values(
+                match,
+                params,
+                line=2.5,
+                context=context,
+                max_goals=max_goals,
+            ),
+        )
+        for selection in OUTCOME_LABELS:
+            overrides[("1x2", selection, None)] = probabilities[selection]
+
+    btts_calibrator = calibrators.get("btts")
+    if btts_calibrator:
+        probabilities = predict_serialized_logistic(
+            btts_calibrator,
+            market_feature_values(
+                match,
+                params,
+                line=2.5,
+                context=context,
+                max_goals=max_goals,
+            ),
+        )
+        yes_probability = probabilities["yes"]
+        overrides[("btts", "yes", None)] = yes_probability
+        overrides[("btts", "no", None)] = 1.0 - yes_probability
+
+    total_calibrators = calibrators.get("total_goals", {})
+    for line, total_calibrator in total_calibrators.items():
+        line_value = float(line)
+        probabilities = predict_serialized_logistic(
+            total_calibrator,
+            market_feature_values(
+                match,
+                params,
+                line=line_value,
+                context=context,
+                max_goals=max_goals,
+            ),
+        )
+        over_probability = probabilities["over"]
+        overrides[("total_goals", "over", line_value)] = over_probability
+        overrides[("total_goals", "under", line_value)] = 1.0 - over_probability
+
+    for row in rows:
+        key = (row["market_key"], row["selection"], row["line"])
+        if key in overrides:
+            row["probability"] = min(max(float(overrides[key]), 0.0), 1.0)
+    return rows
+
+
+def tempo_multiplier_for_match(row: dict[str, Any], params: CalibrationParams) -> float:
+    tempo_index = coalesce_float(
+        row.get("match_tempo_index"),
+        params.league_avg_tempo_index,
+    )
+    multiplier = 1.0 + params.tempo_beta * (
+        tempo_index - params.league_avg_tempo_index
+    )
+    return clip_float(
+        multiplier,
+        params.tempo_multiplier_min,
+        params.tempo_multiplier_max,
+    )
+
+
 def construct_lambdas(row: dict[str, Any], params: CalibrationParams) -> tuple[float, float]:
     fragility_home = coalesce_float(row.get("fragility_home"), params.league_avg_fragility)
     fragility_away = coalesce_float(row.get("fragility_away"), params.league_avg_fragility)
     xg_home = coalesce_float(row.get("xg_home"), 0.0)
     xg_away = coalesce_float(row.get("xg_away"), 0.0)
+    tempo_multiplier = tempo_multiplier_for_match(row, params)
 
-    lambda_home = params.home_multiplier * xg_home * (
+    lambda_home = tempo_multiplier * params.home_multiplier * xg_home * (
         1.0 + params.alpha * (fragility_away - params.league_avg_fragility)
     )
-    lambda_away = params.away_multiplier * xg_away * (
+    lambda_away = tempo_multiplier * params.away_multiplier * xg_away * (
         1.0 + params.alpha * (fragility_home - params.league_avg_fragility)
     )
     return (
@@ -286,9 +699,62 @@ def build_match_inputs(scored_rows) -> list[dict[str, Any]]:
                 "shot_quality_away": float(away["shot_quality_hat"]),
                 "fragility_home": float(home["fragility_hat"]),
                 "fragility_away": float(away["fragility_hat"]),
+                "feature_coverage_score_home": coalesce_float(
+                    home.get("feature_coverage_score"),
+                    0.0,
+                ),
+                "feature_coverage_score_away": coalesce_float(
+                    away.get("feature_coverage_score"),
+                    0.0,
+                ),
+                "xg_feature_available_home": coalesce_bool(
+                    home.get("xg_feature_available"),
+                ),
+                "xg_feature_available_away": coalesce_bool(
+                    away.get("xg_feature_available"),
+                ),
+                "rolling_history_count_home": nullable_int(
+                    home.get("rolling_history_count"),
+                ),
+                "rolling_history_count_away": nullable_int(
+                    away.get("rolling_history_count"),
+                ),
+                "tempo_feature_coverage_score_home": coalesce_float(
+                    home.get("tempo_feature_coverage_score"),
+                    0.0,
+                ),
+                "tempo_feature_coverage_score_away": coalesce_float(
+                    away.get("tempo_feature_coverage_score"),
+                    0.0,
+                ),
+                "rolling_tempo_count_home": nullable_int(
+                    home.get("rolling_tempo_count"),
+                ),
+                "rolling_tempo_count_away": nullable_int(
+                    away.get("rolling_tempo_count"),
+                ),
+                "match_tempo_index": (
+                    coalesce_float(home.get("match_tempo_index"), 1.0)
+                    + coalesce_float(away.get("match_tempo_index"), 1.0)
+                ) / 2.0,
             }
         )
     return matches
+
+
+def coalesce_bool(value: Any, default: bool = False) -> bool:
+    try:
+        if value is None:
+            return default
+        if isinstance(value, str):
+            return value.lower() in {"1", "t", "true", "yes", "y"}
+        result = float(value)
+    except (TypeError, ValueError):
+        try:
+            return bool(value)
+        except TypeError:
+            return default
+    return default if math.isnan(result) else bool(result)
 
 
 def nullable_int(value: Any) -> int | None:
@@ -384,6 +850,11 @@ def score_xgboost_models(
         "xg_hat_for",
         "shot_quality_hat",
         "fragility_hat",
+        "feature_coverage_score",
+        "rolling_history_count",
+        "tempo_feature_coverage_score",
+        "rolling_tempo_count",
+        "match_tempo_index",
         "goals_for",
         "goals_against",
     ]
@@ -409,25 +880,31 @@ def fit_calibration_params(
     league_avg_fragility = sum(
         (match["fragility_home"] + match["fragility_away"]) / 2.0 for match in matches
     ) / len(matches)
+    league_avg_tempo_index = sum(
+        coalesce_float(match.get("match_tempo_index"), 1.0) for match in matches
+    ) / len(matches)
     params = CalibrationParams(
         alpha=0.0,
         home_multiplier=1.0,
         away_multiplier=1.0,
         rho=0.0,
         league_avg_fragility=league_avg_fragility,
+        tempo_beta=0.0,
+        league_avg_tempo_index=league_avg_tempo_index,
     )
     bounds = {
         "alpha": (-5.0, 5.0),
         "home_multiplier": (0.5, 1.8),
         "away_multiplier": (0.5, 1.8),
         "rho": (-0.25, 0.25),
+        "tempo_beta": (-1.0, 1.0),
     }
-    best_score = scoreline_nll(matches, params, max_goals=max_goals)
+    best_score = market_log_loss_score(matches, params, max_goals=max_goals)
     for step in (0.25, 0.1, 0.05, 0.025, 0.01):
         improved = True
         while improved:
             improved = False
-            for field in ("alpha", "home_multiplier", "away_multiplier", "rho"):
+            for field in ("alpha", "home_multiplier", "away_multiplier", "rho", "tempo_beta"):
                 for direction in (-1.0, 1.0):
                     candidate_value = getattr(params, field) + direction * step
                     lower, upper = bounds[field]
@@ -435,7 +912,11 @@ def fit_calibration_params(
                     if candidate_value == getattr(params, field):
                         continue
                     candidate = replace_param(params, field, candidate_value)
-                    candidate_score = scoreline_nll(matches, candidate, max_goals=max_goals)
+                    candidate_score = market_log_loss_score(
+                        matches,
+                        candidate,
+                        max_goals=max_goals,
+                    )
                     if candidate_score + 1e-10 < best_score:
                         params = candidate
                         best_score = candidate_score
@@ -446,7 +927,7 @@ def fit_calibration_params(
 def replace_param(
     params: CalibrationParams,
     field: str,
-    value: float,
+    value: Any,
 ) -> CalibrationParams:
     data = asdict(params)
     data[field] = value
@@ -469,6 +950,19 @@ def scoreline_nll(
             probability = grid[home_goals][away_goals]
         losses.append(-math.log(max(probability, EPSILON)))
     return sum(losses) / len(losses)
+
+
+def market_log_loss_score(
+    matches: list[dict[str, Any]],
+    params: CalibrationParams,
+    max_goals: int = DEFAULT_MAX_GOALS,
+) -> float:
+    metrics = evaluate_matches(matches, params, max_goals=max_goals)
+    return (
+        metrics["one_x_two_log_loss"]
+        + metrics["btts_log_loss"]
+        + metrics["over_2_5_log_loss"]
+    ) / 3.0
 
 
 def scoreline_grid_for_match(
@@ -499,9 +993,7 @@ def evaluate_matches(
         home_goals = int(match["home_goals"])
         away_goals = int(match["away_goals"])
         markets = market_probability_lookup(
-            derive_market_probabilities(
-                scoreline_grid_for_match(match, params, max_goals=max_goals)
-            )
+            calibrated_market_rows_for_match(match, params, max_goals=max_goals)
         )
         if home_goals <= max_goals and away_goals <= max_goals:
             score_probability = markets[("exact_score", f"{home_goals}-{away_goals}", None)]
@@ -561,13 +1053,94 @@ def baseline_params(matches: list[dict[str, Any]]) -> CalibrationParams:
     league_avg_fragility = sum(
         (match["fragility_home"] + match["fragility_away"]) / 2.0 for match in matches
     ) / len(matches)
+    league_avg_tempo_index = sum(
+        coalesce_float(match.get("match_tempo_index"), 1.0) for match in matches
+    ) / len(matches)
     return CalibrationParams(
         alpha=0.0,
         home_multiplier=1.0,
         away_multiplier=1.0,
         rho=0.0,
         league_avg_fragility=league_avg_fragility,
+        tempo_beta=0.0,
+        league_avg_tempo_index=league_avg_tempo_index,
     )
+
+
+def per_season_metrics(
+    matches: list[dict[str, Any]],
+    params: CalibrationParams,
+    max_goals: int = DEFAULT_MAX_GOALS,
+) -> dict[str, dict[str, float]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for match in matches:
+        grouped.setdefault(str(match["season_year"]), []).append(match)
+    return {
+        season: evaluate_matches(season_matches, params, max_goals=max_goals)
+        for season, season_matches in sorted(grouped.items())
+    }
+
+
+def feature_coverage_summary(matches: list[dict[str, Any]]) -> dict[str, Any]:
+    if not matches:
+        return {
+            "matches": 0,
+            "avg_feature_coverage_score": None,
+            "avg_tempo_feature_coverage_score": None,
+            "avg_rolling_history_count": None,
+            "avg_rolling_tempo_count": None,
+            "xg_labelled_matches": 0,
+            "training_backfill_matches": 0,
+        }
+    coverage_values = []
+    tempo_coverage_values = []
+    rolling_counts = []
+    tempo_counts = []
+    xg_labelled_matches = 0
+    for match in matches:
+        coverage_values.extend(
+            [
+                coalesce_float(match.get("feature_coverage_score_home"), 0.0),
+                coalesce_float(match.get("feature_coverage_score_away"), 0.0),
+            ]
+        )
+        tempo_coverage_values.extend(
+            [
+                coalesce_float(match.get("tempo_feature_coverage_score_home"), 0.0),
+                coalesce_float(match.get("tempo_feature_coverage_score_away"), 0.0),
+            ]
+        )
+        for key in ("rolling_history_count_home", "rolling_history_count_away"):
+            value = match.get(key)
+            if value is not None:
+                rolling_counts.append(float(value))
+        for key in ("rolling_tempo_count_home", "rolling_tempo_count_away"):
+            value = match.get(key)
+            if value is not None:
+                tempo_counts.append(float(value))
+        if (
+            match.get("xg_feature_available_home")
+            and match.get("xg_feature_available_away")
+        ):
+            xg_labelled_matches += 1
+    return {
+        "matches": len(matches),
+        "avg_feature_coverage_score": mean(coverage_values),
+        "avg_tempo_feature_coverage_score": mean(tempo_coverage_values),
+        "avg_rolling_history_count": mean(rolling_counts) if rolling_counts else None,
+        "avg_rolling_tempo_count": mean(tempo_counts) if tempo_counts else None,
+        "xg_labelled_matches": xg_labelled_matches,
+        "training_backfill_matches": len(matches) - xg_labelled_matches,
+    }
+
+
+def xg_labelled_matches(matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        match
+        for match in matches
+        if match.get("xg_feature_available_home")
+        and match.get("xg_feature_available_away")
+    ]
 
 
 def build_probability_outputs(
@@ -580,12 +1153,15 @@ def build_probability_outputs(
     market_rows: list[dict[str, Any]] = []
     for match in matches:
         lambda_home, lambda_away = construct_lambdas(match, params)
-        input_row = {**match, "lambda_home": lambda_home, "lambda_away": lambda_away}
+        input_row = {
+            **match,
+            "lambda_home": lambda_home,
+            "lambda_away": lambda_away,
+            "tempo_multiplier": tempo_multiplier_for_match(match, params),
+        }
         input_rows.append(input_row)
 
-        markets = derive_market_probabilities(
-            scoreline_grid(lambda_home, lambda_away, params.rho, max_goals=max_goals)
-        )
+        markets = calibrated_market_rows_for_match(match, params, max_goals=max_goals)
         lookup = market_probability_lookup(markets)
         top_scores = top_scorelines(markets)
         summary = {
@@ -681,10 +1257,17 @@ def write_outputs_to_db(
                     home_team_id, away_team_id, home_team_name, away_team_name,
                     home_goals, away_goals, xg_home, xg_away,
                     shot_quality_home, shot_quality_away,
-                    fragility_home, fragility_away, lambda_home, lambda_away
+                    fragility_home, fragility_away,
+                    feature_coverage_score_home, feature_coverage_score_away,
+                    xg_feature_available_home, xg_feature_available_away,
+                    rolling_history_count_home, rolling_history_count_away,
+                    tempo_feature_coverage_score_home, tempo_feature_coverage_score_away,
+                    rolling_tempo_count_home, rolling_tempo_count_away,
+                    match_tempo_index, tempo_multiplier,
+                    lambda_home, lambda_away
                 )
                 VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
                 """,
                 [
@@ -706,6 +1289,18 @@ def write_outputs_to_db(
                         row["shot_quality_away"],
                         row["fragility_home"],
                         row["fragility_away"],
+                        row["feature_coverage_score_home"],
+                        row["feature_coverage_score_away"],
+                        row["xg_feature_available_home"],
+                        row["xg_feature_available_away"],
+                        row["rolling_history_count_home"],
+                        row["rolling_history_count_away"],
+                        row["tempo_feature_coverage_score_home"],
+                        row["tempo_feature_coverage_score_away"],
+                        row["rolling_tempo_count_home"],
+                        row["rolling_tempo_count_away"],
+                        row["match_tempo_index"],
+                        row["tempo_multiplier"],
                         row["lambda_home"],
                         row["lambda_away"],
                     )
@@ -800,16 +1395,37 @@ def fit_calibration(
     if not validation:
         raise SystemExit(f"No validation matches found for {validation_season}")
 
-    params = fit_calibration_params(train, max_goals=max_goals)
+    params, calibrator_selection = fit_validated_market_calibrators(
+        train,
+        validation,
+        fit_calibration_params(train, max_goals=max_goals),
+        max_goals=max_goals,
+    )
+    baseline = baseline_params(train)
     validation_metrics = evaluate_matches(validation, params, max_goals=max_goals)
     baseline_metrics = evaluate_matches(
         validation,
-        baseline_params(train),
+        baseline,
         max_goals=max_goals,
     )
     metrics = {
         "validation": validation_metrics,
         "baseline": baseline_metrics,
+        "validation_by_season": per_season_metrics(
+            validation,
+            params,
+            max_goals=max_goals,
+        ),
+        "baseline_by_season": per_season_metrics(
+            validation,
+            baseline,
+            max_goals=max_goals,
+        ),
+        "feature_coverage": {
+            "train": feature_coverage_summary(train),
+            "validation": feature_coverage_summary(validation),
+        },
+        "market_calibrator_selection": calibrator_selection,
     }
     input_rows, summary_rows, market_rows = build_probability_outputs(
         validation,
@@ -824,7 +1440,12 @@ def fit_calibration(
         sources=sources,
         train_seasons=train_seasons,
         validation_season=validation_season,
-        extra={"max_goals": max_goals},
+        extra={
+            "max_goals": max_goals,
+            "selected_market_calibrators": calibrator_selection[
+                "selected_market_calibrators"
+            ],
+        },
     )
     paths = probability_artifact_paths(model_dir)
     save_json(paths["calibration"], metadata)
@@ -854,8 +1475,35 @@ def fit_final(
     matches = filtered_finished_matches(build_match_inputs(scored_rows))
     if not matches:
         raise SystemExit("No finished matches found for final calibration")
-    params = fit_calibration_params(matches, max_goals=max_goals)
-    metrics = {"training": evaluate_matches(matches, params, max_goals=max_goals)}
+    training_matches = xg_labelled_matches(matches)
+    if not training_matches:
+        raise SystemExit("No xG-labelled matches found for final calibration")
+    params = fit_market_calibrators(
+        training_matches,
+        fit_calibration_params(training_matches, max_goals=max_goals),
+        max_goals=max_goals,
+    )
+    selected_markets = validated_market_families()
+    if selected_markets is not None:
+        params = filter_market_calibrators(params, selected_markets)
+    metrics = {
+        "training": evaluate_matches(training_matches, params, max_goals=max_goals),
+        "training_by_season": per_season_metrics(
+            training_matches,
+            params,
+            max_goals=max_goals,
+        ),
+        "training_backfill": evaluate_matches(matches, params, max_goals=max_goals),
+        "training_backfill_by_season": per_season_metrics(
+            matches,
+            params,
+            max_goals=max_goals,
+        ),
+        "feature_coverage": {
+            "training": feature_coverage_summary(training_matches),
+            "training_backfill": feature_coverage_summary(matches),
+        },
+    }
     input_rows, summary_rows, market_rows = build_probability_outputs(
         matches,
         params,
@@ -867,9 +1515,14 @@ def fit_final(
         params=params,
         metrics=metrics,
         sources=sources,
-        train_seasons=tuple(sorted({match["season_year"] for match in matches})),
+        train_seasons=tuple(sorted({match["season_year"] for match in training_matches})),
         validation_season=None,
-        extra={"max_goals": max_goals},
+        extra={
+            "max_goals": max_goals,
+            "selected_market_calibrators": sorted(selected_markets)
+            if selected_markets is not None
+            else sorted((params.market_calibrators or {}).keys()),
+        },
     )
     paths = probability_artifact_paths(model_dir)
     save_json(paths["calibration"], metadata)
@@ -989,6 +1642,7 @@ def print_probability_summary(rows: list[dict[str, Any]]) -> None:
         print(
             "match_id={match_id} {home_team_name} vs {away_team_name} "
             "lambda=({lambda_home:.3f}, {lambda_away:.3f}) "
+            "tempo={tempo_multiplier:.3f} "
             "1X2=({p_home_win:.3f}, {p_draw:.3f}, {p_away_win:.3f}) "
             "BTTS_yes={p_btts_yes:.3f} O2.5={p_over_2_5:.3f} "
             "top_score={top_score_1} ({top_score_1_probability:.3f})".format(**row)

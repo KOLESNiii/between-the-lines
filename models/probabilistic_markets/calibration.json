@@ -1,47 +1,194 @@
 {
-  "created_at": "2026-05-06T15:05:36.579002+00:00",
+  "created_at": "2026-05-06T22:28:43.606109+00:00",
   "metadata": {
     "artifact_dir": "models/probabilistic_markets",
-    "db_run_id": 5,
-    "max_goals": 12
+    "db_run_id": 15,
+    "max_goals": 12,
+    "selected_market_calibrators": [
+      "btts"
+    ]
   },
   "metrics": {
     "baseline": {
-      "btts_brier": 0.2454216235279277,
-      "btts_log_loss": 0.6838730183750253,
+      "btts_brier": 0.24641340150745764,
+      "btts_log_loss": 0.685945334668332,
       "matches": 348,
-      "one_x_two_brier": 0.6253545863516898,
-      "one_x_two_log_loss": 1.0398054155578038,
-      "over_2_5_brier": 0.24418537776995755,
-      "over_2_5_log_loss": 0.6814584866225908,
-      "scoreline_nll": 2.9056993930924806
+      "one_x_two_brier": 0.6156128387650904,
+      "one_x_two_log_loss": 1.024655012269784,
+      "over_2_5_brier": 0.24516522494888368,
+      "over_2_5_log_loss": 0.6833814966288903,
+      "scoreline_nll": 2.8837645655954547
+    },
+    "baseline_by_season": {
+      "25/26": {
+        "btts_brier": 0.24641340150745764,
+        "btts_log_loss": 0.685945334668332,
+        "matches": 348,
+        "one_x_two_brier": 0.6156128387650904,
+        "one_x_two_log_loss": 1.024655012269784,
+        "over_2_5_brier": 0.24516522494888368,
+        "over_2_5_log_loss": 0.6833814966288903,
+        "scoreline_nll": 2.8837645655954547
+      }
+    },
+    "feature_coverage": {
+      "train": {
+        "avg_feature_coverage_score": 0.9954116059379217,
+        "avg_rolling_history_count": 270.46666666666664,
+        "avg_rolling_tempo_count": 4.980263157894737,
+        "avg_tempo_feature_coverage_score": 0.9195723684210526,
+        "matches": 1140,
+        "training_backfill_matches": 1,
+        "xg_labelled_matches": 1139
+      },
+      "validation": {
+        "avg_feature_coverage_score": 0.9995579133510167,
+        "avg_rolling_history_count": 330.9669540229885,
+        "avg_rolling_tempo_count": 5.0,
+        "avg_tempo_feature_coverage_score": 0.9996408045977011,
+        "matches": 348,
+        "training_backfill_matches": 0,
+        "xg_labelled_matches": 348
+      }
+    },
+    "market_calibrator_selection": {
+      "comparisons": {
+        "btts_log_loss": {
+          "base": 0.6864316933042524,
+          "candidate": 0.6839600962939699,
+          "selected": true
+        },
+        "one_x_two_log_loss": {
+          "base": 1.0244612192015219,
+          "candidate": 1.0403486907304418,
+          "selected": false
+        },
+        "over_2_5_log_loss": {
+          "base": 0.682516262386921,
+          "candidate": 0.6866615771494096,
+          "selected": false
+        }
+      },
+      "selected_market_calibrators": [
+        "btts"
+      ]
     },
     "validation": {
-      "btts_brier": 0.24528811619041277,
-      "btts_log_loss": 0.6835675270212781,
+      "btts_brier": 0.24544651360000633,
+      "btts_log_loss": 0.6839600962939699,
       "matches": 348,
-      "one_x_two_brier": 0.6227705419645043,
-      "one_x_two_log_loss": 1.0362192918791349,
-      "over_2_5_brier": 0.2437233815503832,
-      "over_2_5_log_loss": 0.6805211837528845,
-      "scoreline_nll": 2.9009823923991953
+      "one_x_two_brier": 0.6165433411003757,
+      "one_x_two_log_loss": 1.0244612192015219,
+      "over_2_5_brier": 0.24475524825649042,
+      "over_2_5_log_loss": 0.682516262386921,
+      "scoreline_nll": 2.8832814358718872
+    },
+    "validation_by_season": {
+      "25/26": {
+        "btts_brier": 0.24544651360000633,
+        "btts_log_loss": 0.6839600962939699,
+        "matches": 348,
+        "one_x_two_brier": 0.6165433411003757,
+        "one_x_two_log_loss": 1.0244612192015219,
+        "over_2_5_brier": 0.24475524825649042,
+        "over_2_5_log_loss": 0.682516262386921,
+        "scoreline_nll": 2.8832814358718872
+      }
     }
   },
   "mode": "calibration",
   "parameters": {
     "alpha": 5.0,
-    "away_multiplier": 0.99,
-    "home_multiplier": 1.0350000000000001,
+    "away_multiplier": 0.985,
+    "home_multiplier": 1.04,
     "lambda_max": 5.5,
     "lambda_min": 0.05,
-    "league_avg_fragility": 0.11487497520355279,
-    "rho": 0.0
+    "league_avg_fragility": 0.11517162302084137,
+    "league_avg_tempo_index": 1.064945211507387,
+    "market_calibrators": {
+      "btts": {
+        "classes": [
+          "no",
+          "yes"
+        ],
+        "coef": [
+          [
+            -0.0149674291559197,
+            0.03787502339025192,
+            -0.021896742170891367,
+            0.1399580038575852,
+            0.05719679268866841,
+            0.002527130158600689,
+            0.1495001715480281,
+            0.12913469300939642,
+            0.27863486455742426,
+            0.02036547853863209,
+            0.13920883387367658,
+            0.1219361974353563,
+            0.26114503130903327,
+            0.01727263643831953,
+            0.006549616413710153,
+            0.001714618466659225,
+            0.004834997947050983,
+            0.005225924591818718,
+            0.002763795687938786,
+            0.0024621289038798937,
+            0.053478928259555476,
+            0.01133983910803538,
+            0.04213908915152025,
+            0.06537543707407104,
+            0.06275428555573564,
+            0.002621151518335664,
+            -0.04676844266926657,
+            0.0029246498527918216
+          ]
+        ],
+        "feature_names": [
+          "base_home_win",
+          "base_draw",
+          "base_away_win",
+          "base_btts_yes",
+          "base_over_probability",
+          "line",
+          "lambda_home",
+          "lambda_away",
+          "lambda_total",
+          "lambda_diff",
+          "xg_home",
+          "xg_away",
+          "xg_total",
+          "xg_diff",
+          "shot_quality_home",
+          "shot_quality_away",
+          "shot_quality_diff",
+          "fragility_home",
+          "fragility_away",
+          "fragility_diff",
+          "feature_coverage_home",
+          "feature_coverage_away",
+          "feature_coverage_diff",
+          "tempo_feature_coverage_home",
+          "tempo_feature_coverage_away",
+          "tempo_feature_coverage_diff",
+          "match_tempo_index",
+          "tempo_multiplier"
+        ],
+        "intercept": [
+          -2.4444428921607435
+        ],
+        "type": "logistic_regression"
+      }
+    },
+    "rho": -0.1,
+    "tempo_beta": -0.04,
+    "tempo_multiplier_max": 1.3,
+    "tempo_multiplier_min": 0.75
   },
-  "run_name": "calibration_2026-05-06T15:05:36.579002+00:00",
+  "run_name": "calibration_2026-05-06T22:28:43.606109+00:00",
   "source_model_dirs": {
-    "fragility": "models/xgboost_fragility_final",
-    "shot_quality": "models/xgboost_shot_quality_final",
-    "xg_for": "models/xgboost_xg_for_final"
+    "fragility": "models/xgboost_fragility",
+    "shot_quality": "models/xgboost_shot_quality",
+    "xg_for": "models/xgboost_xg_for"
   },
   "train_seasons": [
     "22/23",

@@ -31,6 +31,18 @@ CREATE TABLE IF NOT EXISTS model_outputs.match_probability_inputs (
     shot_quality_away NUMERIC,
     fragility_home NUMERIC,
     fragility_away NUMERIC,
+    feature_coverage_score_home NUMERIC,
+    feature_coverage_score_away NUMERIC,
+    xg_feature_available_home BOOLEAN,
+    xg_feature_available_away BOOLEAN,
+    rolling_history_count_home INTEGER,
+    rolling_history_count_away INTEGER,
+    tempo_feature_coverage_score_home NUMERIC,
+    tempo_feature_coverage_score_away NUMERIC,
+    rolling_tempo_count_home INTEGER,
+    rolling_tempo_count_away INTEGER,
+    match_tempo_index NUMERIC,
+    tempo_multiplier NUMERIC,
     lambda_home NUMERIC NOT NULL,
     lambda_away NUMERIC NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -47,6 +59,20 @@ CREATE TABLE IF NOT EXISTS model_outputs.market_probabilities (
     probability NUMERIC NOT NULL CHECK (probability >= 0 AND probability <= 1),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE model_outputs.match_probability_inputs
+    ADD COLUMN IF NOT EXISTS feature_coverage_score_home NUMERIC,
+    ADD COLUMN IF NOT EXISTS feature_coverage_score_away NUMERIC,
+    ADD COLUMN IF NOT EXISTS xg_feature_available_home BOOLEAN,
+    ADD COLUMN IF NOT EXISTS xg_feature_available_away BOOLEAN,
+    ADD COLUMN IF NOT EXISTS rolling_history_count_home INTEGER,
+    ADD COLUMN IF NOT EXISTS rolling_history_count_away INTEGER,
+    ADD COLUMN IF NOT EXISTS tempo_feature_coverage_score_home NUMERIC,
+    ADD COLUMN IF NOT EXISTS tempo_feature_coverage_score_away NUMERIC,
+    ADD COLUMN IF NOT EXISTS rolling_tempo_count_home INTEGER,
+    ADD COLUMN IF NOT EXISTS rolling_tempo_count_away INTEGER,
+    ADD COLUMN IF NOT EXISTS match_tempo_index NUMERIC,
+    ADD COLUMN IF NOT EXISTS tempo_multiplier NUMERIC;
 
 CREATE INDEX IF NOT EXISTS idx_market_probability_runs_mode_created
     ON model_outputs.market_probability_runs (mode, created_at DESC);

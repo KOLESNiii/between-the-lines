@@ -11,6 +11,7 @@ from xgboost_xg_model import (
     FEATURE_COLUMNS,
     META_COLUMNS,
     MODEL_SPECS,
+    QUALITY_COLUMNS,
     TARGET_COLUMN,
     artifact_paths,
     best_iteration_count,
@@ -32,6 +33,8 @@ def test_target_is_label_not_feature():
     assert "xg" not in FEATURE_COLUMNS
     assert "goals_for" not in FEATURE_COLUMNS
     assert "goals_against" not in FEATURE_COLUMNS
+    assert "expected_goals_on_target" not in FEATURE_COLUMNS
+    assert "shots_actual" not in FEATURE_COLUMNS
 
 
 def test_model_specs_define_independent_targets_and_outputs():
@@ -61,8 +64,8 @@ def test_model_specs_define_default_artifact_directories():
 def test_dataset_sql_labels_target_from_current_xg_only():
     sql = compact_sql(build_model_dataset_sql(labelled_only=True))
 
-    assert "f.xg AS target_xg_for" in sql
-    assert "WHERE f.xg IS NOT NULL" in sql
+    assert "f.xg_actual AS target_xg_for" in sql
+    assert "WHERE f.xg_actual IS NOT NULL" in sql
     assert f"AS {BASELINE_COLUMN}" in sql
 
 
@@ -74,10 +77,10 @@ def test_shot_quality_sql_uses_direct_target_and_low_shot_filter():
         )
     )
 
-    assert "f.xg / GREATEST(f.total_shots, 1)" in sql
+    assert "f.xg_actual / GREATEST(f.shots_actual, 1)" in sql
     assert "AS target_shot_quality" in sql
     assert "AS baseline_prediction" in sql
-    assert "f.total_shots >= 3" in sql
+    assert "f.shots_actual >= 3" in sql
     assert "xg_hat_for" not in sql
 
 
@@ -89,17 +92,17 @@ def test_fragility_sql_uses_direct_target_and_low_shot_filter():
         )
     )
 
-    assert "f.xg_against / GREATEST(f.shots_against, 1)" in sql
+    assert "f.xg_against_actual / GREATEST(f.shots_against_actual, 1)" in sql
     assert "AS target_fragility" in sql
     assert "AS baseline_prediction" in sql
-    assert "f.shots_against >= 3" in sql
+    assert "f.shots_against_actual >= 3" in sql
     assert "xg_hat_for" not in sql
 
 
-def test_dataset_sql_uses_season_scoped_leak_free_windows():
+def test_dataset_sql_uses_cross_season_leak_free_windows():
     sql = compact_sql(build_model_dataset_sql(labelled_only=True))
 
-    assert "PARTITION BY a.team_id, a.season_year" in sql
+    assert "PARTITION BY a.team_id ORDER BY a.start_datetime, a.match_id" in sql
     assert "ROWS BETWEEN 3 PRECEDING AND 1 PRECEDING" in sql
     assert "ROWS BETWEEN 5 PRECEDING AND 1 PRECEDING" in sql
     assert "ROWS BETWEEN 10 PRECEDING AND 1 PRECEDING" in sql
@@ -108,28 +111,89 @@ def test_dataset_sql_uses_season_scoped_leak_free_windows():
 def test_dataset_sql_lineup_proxy_uses_prior_player_matches_only():
     sql = compact_sql(build_model_dataset_sql(labelled_only=True))
 
-    assert "prior.season_year = target.season_year" in sql
     assert "prior.start_datetime < target.start_datetime" in sql
+    assert "recency.weight" in sql
     assert "WHERE player_rank <= 11" in sql
+
+
+def test_dataset_sql_can_score_first_week_from_prior_team_history():
+    sql = compact_sql(build_model_dataset_sql(labelled_only=False))
+
+    assert "COUNT(*) OVER team_prior AS rolling_history_count" in sql
+    assert "COALESCE(rolling_xg_for_5_raw, 1.35) AS rolling_xg_for_5" in sql
+    assert "rolling.feature_coverage_score" in sql
+
+
+def test_dataset_sql_uses_prior_tempo_features_only():
+    sql = compact_sql(build_model_dataset_sql(labelled_only=True))
+
+    assert "COUNT(a.tempo_total_shots) OVER w5 AS rolling_tempo_shots_5_available_count" in sql
+    assert "AVG(a.tempo_touches_in_box) OVER w5 AS rolling_tempo_box_touches_5_raw" in sql
+    assert "ROWS BETWEEN 5 PRECEDING AND 1 PRECEDING" in sql
+    assert "rolling.rolling_tempo_shots_5" in sql
+    assert "rolling.rolling_tempo_count" in sql
+    assert "opponent_rolling.rolling_tempo_shots_5 AS opp_rolling_tempo_shots_5" in sql
+    assert "AS match_tempo_index" in sql
+
+
+def test_dataset_sql_uses_prior_expanded_performance_features_only():
+    sql = compact_sql(build_model_dataset_sql(labelled_only=True))
+
+    assert "COUNT(a.expected_goals_on_target) OVER w5 AS rolling_xgot_for_5_available_count" in sql
+    assert "AVG(a.total_progression) OVER w5 AS rolling_progression_5_raw" in sql
+    assert "a.tempo_crosses_completed / NULLIF(a.tempo_crosses_attempted, 0)" in sql
+    assert "a.tempo_big_chances_scored / NULLIF(" in sql
+    assert "ROWS BETWEEN 5 PRECEDING AND 1 PRECEDING" in sql
+    assert "rolling.rolling_xgot_for_5" in sql
+    assert "opponent_rolling.rolling_xgot_for_5 AS opp_rolling_xgot_for_5" in sql
+
+
+def test_dataset_sql_uses_current_lineup_context_without_match_performance():
+    sql = compact_sql(build_model_dataset_sql(labelled_only=False))
+
+    assert "CASE WHEN COALESCE(f.confirmed_lineup, false) THEN 1 ELSE 0 END AS confirmed_lineup" in sql
+    assert "COALESCE(f.formation_code, 442) AS formation_code" in sql
+    assert "COALESCE(f.starter_market_value_eur, f.listed_market_value_eur, 250000000) / 1000000.0 AS starter_market_value_m" in sql
+    assert "LEFT JOIN features.sofascore_team_match_features opponent_features" in sql
+
+
+def test_tempo_features_are_public_model_columns():
+    assert "rolling_tempo_shots_5" in FEATURE_COLUMNS
+    assert "rolling_tempo_box_touches_5" in FEATURE_COLUMNS
+    assert "opp_rolling_tempo_shots_5" in FEATURE_COLUMNS
+    assert "match_tempo_index" in FEATURE_COLUMNS
+    assert "tempo_feature_coverage_score" in QUALITY_COLUMNS
+
+
+def test_expanded_features_are_public_model_columns():
+    assert "rolling_xgot_for_5" in FEATURE_COLUMNS
+    assert "rolling_progression_5" in FEATURE_COLUMNS
+    assert "rolling_cross_accuracy_5" in FEATURE_COLUMNS
+    assert "confirmed_lineup" in FEATURE_COLUMNS
+    assert "starter_market_value_m" in FEATURE_COLUMNS
+    assert "opp_rolling_xgot_for_5" in FEATURE_COLUMNS
+    assert "adj_roster_value" in FEATURE_COLUMNS
+    assert "xi_player_value_sum" in FEATURE_COLUMNS
+    assert "extended_feature_coverage_score" in QUALITY_COLUMNS
 
 
 def test_where_clause_filters_match_identifiers():
     assert build_where_clause(match_id=123) == "WHERE f.match_id = 123"
     assert (
         build_where_clause(labelled_only=True, sofascore_event_id=456)
-        == "WHERE f.xg IS NOT NULL AND f.sofascore_event_id = 456"
+        == "WHERE f.xg_actual IS NOT NULL AND f.sofascore_event_id = 456"
     )
 
 
 def test_where_clause_uses_target_specific_label_filters():
     assert (
         build_where_clause(labelled_only=True, model_spec=MODEL_SPECS["shot_quality"])
-        == "WHERE f.xg IS NOT NULL AND f.total_shots IS NOT NULL AND f.total_shots >= 3"
+        == "WHERE f.xg_actual IS NOT NULL AND f.shots_actual IS NOT NULL AND f.shots_actual >= 3"
     )
     assert (
         build_where_clause(labelled_only=True, model_spec=MODEL_SPECS["fragility"])
-        == "WHERE f.xg_against IS NOT NULL AND f.shots_against IS NOT NULL "
-        "AND f.shots_against >= 3"
+        == "WHERE f.xg_against_actual IS NOT NULL AND f.shots_against_actual IS NOT NULL "
+        "AND f.shots_against_actual >= 3"
     )
 
 

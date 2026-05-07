@@ -81,6 +81,12 @@ FEATURE_COLUMNS = [
     "rest_days",
     "matches_last_7_days",
     "matches_last_14_days",
+    "rolling_history_count",
+    "rolling_xg_for_5_available_count",
+    "rolling_xg_against_5_available_count",
+    "rolling_shots_5_available_count",
+    "rolling_shots_against_5_available_count",
+    "feature_coverage_score",
     "rolling_xg_for_3",
     "rolling_xg_for_5",
     "rolling_xg_for_10",
@@ -94,19 +100,89 @@ FEATURE_COLUMNS = [
     "blocks_5",
     "possession_proxy_5",
     "passes_per90_5",
+    "rolling_tempo_count",
+    "tempo_feature_coverage_score",
+    "rolling_tempo_shots_5",
+    "rolling_tempo_box_touches_5",
+    "rolling_tempo_final_third_entries_5",
+    "rolling_tempo_corners_5",
+    "rolling_tempo_passes_5",
+    "rolling_tempo_pass_accuracy_5",
+    "rolling_tempo_directness_5",
+    "rolling_box_pressure_index_5",
+    "rolling_xgot_for_5",
+    "rolling_shot_value_5",
+    "rolling_pass_value_5",
+    "rolling_progression_5",
+    "rolling_carry_distance_5",
+    "rolling_opp_half_pass_accuracy_5",
+    "rolling_dribble_success_5",
+    "rolling_fouls_won_5",
+    "rolling_clearances_5",
+    "rolling_keeper_value_5",
+    "rolling_cross_accuracy_5",
+    "rolling_long_ball_accuracy_5",
+    "rolling_big_chance_conversion_5",
+    "rolling_shot_box_share_5",
+    "confirmed_lineup",
+    "formation_code",
+    "starter_market_value_m",
+    "missing_market_value_m",
+    "doubtful_market_value_m",
+    "missing_player_count",
+    "doubtful_player_count",
+    "starter_avg_age_years",
+    "starter_defender_count",
+    "starter_midfielder_count",
+    "starter_forward_count",
     "opp_rolling_xg_for_5",
     "opp_rolling_xg_against_5",
     "opp_shot_accuracy_5",
     "opp_rolling_shots_5",
     "opp_rolling_shots_against_5",
+    "opp_rolling_history_count",
+    "opp_feature_coverage_score",
+    "opp_rolling_tempo_count",
+    "opp_tempo_feature_coverage_score",
+    "opp_rolling_tempo_shots_5",
+    "opp_rolling_tempo_box_touches_5",
+    "opp_rolling_tempo_final_third_entries_5",
+    "opp_rolling_tempo_corners_5",
+    "opp_rolling_tempo_passes_5",
+    "opp_rolling_tempo_pass_accuracy_5",
+    "opp_rolling_tempo_directness_5",
+    "opp_rolling_box_pressure_index_5",
+    "opp_rolling_xgot_for_5",
+    "opp_rolling_shot_value_5",
+    "opp_rolling_progression_5",
+    "opp_rolling_dribble_success_5",
+    "opp_rolling_cross_accuracy_5",
+    "opp_rolling_shot_box_share_5",
+    "opp_starter_market_value_m",
+    "opp_missing_market_value_m",
+    "opp_missing_player_count",
     "adj_attack_xg_5",
     "adj_defence_xg_5",
+    "adj_progression_5",
+    "adj_roster_value",
+    "match_tempo_index",
     "xi_xg_sum",
     "xi_xa_sum",
     "xi_key_pass_sum",
     "xi_progressive_carries",
     "xi_def_actions",
     "xi_goalkeeper_strength",
+    "xi_player_value_sum",
+]
+
+QUALITY_COLUMNS = [
+    "xg_feature_available",
+    "rolling_history_count",
+    "feature_coverage_score",
+    "rolling_tempo_count",
+    "tempo_feature_coverage_score",
+    "extended_feature_coverage_score",
+    "match_tempo_index",
 ]
 
 MODEL_PARAMS = {
@@ -125,6 +201,7 @@ MODEL_DATASET_SQL = """
 WITH rolling_base AS (
     SELECT
         a.*,
+        COUNT(*) OVER team_prior AS rolling_history_count,
         COUNT(a.xg) OVER w3 AS rolling_xg_for_3_available_count,
         AVG(a.xg) OVER w3 AS rolling_xg_for_3_raw,
         COUNT(a.xg) OVER w5 AS rolling_xg_for_5_available_count,
@@ -150,21 +227,173 @@ WITH rolling_base AS (
         COUNT(a.possession_proxy) OVER w5 AS possession_proxy_5_available_count,
         AVG(a.possession_proxy) OVER w5 AS possession_proxy_5_raw,
         COUNT(a.passes_per_minute) OVER w5 AS passes_per90_5_available_count,
-        AVG(a.passes_per_minute * 90) OVER w5 AS passes_per90_5_raw
+        AVG(a.passes_per_minute * 90) OVER w5 AS passes_per90_5_raw,
+        COUNT(a.tempo_total_shots) OVER w5 AS rolling_tempo_shots_5_available_count,
+        AVG(a.tempo_total_shots) OVER w5 AS rolling_tempo_shots_5_raw,
+        COUNT(a.tempo_touches_in_box) OVER w5 AS rolling_tempo_box_touches_5_available_count,
+        AVG(a.tempo_touches_in_box) OVER w5 AS rolling_tempo_box_touches_5_raw,
+        COUNT(a.tempo_final_third_entries) OVER w5 AS rolling_tempo_final_third_entries_5_available_count,
+        AVG(a.tempo_final_third_entries) OVER w5 AS rolling_tempo_final_third_entries_5_raw,
+        COUNT(a.tempo_corners) OVER w5 AS rolling_tempo_corners_5_available_count,
+        AVG(a.tempo_corners) OVER w5 AS rolling_tempo_corners_5_raw,
+        COUNT(a.tempo_passes) OVER w5 AS rolling_tempo_passes_5_available_count,
+        AVG(a.tempo_passes) OVER w5 AS rolling_tempo_passes_5_raw,
+        COUNT(
+            CASE
+                WHEN a.tempo_accurate_passes IS NOT NULL AND a.tempo_passes > 0
+                THEN 1
+            END
+        ) OVER w5 AS rolling_tempo_pass_accuracy_5_available_count,
+        AVG(
+            CASE
+                WHEN a.tempo_accurate_passes IS NOT NULL AND a.tempo_passes > 0
+                THEN a.tempo_accurate_passes / NULLIF(a.tempo_passes, 0)
+            END
+        ) OVER w5 AS rolling_tempo_pass_accuracy_5_raw,
+        COUNT(
+            CASE
+                WHEN a.tempo_final_third_entries IS NOT NULL AND a.tempo_passes > 0
+                THEN 1
+            END
+        ) OVER w5 AS rolling_tempo_directness_5_available_count,
+        AVG(
+            CASE
+                WHEN a.tempo_final_third_entries IS NOT NULL AND a.tempo_passes > 0
+                THEN a.tempo_final_third_entries / NULLIF(a.tempo_passes, 0)
+            END
+        ) OVER w5 AS rolling_tempo_directness_5_raw,
+        COUNT(
+            CASE
+                WHEN a.tempo_touches_in_box IS NOT NULL
+                  OR a.tempo_shots_inside_box IS NOT NULL
+                  OR a.tempo_corners IS NOT NULL
+                THEN 1
+            END
+        ) OVER w5 AS rolling_box_pressure_index_5_available_count,
+        AVG(
+            CASE
+                WHEN a.tempo_touches_in_box IS NOT NULL
+                  OR a.tempo_shots_inside_box IS NOT NULL
+                  OR a.tempo_corners IS NOT NULL
+                THEN COALESCE(a.tempo_touches_in_box, 0)
+                   + COALESCE(a.tempo_shots_inside_box, 0) * 2.0
+                   + COALESCE(a.tempo_corners, 0) * 0.5
+            END
+        ) OVER w5 AS rolling_box_pressure_index_5_raw
+        ,
+        COUNT(a.expected_goals_on_target) OVER w5 AS rolling_xgot_for_5_available_count,
+        AVG(a.expected_goals_on_target) OVER w5 AS rolling_xgot_for_5_raw,
+        COUNT(a.shot_value) OVER w5 AS rolling_shot_value_5_available_count,
+        AVG(a.shot_value) OVER w5 AS rolling_shot_value_5_raw,
+        COUNT(a.pass_value) OVER w5 AS rolling_pass_value_5_available_count,
+        AVG(a.pass_value) OVER w5 AS rolling_pass_value_5_raw,
+        COUNT(a.total_progression) OVER w5 AS rolling_progression_5_available_count,
+        AVG(a.total_progression) OVER w5 AS rolling_progression_5_raw,
+        COUNT(a.ball_carry_distance) OVER w5 AS rolling_carry_distance_5_available_count,
+        AVG(a.ball_carry_distance) OVER w5 AS rolling_carry_distance_5_raw,
+        COUNT(
+            CASE
+                WHEN a.accurate_opp_half_passes IS NOT NULL AND a.opp_half_passes > 0
+                THEN 1
+            END
+        ) OVER w5 AS rolling_opp_half_pass_accuracy_5_available_count,
+        AVG(
+            CASE
+                WHEN a.accurate_opp_half_passes IS NOT NULL AND a.opp_half_passes > 0
+                THEN a.accurate_opp_half_passes / NULLIF(a.opp_half_passes, 0)
+            END
+        ) OVER w5 AS rolling_opp_half_pass_accuracy_5_raw,
+        COUNT(
+            CASE
+                WHEN a.won_contests IS NOT NULL AND a.total_contests > 0
+                THEN 1
+            END
+        ) OVER w5 AS rolling_dribble_success_5_available_count,
+        AVG(
+            CASE
+                WHEN a.won_contests IS NOT NULL AND a.total_contests > 0
+                THEN a.won_contests / NULLIF(a.total_contests, 0)
+            END
+        ) OVER w5 AS rolling_dribble_success_5_raw,
+        COUNT(a.fouls_won) OVER w5 AS rolling_fouls_won_5_available_count,
+        AVG(a.fouls_won) OVER w5 AS rolling_fouls_won_5_raw,
+        COUNT(a.clearances) OVER w5 AS rolling_clearances_5_available_count,
+        AVG(a.clearances) OVER w5 AS rolling_clearances_5_raw,
+        COUNT(a.goalkeeper_value) OVER w5 AS rolling_keeper_value_5_available_count,
+        AVG(a.goalkeeper_value) OVER w5 AS rolling_keeper_value_5_raw,
+        COUNT(
+            CASE
+                WHEN a.tempo_crosses_completed IS NOT NULL AND a.tempo_crosses_attempted > 0
+                THEN 1
+            END
+        ) OVER w5 AS rolling_cross_accuracy_5_available_count,
+        AVG(
+            CASE
+                WHEN a.tempo_crosses_completed IS NOT NULL AND a.tempo_crosses_attempted > 0
+                THEN a.tempo_crosses_completed / NULLIF(a.tempo_crosses_attempted, 0)
+            END
+        ) OVER w5 AS rolling_cross_accuracy_5_raw,
+        COUNT(
+            CASE
+                WHEN a.tempo_long_balls_completed IS NOT NULL AND a.tempo_long_balls_attempted > 0
+                THEN 1
+            END
+        ) OVER w5 AS rolling_long_ball_accuracy_5_available_count,
+        AVG(
+            CASE
+                WHEN a.tempo_long_balls_completed IS NOT NULL AND a.tempo_long_balls_attempted > 0
+                THEN a.tempo_long_balls_completed / NULLIF(a.tempo_long_balls_attempted, 0)
+            END
+        ) OVER w5 AS rolling_long_ball_accuracy_5_raw,
+        COUNT(
+            CASE
+                WHEN a.tempo_big_chances_scored IS NOT NULL
+                  AND COALESCE(a.tempo_big_chances_scored, 0) + COALESCE(a.tempo_big_chances_missed, 0) > 0
+                THEN 1
+            END
+        ) OVER w5 AS rolling_big_chance_conversion_5_available_count,
+        AVG(
+            CASE
+                WHEN a.tempo_big_chances_scored IS NOT NULL
+                  AND COALESCE(a.tempo_big_chances_scored, 0) + COALESCE(a.tempo_big_chances_missed, 0) > 0
+                THEN a.tempo_big_chances_scored / NULLIF(
+                    COALESCE(a.tempo_big_chances_scored, 0)
+                    + COALESCE(a.tempo_big_chances_missed, 0),
+                    0
+                )
+            END
+        ) OVER w5 AS rolling_big_chance_conversion_5_raw,
+        COUNT(
+            CASE
+                WHEN a.tempo_shots_inside_box IS NOT NULL AND a.tempo_total_shots > 0
+                THEN 1
+            END
+        ) OVER w5 AS rolling_shot_box_share_5_available_count,
+        AVG(
+            CASE
+                WHEN a.tempo_shots_inside_box IS NOT NULL AND a.tempo_total_shots > 0
+                THEN a.tempo_shots_inside_box / NULLIF(a.tempo_total_shots, 0)
+            END
+        ) OVER w5 AS rolling_shot_box_share_5_raw
     FROM features.sofascore_team_match_aggregates a
     WINDOW
+        team_prior AS (
+            PARTITION BY a.team_id
+            ORDER BY a.start_datetime, a.match_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ),
         w3 AS (
-            PARTITION BY a.team_id, a.season_year
+            PARTITION BY a.team_id
             ORDER BY a.start_datetime, a.match_id
             ROWS BETWEEN 3 PRECEDING AND 1 PRECEDING
         ),
         w5 AS (
-            PARTITION BY a.team_id, a.season_year
+            PARTITION BY a.team_id
             ORDER BY a.start_datetime, a.match_id
             ROWS BETWEEN 5 PRECEDING AND 1 PRECEDING
         ),
         w10 AS (
-            PARTITION BY a.team_id, a.season_year
+            PARTITION BY a.team_id
             ORDER BY a.start_datetime, a.match_id
             ROWS BETWEEN 10 PRECEDING AND 1 PRECEDING
         )
@@ -174,19 +403,109 @@ rolling AS (
         rolling_base.match_id,
         rolling_base.team_id,
         rolling_base.opponent_id,
-        CASE WHEN rolling_xg_for_3_available_count = 3 THEN rolling_xg_for_3_raw END AS rolling_xg_for_3,
-        CASE WHEN rolling_xg_for_5_available_count = 5 THEN rolling_xg_for_5_raw END AS rolling_xg_for_5,
-        CASE WHEN rolling_xg_for_10_available_count = 10 THEN rolling_xg_for_10_raw END AS rolling_xg_for_10,
-        CASE WHEN rolling_xg_against_5_available_count = 5 THEN rolling_xg_against_5_raw END AS rolling_xg_against_5,
-        CASE WHEN rolling_shots_5_available_count = 5 THEN rolling_shots_5_raw END AS rolling_shots_5,
-        CASE WHEN rolling_shots_against_5_available_count = 5 THEN rolling_shots_against_5_raw END AS rolling_shots_against_5,
-        CASE WHEN rolling_big_chances_5_available_count = 5 THEN rolling_big_chances_5_raw END AS rolling_big_chances_5,
-        CASE WHEN shot_accuracy_5_available_count = 5 THEN shot_accuracy_5_raw END AS shot_accuracy_5,
-        CASE WHEN tackles_won_5_available_count = 5 THEN tackles_won_5_raw END AS tackles_won_5,
-        CASE WHEN interceptions_5_available_count = 5 THEN interceptions_5_raw END AS interceptions_5,
-        CASE WHEN blocks_5_available_count = 5 THEN blocks_5_raw END AS blocks_5,
-        CASE WHEN possession_proxy_5_available_count = 5 THEN possession_proxy_5_raw END AS possession_proxy_5,
-        CASE WHEN passes_per90_5_available_count = 5 THEN passes_per90_5_raw END AS passes_per90_5
+        rolling_base.rolling_history_count,
+        rolling_base.rolling_xg_for_5_available_count,
+        rolling_base.rolling_xg_against_5_available_count,
+        rolling_base.rolling_shots_5_available_count,
+        rolling_base.rolling_shots_against_5_available_count,
+        GREATEST(
+            rolling_tempo_shots_5_available_count,
+            rolling_tempo_box_touches_5_available_count,
+            rolling_tempo_final_third_entries_5_available_count,
+            rolling_tempo_corners_5_available_count,
+            rolling_tempo_passes_5_available_count,
+            rolling_tempo_pass_accuracy_5_available_count,
+            rolling_tempo_directness_5_available_count,
+            rolling_box_pressure_index_5_available_count
+        ) AS rolling_tempo_count,
+        (
+            (
+                CASE WHEN rolling_xg_for_3_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_xg_for_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_xg_for_10_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_xg_against_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_shots_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_shots_against_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_big_chances_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN shot_accuracy_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN tackles_won_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN interceptions_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN blocks_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN possession_proxy_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN passes_per90_5_available_count > 0 THEN 1 ELSE 0 END
+            ) / 13.0
+        ) AS feature_coverage_score,
+        (
+            (
+                CASE WHEN rolling_tempo_shots_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_tempo_box_touches_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_tempo_final_third_entries_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_tempo_corners_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_tempo_passes_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_tempo_pass_accuracy_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_tempo_directness_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_box_pressure_index_5_available_count > 0 THEN 1 ELSE 0 END
+            ) / 8.0
+        ) AS tempo_feature_coverage_score,
+        (
+            (
+                CASE WHEN rolling_xgot_for_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_shot_value_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_pass_value_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_progression_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_carry_distance_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_opp_half_pass_accuracy_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_dribble_success_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_fouls_won_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_clearances_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_keeper_value_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_cross_accuracy_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_long_ball_accuracy_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_big_chance_conversion_5_available_count > 0 THEN 1 ELSE 0 END
+                + CASE WHEN rolling_shot_box_share_5_available_count > 0 THEN 1 ELSE 0 END
+            ) / 14.0
+        ) AS extended_feature_coverage_score,
+        COALESCE(rolling_xg_for_3_raw, 1.35) AS rolling_xg_for_3,
+        COALESCE(rolling_xg_for_5_raw, 1.35) AS rolling_xg_for_5,
+        COALESCE(rolling_xg_for_10_raw, 1.35) AS rolling_xg_for_10,
+        COALESCE(rolling_xg_against_5_raw, 1.35) AS rolling_xg_against_5,
+        COALESCE(rolling_shots_5_raw, 12.0) AS rolling_shots_5,
+        COALESCE(rolling_shots_against_5_raw, 12.0) AS rolling_shots_against_5,
+        COALESCE(rolling_big_chances_5_raw, 1.5) AS rolling_big_chances_5,
+        COALESCE(shot_accuracy_5_raw, 0.35) AS shot_accuracy_5,
+        COALESCE(tackles_won_5_raw, 12.0) AS tackles_won_5,
+        COALESCE(interceptions_5_raw, 12.0) AS interceptions_5,
+        COALESCE(blocks_5_raw, 4.0) AS blocks_5,
+        COALESCE(possession_proxy_5_raw, 0.5) AS possession_proxy_5,
+        COALESCE(passes_per90_5_raw, 35.0) AS passes_per90_5,
+        COALESCE(rolling_tempo_shots_5_raw, 12.0) AS rolling_tempo_shots_5,
+        COALESCE(rolling_tempo_box_touches_5_raw, 22.0) AS rolling_tempo_box_touches_5,
+        COALESCE(rolling_tempo_final_third_entries_5_raw, 40.0) AS rolling_tempo_final_third_entries_5,
+        COALESCE(rolling_tempo_corners_5_raw, 4.5) AS rolling_tempo_corners_5,
+        COALESCE(rolling_tempo_passes_5_raw, 400.0) AS rolling_tempo_passes_5,
+        COALESCE(rolling_tempo_pass_accuracy_5_raw, 0.78) AS rolling_tempo_pass_accuracy_5,
+        COALESCE(rolling_tempo_directness_5_raw, 0.10) AS rolling_tempo_directness_5,
+        COALESCE(rolling_box_pressure_index_5_raw, 38.0) AS rolling_box_pressure_index_5,
+        COALESCE(rolling_xgot_for_5_raw, 1.25) AS rolling_xgot_for_5,
+        COALESCE(rolling_shot_value_5_raw, 0.0) AS rolling_shot_value_5,
+        COALESCE(rolling_pass_value_5_raw, 0.0) AS rolling_pass_value_5,
+        COALESCE(rolling_progression_5_raw, 700.0) AS rolling_progression_5,
+        COALESCE(rolling_carry_distance_5_raw, 1400.0) AS rolling_carry_distance_5,
+        COALESCE(rolling_opp_half_pass_accuracy_5_raw, 0.72) AS rolling_opp_half_pass_accuracy_5,
+        COALESCE(rolling_dribble_success_5_raw, 0.45) AS rolling_dribble_success_5,
+        COALESCE(rolling_fouls_won_5_raw, 10.0) AS rolling_fouls_won_5,
+        COALESCE(rolling_clearances_5_raw, 18.0) AS rolling_clearances_5,
+        COALESCE(rolling_keeper_value_5_raw, 0.0) AS rolling_keeper_value_5,
+        COALESCE(rolling_cross_accuracy_5_raw, 0.28) AS rolling_cross_accuracy_5,
+        COALESCE(rolling_long_ball_accuracy_5_raw, 0.45) AS rolling_long_ball_accuracy_5,
+        COALESCE(rolling_big_chance_conversion_5_raw, 0.35) AS rolling_big_chance_conversion_5,
+        COALESCE(rolling_shot_box_share_5_raw, 0.55) AS rolling_shot_box_share_5,
+        (
+            COALESCE(rolling_tempo_shots_5_raw, 12.0) / 12.0
+            + COALESCE(rolling_tempo_box_touches_5_raw, 22.0) / 22.0
+            + COALESCE(rolling_tempo_final_third_entries_5_raw, 40.0) / 40.0
+            + COALESCE(rolling_box_pressure_index_5_raw, 38.0) / 38.0
+        ) / 4.0 AS team_tempo_index
     FROM rolling_base
 ),
 context AS (
@@ -231,6 +550,13 @@ active_player_values AS (
         key_pass.value_numeric / NULLIF(minutes.value_numeric, 0) * 90 AS key_pass_per90,
         progressive.value_numeric / NULLIF(minutes.value_numeric, 0) * 90 AS progressive_carries_per90,
         (
+            COALESCE(pass_value.value_numeric, 0)
+            + COALESCE(shot_value.value_numeric, 0)
+            + COALESCE(dribble_value.value_numeric, 0)
+            + COALESCE(defensive_value.value_numeric, 0)
+        ) AS player_value,
+        NULLIF(p.raw_player -> 'proposedMarketValueRaw' ->> 'value', '')::numeric / 1000000.0 AS market_value_m,
+        (
             COALESCE(tackles.value_numeric, 0)
             + COALESCE(interceptions.value_numeric, 0)
         ) / NULLIF(minutes.value_numeric, 0) * 90 AS def_actions_per90,
@@ -240,6 +566,7 @@ active_player_values AS (
         ) / NULLIF(minutes.value_numeric, 0) * 90 AS goalkeeper_strength_per90
     FROM raw.sofascore_player_match_appearances a
     JOIN raw.sofascore_matches m ON m.id = a.match_id
+    JOIN raw.sofascore_players p ON p.id = a.player_id
     JOIN raw.sofascore_player_match_stats minutes
       ON minutes.match_id = a.match_id
      AND minutes.team_id = a.team_id
@@ -265,6 +592,26 @@ active_player_values AS (
      AND progressive.team_id = a.team_id
      AND progressive.player_id = a.player_id
      AND progressive.stat_key = 'progressiveBallCarriesCount'
+    LEFT JOIN raw.sofascore_player_match_stats pass_value
+      ON pass_value.match_id = a.match_id
+     AND pass_value.team_id = a.team_id
+     AND pass_value.player_id = a.player_id
+     AND pass_value.stat_key = 'passValueNormalized'
+    LEFT JOIN raw.sofascore_player_match_stats shot_value
+      ON shot_value.match_id = a.match_id
+     AND shot_value.team_id = a.team_id
+     AND shot_value.player_id = a.player_id
+     AND shot_value.stat_key = 'shotValueNormalized'
+    LEFT JOIN raw.sofascore_player_match_stats dribble_value
+      ON dribble_value.match_id = a.match_id
+     AND dribble_value.team_id = a.team_id
+     AND dribble_value.player_id = a.player_id
+     AND dribble_value.stat_key = 'dribbleValueNormalized'
+    LEFT JOIN raw.sofascore_player_match_stats defensive_value
+      ON defensive_value.match_id = a.match_id
+     AND defensive_value.team_id = a.team_id
+     AND defensive_value.player_id = a.player_id
+     AND defensive_value.stat_key = 'defensiveValueNormalized'
     LEFT JOIN raw.sofascore_player_match_stats tackles
       ON tackles.match_id = a.match_id
      AND tackles.team_id = a.team_id
@@ -292,18 +639,25 @@ player_recent AS (
         target.match_id,
         target.team_id,
         prior.player_id,
-        SUM(prior.minutes_played) AS recent_minutes,
-        SUM(prior.xg_per90 * prior.minutes_played) / NULLIF(SUM(prior.minutes_played) FILTER (WHERE prior.xg_per90 IS NOT NULL), 0) AS xg_per90,
-        SUM(prior.xa_per90 * prior.minutes_played) / NULLIF(SUM(prior.minutes_played) FILTER (WHERE prior.xa_per90 IS NOT NULL), 0) AS xa_per90,
-        SUM(prior.key_pass_per90 * prior.minutes_played) / NULLIF(SUM(prior.minutes_played) FILTER (WHERE prior.key_pass_per90 IS NOT NULL), 0) AS key_pass_per90,
-        SUM(prior.progressive_carries_per90 * prior.minutes_played) / NULLIF(SUM(prior.minutes_played) FILTER (WHERE prior.progressive_carries_per90 IS NOT NULL), 0) AS progressive_carries_per90,
-        SUM(prior.def_actions_per90 * prior.minutes_played) / NULLIF(SUM(prior.minutes_played) FILTER (WHERE prior.def_actions_per90 IS NOT NULL), 0) AS def_actions_per90,
-        SUM(prior.goalkeeper_strength_per90 * prior.minutes_played) / NULLIF(SUM(prior.minutes_played) FILTER (WHERE prior.goalkeeper_strength_per90 IS NOT NULL), 0) AS goalkeeper_strength_per90
+        SUM(prior.minutes_played * recency.weight) AS recent_minutes,
+        SUM(prior.xg_per90 * prior.minutes_played * recency.weight) / NULLIF(SUM(prior.minutes_played * recency.weight) FILTER (WHERE prior.xg_per90 IS NOT NULL), 0) AS xg_per90,
+        SUM(prior.xa_per90 * prior.minutes_played * recency.weight) / NULLIF(SUM(prior.minutes_played * recency.weight) FILTER (WHERE prior.xa_per90 IS NOT NULL), 0) AS xa_per90,
+        SUM(prior.key_pass_per90 * prior.minutes_played * recency.weight) / NULLIF(SUM(prior.minutes_played * recency.weight) FILTER (WHERE prior.key_pass_per90 IS NOT NULL), 0) AS key_pass_per90,
+        SUM(prior.progressive_carries_per90 * prior.minutes_played * recency.weight) / NULLIF(SUM(prior.minutes_played * recency.weight) FILTER (WHERE prior.progressive_carries_per90 IS NOT NULL), 0) AS progressive_carries_per90,
+        SUM(prior.player_value * prior.minutes_played * recency.weight) / NULLIF(SUM(prior.minutes_played * recency.weight) FILTER (WHERE prior.player_value IS NOT NULL), 0) AS player_value,
+        MAX(prior.market_value_m) AS market_value_m,
+        SUM(prior.def_actions_per90 * prior.minutes_played * recency.weight) / NULLIF(SUM(prior.minutes_played * recency.weight) FILTER (WHERE prior.def_actions_per90 IS NOT NULL), 0) AS def_actions_per90,
+        SUM(prior.goalkeeper_strength_per90 * prior.minutes_played * recency.weight) / NULLIF(SUM(prior.minutes_played * recency.weight) FILTER (WHERE prior.goalkeeper_strength_per90 IS NOT NULL), 0) AS goalkeeper_strength_per90
     FROM features.sofascore_team_match_aggregates target
     JOIN active_player_values prior
       ON prior.team_id = target.team_id
-     AND prior.season_year = target.season_year
      AND prior.start_datetime < target.start_datetime
+    CROSS JOIN LATERAL (
+        SELECT 1.0 / (
+            1.0
+            + EXTRACT(EPOCH FROM (target.start_datetime - prior.start_datetime)) / 86400.0 / 180.0
+        ) AS weight
+    ) recency
     GROUP BY target.match_id, target.team_id, prior.player_id
 ),
 likely_xi AS (
@@ -323,6 +677,8 @@ lineup_proxy AS (
         SUM(xa_per90) FILTER (WHERE xa_per90 IS NOT NULL) AS xi_xa_sum,
         SUM(key_pass_per90) FILTER (WHERE key_pass_per90 IS NOT NULL) AS xi_key_pass_sum,
         SUM(progressive_carries_per90) FILTER (WHERE progressive_carries_per90 IS NOT NULL) AS xi_progressive_carries,
+        SUM(player_value) FILTER (WHERE player_value IS NOT NULL) AS xi_player_value_sum,
+        SUM(market_value_m) FILTER (WHERE market_value_m IS NOT NULL) AS xi_market_value_sum,
         SUM(def_actions_per90) FILTER (WHERE def_actions_per90 IS NOT NULL) AS xi_def_actions,
         SUM(goalkeeper_strength_per90) FILTER (WHERE goalkeeper_strength_per90 IS NOT NULL) AS xi_goalkeeper_strength
     FROM likely_xi
@@ -341,10 +697,17 @@ SELECT
     f.side,
     {target_expression} AS {target_column},
     {baseline_expression} AS baseline_prediction,
+    f.xg_actual IS NOT NULL AS xg_feature_available,
     CASE WHEN f.side = 'home' THEN 1 ELSE 0 END AS is_home,
-    context.rest_days,
+    COALESCE(context.rest_days, 14.0) AS rest_days,
     context.matches_last_7_days,
     context.matches_last_14_days,
+    rolling.rolling_history_count,
+    rolling.rolling_xg_for_5_available_count,
+    rolling.rolling_xg_against_5_available_count,
+    rolling.rolling_shots_5_available_count,
+    rolling.rolling_shots_against_5_available_count,
+    rolling.feature_coverage_score,
     rolling.rolling_xg_for_3,
     rolling.rolling_xg_for_5,
     rolling.rolling_xg_for_10,
@@ -358,19 +721,85 @@ SELECT
     rolling.blocks_5,
     rolling.possession_proxy_5,
     rolling.passes_per90_5,
+    rolling.rolling_tempo_count,
+    rolling.tempo_feature_coverage_score,
+    rolling.extended_feature_coverage_score,
+    rolling.rolling_tempo_shots_5,
+    rolling.rolling_tempo_box_touches_5,
+    rolling.rolling_tempo_final_third_entries_5,
+    rolling.rolling_tempo_corners_5,
+    rolling.rolling_tempo_passes_5,
+    rolling.rolling_tempo_pass_accuracy_5,
+    rolling.rolling_tempo_directness_5,
+    rolling.rolling_box_pressure_index_5,
+    rolling.rolling_xgot_for_5,
+    rolling.rolling_shot_value_5,
+    rolling.rolling_pass_value_5,
+    rolling.rolling_progression_5,
+    rolling.rolling_carry_distance_5,
+    rolling.rolling_opp_half_pass_accuracy_5,
+    rolling.rolling_dribble_success_5,
+    rolling.rolling_fouls_won_5,
+    rolling.rolling_clearances_5,
+    rolling.rolling_keeper_value_5,
+    rolling.rolling_cross_accuracy_5,
+    rolling.rolling_long_ball_accuracy_5,
+    rolling.rolling_big_chance_conversion_5,
+    rolling.rolling_shot_box_share_5,
+    CASE WHEN COALESCE(f.confirmed_lineup, false) THEN 1 ELSE 0 END AS confirmed_lineup,
+    COALESCE(f.formation_code, 442) AS formation_code,
+    COALESCE(f.starter_market_value_eur, f.listed_market_value_eur, 250000000) / 1000000.0 AS starter_market_value_m,
+    COALESCE(f.missing_market_value_eur, 0) / 1000000.0 AS missing_market_value_m,
+    COALESCE(f.doubtful_market_value_eur, 0) / 1000000.0 AS doubtful_market_value_m,
+    COALESCE(f.missing_player_count, 0) AS missing_player_count,
+    COALESCE(f.doubtful_player_count, 0) AS doubtful_player_count,
+    COALESCE(f.starter_avg_age_years, f.listed_avg_age_years, 27.0) AS starter_avg_age_years,
+    COALESCE(f.starter_defender_count, 4.0) AS starter_defender_count,
+    COALESCE(f.starter_midfielder_count, 4.0) AS starter_midfielder_count,
+    COALESCE(f.starter_forward_count, 2.0) AS starter_forward_count,
     opponent_rolling.rolling_xg_for_5 AS opp_rolling_xg_for_5,
     opponent_rolling.rolling_xg_against_5 AS opp_rolling_xg_against_5,
     opponent_rolling.shot_accuracy_5 AS opp_shot_accuracy_5,
     opponent_rolling.rolling_shots_5 AS opp_rolling_shots_5,
     opponent_rolling.rolling_shots_against_5 AS opp_rolling_shots_against_5,
+    opponent_rolling.rolling_history_count AS opp_rolling_history_count,
+    opponent_rolling.feature_coverage_score AS opp_feature_coverage_score,
+    opponent_rolling.rolling_tempo_count AS opp_rolling_tempo_count,
+    opponent_rolling.tempo_feature_coverage_score AS opp_tempo_feature_coverage_score,
+    opponent_rolling.rolling_tempo_shots_5 AS opp_rolling_tempo_shots_5,
+    opponent_rolling.rolling_tempo_box_touches_5 AS opp_rolling_tempo_box_touches_5,
+    opponent_rolling.rolling_tempo_final_third_entries_5 AS opp_rolling_tempo_final_third_entries_5,
+    opponent_rolling.rolling_tempo_corners_5 AS opp_rolling_tempo_corners_5,
+    opponent_rolling.rolling_tempo_passes_5 AS opp_rolling_tempo_passes_5,
+    opponent_rolling.rolling_tempo_pass_accuracy_5 AS opp_rolling_tempo_pass_accuracy_5,
+    opponent_rolling.rolling_tempo_directness_5 AS opp_rolling_tempo_directness_5,
+    opponent_rolling.rolling_box_pressure_index_5 AS opp_rolling_box_pressure_index_5,
+    opponent_rolling.rolling_xgot_for_5 AS opp_rolling_xgot_for_5,
+    opponent_rolling.rolling_shot_value_5 AS opp_rolling_shot_value_5,
+    opponent_rolling.rolling_progression_5 AS opp_rolling_progression_5,
+    opponent_rolling.rolling_dribble_success_5 AS opp_rolling_dribble_success_5,
+    opponent_rolling.rolling_cross_accuracy_5 AS opp_rolling_cross_accuracy_5,
+    opponent_rolling.rolling_shot_box_share_5 AS opp_rolling_shot_box_share_5,
+    COALESCE(opponent_features.starter_market_value_eur, opponent_features.listed_market_value_eur, 250000000) / 1000000.0 AS opp_starter_market_value_m,
+    COALESCE(opponent_features.missing_market_value_eur, 0) / 1000000.0 AS opp_missing_market_value_m,
+    COALESCE(opponent_features.missing_player_count, 0) AS opp_missing_player_count,
     rolling.rolling_xg_for_5 / NULLIF(opponent_rolling.rolling_xg_against_5, 0) AS adj_attack_xg_5,
     rolling.rolling_xg_against_5 / NULLIF(opponent_rolling.rolling_xg_for_5, 0) AS adj_defence_xg_5,
-    lineup_proxy.xi_xg_sum,
-    lineup_proxy.xi_xa_sum,
-    lineup_proxy.xi_key_pass_sum,
-    lineup_proxy.xi_progressive_carries,
-    lineup_proxy.xi_def_actions,
-    lineup_proxy.xi_goalkeeper_strength
+    rolling.rolling_progression_5 / NULLIF(opponent_rolling.rolling_progression_5, 0) AS adj_progression_5,
+    COALESCE(f.starter_market_value_eur, f.listed_market_value_eur, 250000000)
+        / NULLIF(COALESCE(opponent_features.starter_market_value_eur, opponent_features.listed_market_value_eur, 250000000), 0)
+        AS adj_roster_value,
+    (
+        COALESCE(rolling.team_tempo_index, 1.0)
+        + COALESCE(opponent_rolling.team_tempo_index, 1.0)
+    ) / 2.0 AS match_tempo_index,
+    COALESCE(lineup_proxy.xi_xg_sum, rolling.rolling_xg_for_5) AS xi_xg_sum,
+    COALESCE(lineup_proxy.xi_xa_sum, rolling.rolling_xg_for_5 * 0.65) AS xi_xa_sum,
+    COALESCE(lineup_proxy.xi_key_pass_sum, 5.0) AS xi_key_pass_sum,
+    COALESCE(lineup_proxy.xi_progressive_carries, 20.0) AS xi_progressive_carries,
+    COALESCE(lineup_proxy.xi_def_actions, 45.0) AS xi_def_actions,
+    COALESCE(lineup_proxy.xi_goalkeeper_strength, 3.0) AS xi_goalkeeper_strength,
+    COALESCE(lineup_proxy.xi_player_value_sum, 0.0) AS xi_player_value_sum
 FROM features.sofascore_team_match_features f
 LEFT JOIN rolling
   ON rolling.match_id = f.match_id
@@ -384,6 +813,9 @@ LEFT JOIN context
 LEFT JOIN lineup_proxy
   ON lineup_proxy.match_id = f.match_id
  AND lineup_proxy.team_id = f.team_id
+LEFT JOIN features.sofascore_team_match_features opponent_features
+  ON opponent_features.match_id = f.match_id
+ AND opponent_features.team_id = f.opponent_id
 {where_clause}
 ORDER BY f.start_datetime, f.match_id, f.side DESC;
 """
@@ -425,16 +857,16 @@ def effective_min_shots(model_spec: ModelSpec, min_shots: int | None = None) -> 
 
 def target_expression(model_spec: ModelSpec) -> str:
     if model_spec.name == "xg_for":
-        return "f.xg"
+        return "f.xg_actual"
     if model_spec.name == "shot_quality":
         return (
-            "CASE WHEN f.xg IS NOT NULL AND f.total_shots IS NOT NULL "
-            "THEN LEAST(GREATEST(f.xg / GREATEST(f.total_shots, 1), 0.0), 0.5) END"
+            "CASE WHEN f.xg_actual IS NOT NULL AND f.shots_actual IS NOT NULL "
+            "THEN LEAST(GREATEST(f.xg_actual / GREATEST(f.shots_actual, 1), 0.0), 0.5) END"
         )
     if model_spec.name == "fragility":
         return (
-            "CASE WHEN f.xg_against IS NOT NULL AND f.shots_against IS NOT NULL "
-            "THEN LEAST(GREATEST(f.xg_against / GREATEST(f.shots_against, 1), 0.0), 0.5) END"
+            "CASE WHEN f.xg_against_actual IS NOT NULL AND f.shots_against_actual IS NOT NULL "
+            "THEN LEAST(GREATEST(f.xg_against_actual / GREATEST(f.shots_against_actual, 1), 0.0), 0.5) END"
         )
     raise ValueError(f"Unsupported model spec: {model_spec.name}")
 
@@ -461,19 +893,19 @@ def baseline_expression(model_spec: ModelSpec) -> str:
 
 def labelled_filter(model_spec: ModelSpec, min_shots: int | None = None) -> str:
     if model_spec.name == "xg_for":
-        return "f.xg IS NOT NULL"
+        return "f.xg_actual IS NOT NULL"
     min_shots = effective_min_shots(model_spec, min_shots)
     if model_spec.name == "shot_quality":
         return (
-            "f.xg IS NOT NULL "
-            "AND f.total_shots IS NOT NULL "
-            f"AND f.total_shots >= {int(min_shots)}"
+            "f.xg_actual IS NOT NULL "
+            "AND f.shots_actual IS NOT NULL "
+            f"AND f.shots_actual >= {int(min_shots)}"
         )
     if model_spec.name == "fragility":
         return (
-            "f.xg_against IS NOT NULL "
-            "AND f.shots_against IS NOT NULL "
-            f"AND f.shots_against >= {int(min_shots)}"
+            "f.xg_against_actual IS NOT NULL "
+            "AND f.shots_against_actual IS NOT NULL "
+            f"AND f.shots_against_actual >= {int(min_shots)}"
         )
     raise ValueError(f"Unsupported model spec: {model_spec.name}")
 
@@ -640,6 +1072,10 @@ def prepare_model_dataframe(df, pd, model_spec: ModelSpec | None = None):
     return df
 
 
+def existing_columns(df, columns: list[str]) -> list[str]:
+    return [column for column in columns if column in df.columns]
+
+
 def metric_summary(actual, predicted, baseline, np) -> dict[str, float | None]:
     actual_values = np.asarray(actual, dtype=float)
     predicted_values = np.asarray(predicted, dtype=float)
@@ -777,7 +1213,11 @@ def train_model(
     model.save_model(paths["model"])
     save_json(paths["feature_columns"], FEATURE_COLUMNS)
 
-    output = validation[META_COLUMNS + [model_spec.target_column, BASELINE_COLUMN]].copy()
+    output = validation[
+        META_COLUMNS
+        + [model_spec.target_column, BASELINE_COLUMN]
+        + existing_columns(validation, QUALITY_COLUMNS)
+    ].copy()
     output[model_spec.prediction_column] = validation_predictions
     output["prediction_error"] = (
         output[model_spec.prediction_column] - output[model_spec.target_column]
@@ -798,6 +1238,7 @@ def train_model(
         "all_labelled_rows": int(len(df)),
         "feature_count": len(FEATURE_COLUMNS),
         "feature_columns": FEATURE_COLUMNS,
+        "quality_columns": QUALITY_COLUMNS,
         "model_params": params,
         "best_iteration": getattr(model, "best_iteration", None),
         "best_iteration_count": best_iteration_count(model),
@@ -890,6 +1331,7 @@ def train_final_model(
         "train_rows": int(len(df)),
         "feature_count": len(FEATURE_COLUMNS),
         "feature_columns": FEATURE_COLUMNS,
+        "quality_columns": QUALITY_COLUMNS,
         "model_params": params,
         "source_model_dir": str(source_model_dir),
         "source_validation_season": source_metadata.get("validation_season"),
@@ -1089,6 +1531,7 @@ def predict_history(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     df[
         META_COLUMNS
+        + existing_columns(df, QUALITY_COLUMNS)
         + [model_spec.target_column, model_spec.prediction_column, "prediction_error"]
     ].to_csv(output_path, index=False)
     return len(df)
@@ -1127,7 +1570,11 @@ def predict_match(
         clip_min,
         clip_max,
     )
-    columns = META_COLUMNS + [model_spec.target_column, model_spec.prediction_column]
+    columns = (
+        META_COLUMNS
+        + existing_columns(df, QUALITY_COLUMNS)
+        + [model_spec.target_column, model_spec.prediction_column]
+    )
     if output_path is not None:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         df[columns].to_csv(output_path, index=False)
