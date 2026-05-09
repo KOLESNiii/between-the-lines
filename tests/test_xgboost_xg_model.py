@@ -44,7 +44,11 @@ def test_model_specs_define_independent_targets_and_outputs():
     assert MODEL_SPECS["shot_quality"].prediction_column == "shot_quality_hat"
     assert MODEL_SPECS["fragility"].target_column == "target_fragility"
     assert MODEL_SPECS["fragility"].prediction_column == "fragility_hat"
-    assert len({spec.prediction_column for spec in MODEL_SPECS.values()}) == 3
+    assert MODEL_SPECS["shots_for"].target_column == "target_shots_for"
+    assert MODEL_SPECS["shots_for"].prediction_column == "shots_for_hat"
+    assert MODEL_SPECS["shots_against"].target_column == "target_shots_against"
+    assert MODEL_SPECS["shots_against"].prediction_column == "shots_against_hat"
+    assert len({spec.prediction_column for spec in MODEL_SPECS.values()}) == 5
 
 
 def test_model_specs_define_default_artifact_directories():
@@ -53,11 +57,23 @@ def test_model_specs_define_default_artifact_directories():
         "models/xgboost_shot_quality"
     )
     assert MODEL_SPECS["fragility"].default_model_dir == Path("models/xgboost_fragility")
+    assert MODEL_SPECS["shots_for"].default_model_dir == Path(
+        "models/xgboost_shots_for"
+    )
+    assert MODEL_SPECS["shots_against"].default_model_dir == Path(
+        "models/xgboost_shots_against"
+    )
     assert MODEL_SPECS["shot_quality"].default_final_model_dir == Path(
         "models/xgboost_shot_quality_final"
     )
     assert MODEL_SPECS["fragility"].default_final_model_dir == Path(
         "models/xgboost_fragility_final"
+    )
+    assert MODEL_SPECS["shots_for"].default_final_model_dir == Path(
+        "models/xgboost_shots_for_final"
+    )
+    assert MODEL_SPECS["shots_against"].default_final_model_dir == Path(
+        "models/xgboost_shots_against_final"
     )
 
 
@@ -96,6 +112,36 @@ def test_fragility_sql_uses_direct_target_and_low_shot_filter():
     assert "AS target_fragility" in sql
     assert "AS baseline_prediction" in sql
     assert "f.shots_against_actual >= 3" in sql
+    assert "xg_hat_for" not in sql
+
+
+def test_shots_for_sql_uses_direct_target_and_rolling_baseline():
+    sql = compact_sql(
+        build_model_dataset_sql(
+            labelled_only=True,
+            model_spec=MODEL_SPECS["shots_for"],
+        )
+    )
+
+    assert "f.shots_actual AS target_shots_for" in sql
+    assert "rolling.rolling_shots_5 AS baseline_prediction" in sql
+    assert "WHERE f.shots_actual IS NOT NULL" in sql
+    assert "f.xg_actual / GREATEST" not in sql
+    assert "xg_hat_for" not in sql
+
+
+def test_shots_against_sql_uses_direct_target_and_rolling_baseline():
+    sql = compact_sql(
+        build_model_dataset_sql(
+            labelled_only=True,
+            model_spec=MODEL_SPECS["shots_against"],
+        )
+    )
+
+    assert "f.shots_against_actual AS target_shots_against" in sql
+    assert "rolling.rolling_shots_against_5 AS baseline_prediction" in sql
+    assert "WHERE f.shots_against_actual IS NOT NULL" in sql
+    assert "f.xg_against_actual / GREATEST" not in sql
     assert "xg_hat_for" not in sql
 
 
@@ -194,6 +240,14 @@ def test_where_clause_uses_target_specific_label_filters():
         build_where_clause(labelled_only=True, model_spec=MODEL_SPECS["fragility"])
         == "WHERE f.xg_against_actual IS NOT NULL AND f.shots_against_actual IS NOT NULL "
         "AND f.shots_against_actual >= 3"
+    )
+    assert (
+        build_where_clause(labelled_only=True, model_spec=MODEL_SPECS["shots_for"])
+        == "WHERE f.shots_actual IS NOT NULL"
+    )
+    assert (
+        build_where_clause(labelled_only=True, model_spec=MODEL_SPECS["shots_against"])
+        == "WHERE f.shots_against_actual IS NOT NULL"
     )
 
 

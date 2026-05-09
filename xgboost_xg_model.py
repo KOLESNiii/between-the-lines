@@ -62,6 +62,24 @@ MODEL_SPECS = {
         clip_max=0.5,
         default_min_shots=3,
     ),
+    "shots_for": ModelSpec(
+        name="shots_for",
+        target_column="target_shots_for",
+        prediction_column="shots_for_hat",
+        default_model_dir=Path("models/xgboost_shots_for"),
+        default_final_model_dir=Path("models/xgboost_shots_for_final"),
+        clip_min=0.0,
+        clip_max=40.0,
+    ),
+    "shots_against": ModelSpec(
+        name="shots_against",
+        target_column="target_shots_against",
+        prediction_column="shots_against_hat",
+        default_model_dir=Path("models/xgboost_shots_against"),
+        default_final_model_dir=Path("models/xgboost_shots_against_final"),
+        clip_min=0.0,
+        clip_max=40.0,
+    ),
 }
 
 META_COLUMNS = [
@@ -868,6 +886,10 @@ def target_expression(model_spec: ModelSpec) -> str:
             "CASE WHEN f.xg_against_actual IS NOT NULL AND f.shots_against_actual IS NOT NULL "
             "THEN LEAST(GREATEST(f.xg_against_actual / GREATEST(f.shots_against_actual, 1), 0.0), 0.5) END"
         )
+    if model_spec.name == "shots_for":
+        return "f.shots_actual"
+    if model_spec.name == "shots_against":
+        return "f.shots_against_actual"
     raise ValueError(f"Unsupported model spec: {model_spec.name}")
 
 
@@ -888,6 +910,10 @@ def baseline_expression(model_spec: ModelSpec) -> str:
             "THEN LEAST(GREATEST(rolling.rolling_xg_against_5 / "
             "GREATEST(rolling.rolling_shots_against_5, 1), 0.0), 0.5) END"
         )
+    if model_spec.name == "shots_for":
+        return "rolling.rolling_shots_5"
+    if model_spec.name == "shots_against":
+        return "rolling.rolling_shots_against_5"
     raise ValueError(f"Unsupported model spec: {model_spec.name}")
 
 
@@ -907,6 +933,10 @@ def labelled_filter(model_spec: ModelSpec, min_shots: int | None = None) -> str:
             "AND f.shots_against_actual IS NOT NULL "
             f"AND f.shots_against_actual >= {int(min_shots)}"
         )
+    if model_spec.name == "shots_for":
+        return "f.shots_actual IS NOT NULL"
+    if model_spec.name == "shots_against":
+        return "f.shots_against_actual IS NOT NULL"
     raise ValueError(f"Unsupported model spec: {model_spec.name}")
 
 
