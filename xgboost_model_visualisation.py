@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_DB_URL = "postgresql://user:pwd@localhost:5432/betting_historical_data"
+ALL_MODELS = ["xg_for", "shots_for", "shots_against", "shot_quality", "fragility"]
 
 
 def _require_plotting_dependencies():
@@ -107,6 +108,95 @@ def _plot_signed_barh(plt, labels: list[str], values: list[float], title: str, o
     plt.close(fig)
 
 
+def _compute_model_mean_abs_contrib(
+    train_mod,
+    model_name: str,
+    model_dir_override: Path | None,
+    db_url: str,
+    max_rows: int,
+    min_shots: int | None,
+):
+    np, pd, DMatrix, XGBRegressor = _require_runtime()
+    model_spec = train_mod.resolve_model_spec(model_name)
+    model_dir = model_dir_override or model_spec.default_final_model_dir
+    model, feature_columns, metadata = _load_model(model_dir, XGBRegressor)
+
+    effective_min_shots = min_shots
+    if effective_min_shots is None:
+        effective_min_shots = metadata.get("min_shots")
+
+    df = train_mod.load_dataset(
+        db_url=db_url,
+        labelled_only=True,
+        model_spec=model_spec,
+        min_shots=effective_min_shots,
+    )
+    if df.empty:
+        raise SystemExit(f"No labelled rows returned for model '{model_name}'")
+
+    df = train_mod.prepare_model_dataframe(df, pd, model_spec=model_spec)
+    if max_rows > 0 and len(df) > max_rows:
+        df = df.sample(n=max_rows, random_state=42)
+
+    X = df[feature_columns].apply(pd.to_numeric, errors="coerce")
+    dmatrix = DMatrix(X, feature_names=feature_columns)
+    contrib_matrix = model.get_booster().predict(dmatrix, pred_contribs=True)
+    feature_contribs = contrib_matrix[:, : len(feature_columns)]
+    mean_abs = np.abs(feature_contribs).mean(axis=0)
+    mean_signed = feature_contribs.mean(axis=0)
+
+    rows = []
+    for idx, feature in enumerate(feature_columns):
+        rows.append(
+            {
+                "feature": feature,
+                "mean_abs_contribution": float(mean_abs[idx]),
+                "mean_signed_contribution": float(mean_signed[idx]),
+            }
+        )
+    return rows, len(df)
+
+
+def _match_identifier(match_id: int | None, sofascore_event_id: int | None) -> str:
+    if match_id is not None:
+        return f"match_{match_id}"
+    return f"sofascore_event_{sofascore_event_id}"
+
+
+def _safe_slug(value: str) -> str:
+    return "".join(char.lower() if char.isalnum() else "_" for char in value).strip("_")
+
+
+def _plot_match_contrib(
+    plt,
+    labels: list[str],
+    values: list[float],
+    title: str,
+    output: Path,
+    base_value: float,
+    predicted_value: float,
+    actual_value: float | None,
+):
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig_height = max(7.0, min(26.0, 0.36 * max(1, len(labels)) + 1.2))
+    fig, ax = plt.subplots(figsize=(13, fig_height))
+    colors = ["#2f855a" if value >= 0 else "#c53030" for value in values]
+    ax.barh(labels, values, color=colors)
+    ax.axvline(0.0, color="#1a202c", linewidth=1.0)
+    ax.invert_yaxis()
+    ax.set_title(title)
+    ax.set_xlabel("Per-feature contribution to prediction")
+    ax.grid(axis="x", linestyle="--", alpha=0.3)
+    actual_text = "n/a" if actual_value is None else f"{actual_value:.4f}"
+    subtitle = (
+        f"base={base_value:.4f}  predicted={predicted_value:.4f}  actual={actual_text}"
+    )
+    fig.text(0.01, 0.01, subtitle, fontsize=10)
+    fig.tight_layout(rect=[0, 0.03, 1, 1])
+    fig.savefig(output, dpi=180)
+    plt.close(fig)
+
+
 def gain_importance(args) -> None:
     plt = _require_plotting_dependencies()
     _, _, _, XGBRegressor = _require_runtime()
@@ -145,48 +235,17 @@ def gain_importance(args) -> None:
 
 def mean_abs_contributions(args) -> None:
     plt = _require_plotting_dependencies()
-    np, pd, DMatrix, XGBRegressor = _require_runtime()
     train_mod = _load_training_module()
 
     model_spec = train_mod.resolve_model_spec(args.model)
-    model_dir = args.model_dir or model_spec.default_final_model_dir
-    model, feature_columns, metadata = _load_model(model_dir, XGBRegressor)
-
-    min_shots = args.min_shots
-    if min_shots is None:
-        min_shots = metadata.get("min_shots")
-
-    df = train_mod.load_dataset(
+    rows, used_rows = _compute_model_mean_abs_contrib(
+        train_mod=train_mod,
+        model_name=model_spec.name,
+        model_dir_override=args.model_dir,
         db_url=args.db_url,
-        labelled_only=True,
-        model_spec=model_spec,
-        min_shots=min_shots,
+        max_rows=args.max_rows,
+        min_shots=args.min_shots,
     )
-    if df.empty:
-        raise SystemExit("No labelled rows returned from dataset")
-
-    df = train_mod.prepare_model_dataframe(df, pd, model_spec=model_spec)
-    if args.max_rows > 0 and len(df) > args.max_rows:
-        df = df.sample(n=args.max_rows, random_state=42)
-
-    X = df[feature_columns].apply(pd.to_numeric, errors="coerce")
-    dmatrix = DMatrix(X, feature_names=feature_columns)
-    contrib_matrix = model.get_booster().predict(dmatrix, pred_contribs=True)
-
-    # pred_contribs adds a final bias term; keep only feature columns.
-    feature_contribs = contrib_matrix[:, : len(feature_columns)]
-    mean_abs = np.abs(feature_contribs).mean(axis=0)
-    mean_signed = feature_contribs.mean(axis=0)
-
-    rows = []
-    for idx, feature in enumerate(feature_columns):
-        rows.append(
-            {
-                "feature": feature,
-                "mean_abs_contribution": float(mean_abs[idx]),
-                "mean_signed_contribution": float(mean_signed[idx]),
-            }
-        )
 
     rows.sort(key=lambda row: row["mean_abs_contribution"], reverse=True)
     if args.top_n > 0:
@@ -229,11 +288,241 @@ def mean_abs_contributions(args) -> None:
         output=signed_png_path,
     )
 
-    print(f"Rows used for contribution summary: {len(df)}")
+    print(f"Rows used for contribution summary: {used_rows}")
     print(f"Saved contribution CSV: {csv_path}")
     print(f"Saved contribution plot: {png_path}")
     print(f"Saved signed contribution CSV: {signed_csv_path}")
     print(f"Saved signed contribution plot: {signed_png_path}")
+
+
+def compare_abs_contributions(args) -> None:
+    plt = _require_plotting_dependencies()
+    train_mod = _load_training_module()
+
+    model_rows: dict[str, dict[str, float]] = {}
+    row_counts: dict[str, int] = {}
+    for model_name in ALL_MODELS:
+        rows, used_rows = _compute_model_mean_abs_contrib(
+            train_mod=train_mod,
+            model_name=model_name,
+            model_dir_override=None,
+            db_url=args.db_url,
+            max_rows=args.max_rows,
+            min_shots=args.min_shots,
+        )
+        model_rows[model_name] = {
+            row["feature"]: row["mean_abs_contribution"] for row in rows
+        }
+        row_counts[model_name] = used_rows
+
+    feature_order = sorted(
+        model_rows["xg_for"].keys(),
+        key=lambda feature: sum(model_rows[model].get(feature, 0.0) for model in ALL_MODELS),
+        reverse=True,
+    )
+
+    csv_rows: list[dict[str, Any]] = []
+    for feature in feature_order:
+        csv_rows.append(
+            {
+                "feature": feature,
+                "xg_for_mean_abs_contribution": model_rows["xg_for"].get(feature, 0.0),
+                "shots_for_mean_abs_contribution": model_rows["shots_for"].get(feature, 0.0),
+                "shots_against_mean_abs_contribution": model_rows["shots_against"].get(feature, 0.0),
+                "shot_quality_mean_abs_contribution": model_rows["shot_quality"].get(feature, 0.0),
+                "fragility_mean_abs_contribution": model_rows["fragility"].get(feature, 0.0),
+            }
+        )
+
+    csv_path = args.output_dir / "all_models_mean_abs_contributions_side_by_side.csv"
+    _write_rows(
+        csv_path,
+        csv_rows,
+        [
+            "feature",
+            "xg_for_mean_abs_contribution",
+            "shots_for_mean_abs_contribution",
+            "shots_against_mean_abs_contribution",
+            "shot_quality_mean_abs_contribution",
+            "fragility_mean_abs_contribution",
+        ],
+    )
+
+    # One horizontal grouped-bar figure containing all features.
+    fig_height = max(18.0, 0.32 * len(feature_order))
+    fig, ax = plt.subplots(figsize=(18, fig_height))
+    y_positions = list(range(len(feature_order)))
+    bar_width = 0.16
+    offsets = [-2, -1, 0, 1, 2]
+    colors = {
+        "xg_for": "#1f77b4",
+        "shots_for": "#ff7f0e",
+        "shots_against": "#2ca02c",
+        "shot_quality": "#d62728",
+        "fragility": "#9467bd",
+    }
+    labels = {
+        "xg_for": "xg_for",
+        "shots_for": "shots_for",
+        "shots_against": "shots_against",
+        "shot_quality": "shot_quality",
+        "fragility": "fragility",
+    }
+
+    for idx, model_name in enumerate(ALL_MODELS):
+        values = [model_rows[model_name].get(feature, 0.0) for feature in feature_order]
+        y = [position + offsets[idx] * bar_width for position in y_positions]
+        ax.barh(y, values, height=bar_width, color=colors[model_name], label=labels[model_name])
+
+    ax.set_yticks(y_positions)
+    ax.set_yticklabels(feature_order)
+    ax.invert_yaxis()
+    ax.set_xlabel("Mean absolute contribution")
+    ax.set_title("Mean Absolute Feature Contributions Across All XGBoost Models")
+    ax.grid(axis="x", linestyle="--", alpha=0.3)
+    ax.legend(loc="upper right")
+    fig.tight_layout()
+
+    png_path = args.output_dir / "all_models_mean_abs_contributions_side_by_side.png"
+    png_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(png_path, dpi=180)
+    plt.close(fig)
+
+    print(f"Saved combined CSV: {csv_path}")
+    print(f"Saved combined plot: {png_path}")
+    print("Rows used per model:")
+    for model_name in ALL_MODELS:
+        print(f"  {model_name}: {row_counts[model_name]}")
+
+
+def match_shap(args) -> None:
+    plt = _require_plotting_dependencies()
+    np, pd, DMatrix, XGBRegressor = _require_runtime()
+    train_mod = _load_training_module()
+
+    if args.match_id is None and args.sofascore_event_id is None:
+        raise SystemExit("match-shap requires --match-id or --sofascore-event-id")
+
+    match_tag = _match_identifier(args.match_id, args.sofascore_event_id)
+    match_output_dir = args.output_dir / match_tag
+    match_output_dir.mkdir(parents=True, exist_ok=True)
+    summary_rows: list[dict[str, Any]] = []
+
+    for model_name in ALL_MODELS:
+        model_spec = train_mod.resolve_model_spec(model_name)
+        model_dir = model_spec.default_final_model_dir
+        model, feature_columns, metadata = _load_model(model_dir, XGBRegressor)
+        clip_min = float(metadata.get("clip_min", model_spec.clip_min))
+        clip_max = float(metadata.get("clip_max", model_spec.clip_max))
+
+        min_shots = args.min_shots
+        if min_shots is None:
+            min_shots = metadata.get("min_shots")
+
+        df = train_mod.load_dataset(
+            db_url=args.db_url,
+            labelled_only=False,
+            match_id=args.match_id,
+            sofascore_event_id=args.sofascore_event_id,
+            model_spec=model_spec,
+            min_shots=min_shots,
+        )
+        if df.empty:
+            raise SystemExit(f"No feature rows found for {match_tag}")
+        df = train_mod.prepare_model_dataframe(df, pd, model_spec=model_spec)
+        X = df[feature_columns].apply(pd.to_numeric, errors="coerce")
+
+        predictions = model.predict(X)
+        predictions = train_mod.clip_predictions(
+            predictions,
+            clip_min=clip_min,
+            clip_max=clip_max,
+            np=np,
+        )
+
+        dmatrix = DMatrix(X, feature_names=feature_columns)
+        contrib_matrix = model.get_booster().predict(dmatrix, pred_contribs=True)
+        feature_contribs = contrib_matrix[:, : len(feature_columns)]
+        bias_values = contrib_matrix[:, len(feature_columns)]
+
+        for row_idx, row in df.reset_index(drop=True).iterrows():
+            contrib_pairs = [
+                (feature_columns[i], float(feature_contribs[row_idx, i]))
+                for i in range(len(feature_columns))
+            ]
+            contrib_pairs.sort(key=lambda item: abs(item[1]), reverse=True)
+            if args.top_n > 0:
+                contrib_pairs = contrib_pairs[: args.top_n]
+
+            side = str(row.get("side", "team"))
+            team_name = str(row.get("team_name", f"team_{row_idx+1}"))
+            team_slug = _safe_slug(f"{side}_{team_name}")
+
+            predicted_value = float(predictions[row_idx])
+            actual_raw = row.get(model_spec.target_column)
+            actual_value = None
+            if pd.notna(actual_raw):
+                actual_value = float(actual_raw)
+
+            chart_path = (
+                match_output_dir
+                / f"{match_tag}_{team_slug}_{model_name}_match_shap.png"
+            )
+            _plot_match_contrib(
+                plt=plt,
+                labels=[item[0] for item in contrib_pairs],
+                values=[item[1] for item in contrib_pairs],
+                title=f"{team_name} ({side}) - {model_name}",
+                output=chart_path,
+                base_value=float(bias_values[row_idx]),
+                predicted_value=predicted_value,
+                actual_value=actual_value,
+            )
+
+            csv_path = (
+                match_output_dir
+                / f"{match_tag}_{team_slug}_{model_name}_match_shap.csv"
+            )
+            csv_rows = [
+                {"feature": feature, "contribution": contribution}
+                for feature, contribution in contrib_pairs
+            ]
+            _write_rows(csv_path, csv_rows, ["feature", "contribution"])
+
+            summary_rows.append(
+                {
+                    "match_tag": match_tag,
+                    "team_name": team_name,
+                    "side": side,
+                    "model": model_name,
+                    "target_column": model_spec.target_column,
+                    "actual_value": actual_value,
+                    "predicted_value": predicted_value,
+                    "base_value": float(bias_values[row_idx]),
+                    "chart_path": str(chart_path),
+                    "csv_path": str(csv_path),
+                }
+            )
+
+    summary_path = match_output_dir / f"{match_tag}_team_model_predictions_summary.csv"
+    _write_rows(
+        summary_path,
+        summary_rows,
+        [
+            "match_tag",
+            "team_name",
+            "side",
+            "model",
+            "target_column",
+            "actual_value",
+            "predicted_value",
+            "base_value",
+            "chart_path",
+            "csv_path",
+        ],
+    )
+    print(f"Saved match SHAP outputs to: {match_output_dir}")
+    print(f"Saved summary CSV: {summary_path}")
 
 
 def main() -> None:
@@ -301,6 +590,56 @@ def main() -> None:
         default=None,
         help="Optional min shots override for shot_quality/fragility rows.",
     )
+    compare_parser = subparsers.add_parser(
+        "compare-abs",
+        help=(
+            "Create one side-by-side chart of mean absolute contributions for all features "
+            "across all five models."
+        ),
+    )
+    compare_parser.add_argument(
+        "--db-url",
+        default=os.getenv("DB_URL", DEFAULT_DB_URL),
+        help="Postgres connection URL.",
+    )
+    compare_parser.add_argument(
+        "--max-rows",
+        type=int,
+        default=10000,
+        help="Maximum labelled rows to sample per model. Use <=0 for all rows.",
+    )
+    compare_parser.add_argument(
+        "--min-shots",
+        type=int,
+        default=None,
+        help="Optional min shots override for shot_quality/fragility rows.",
+    )
+    match_parser = subparsers.add_parser(
+        "match-shap",
+        help=(
+            "Create per-team SHAP-style contribution plots for a single match, "
+            "plus actual/predicted summary values for each model."
+        ),
+    )
+    match_parser.add_argument(
+        "--db-url",
+        default=os.getenv("DB_URL", DEFAULT_DB_URL),
+        help="Postgres connection URL.",
+    )
+    match_parser.add_argument("--match-id", type=int)
+    match_parser.add_argument("--sofascore-event-id", type=int)
+    match_parser.add_argument(
+        "--min-shots",
+        type=int,
+        default=None,
+        help="Optional min shots override for shot_quality/fragility rows.",
+    )
+    match_parser.add_argument(
+        "--top-n",
+        type=int,
+        default=25,
+        help="Top contribution features per team chart. Use <=0 for all features.",
+    )
 
     args = parser.parse_args()
 
@@ -308,6 +647,10 @@ def main() -> None:
         gain_importance(args)
     elif args.command == "contrib":
         mean_abs_contributions(args)
+    elif args.command == "compare-abs":
+        compare_abs_contributions(args)
+    elif args.command == "match-shap":
+        match_shap(args)
 
 
 if __name__ == "__main__":
