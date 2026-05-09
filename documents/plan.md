@@ -6,6 +6,7 @@ You already have:
 
 - Team feature engineering
 - XGBoost xG models
+- XGBoost team shots models
 - Shot quality + fragility models
 - Dixon-Coles score adjustment
 - Probability generation
@@ -32,6 +33,8 @@ Rolling + opponent-adjusted team features
     ↓
 XGBoost regressors
     ├── xG_for_hat
+    ├── shots_for_hat
+    ├── shots_against_hat
     ├── shot_quality_hat
     └── fragility_hat
     ↓
@@ -44,133 +47,9 @@ Market probabilities
 EV calculation
 ```
 
----
+# 1. SHOTS ON TARGET MODEL
 
-# =========================================================
-# 1. SHOTS MODEL (VERY IMPORTANT)
-# =========================================================
-
-# ✅ What This Is
-
-A dedicated model predicting:
-
-```text
-shots_for_hat
-```
-
-instead of deriving shots indirectly.
-
-This becomes one of the most important foundational models for:
-
-- player shots props
-- corners
-- over/under
-- SOT markets
-- player anytime scorer
-- reconstructed xG
-
----
-
-# ✅ What It Improves
-
-Currently:
-
-```text
-xG = total scoring strength
-```
-
-But xG alone cannot distinguish:
-
-- many low-quality shots
-vs
-- few high-quality shots
-
-A shots model separates:
-
-```text
-volume
-```
-
-from
-
-```text
-efficiency
-```
-
-This massively improves:
-
-- player props
-- corners
-- tempo modelling
-- team totals
-
----
-
-# ✅ Recommended Architecture
-
-## Preferred
-
-```text
-XGBoost regression
-```
-
-Target:
-
-```python
-shots_for
-```
-
----
-
-# ✅ Inputs
-
-Use existing features PLUS tempo-heavy features:
-
-```text
-rolling_tempo_shots_5
-rolling_tempo_passes_5
-rolling_progression_5
-rolling_box_pressure_index_5
-rolling_cross_accuracy_5
-rolling_possession
-```
-
----
-
-# ✅ Outputs
-
-```text
-shots_for_hat
-shots_against_hat
-```
-
----
-
-# ✅ Pipeline Placement
-
-```text
-Feature Engineering
-    ↓
-Shots Model
-    ↓
-xG decomposition
-```
-
----
-
-# ✅ Recommendation
-
-DO THIS NEXT.
-
-This unlocks almost every advanced market.
-
----
-
-# =========================================================
-# 2. SHOTS ON TARGET MODEL
-# =========================================================
-
-# ✅ What This Is
+## ✅ What This Is
 
 Separate model for:
 
@@ -178,9 +57,7 @@ Separate model for:
 shots_on_target_hat
 ```
 
----
-
-# ✅ What It Improves
+## ✅ What It Improves
 
 Massively improves:
 
@@ -190,46 +67,43 @@ Massively improves:
 - over/under
 - player SOT markets
 
----
+## ✅ Options
 
-# ✅ Options
-
-## Option A — Derived
+### Option A — Derived
 
 ```text
 SOT = shots × shot_accuracy
 ```
 
-### Pros
+#### Pros
 
 - simple
 
-### Cons
+#### Cons
 
 - compounds errors
 - weaker calibration
 
 ---
 
-## Option B — Direct Model (RECOMMENDED)
+### Option B — Direct Model (RECOMMENDED)
 
 Predict directly with XGBoost.
 
-### Pros
+#### Pros
 
 - better calibration
 - better props
 - better tails
 
-### Cons
+#### Cons
 
 - another model to maintain
 
----
 
-# ✅ Inputs
+## ✅ Inputs
 
-Same as shots model.
+Use the existing shots-model feature set.
 
 Add:
 
@@ -239,33 +113,27 @@ rolling_xgot_for_5
 rolling_shot_box_share_5
 ```
 
----
 
-# ✅ Outputs
+## ✅ Outputs
 
 ```text
 shots_on_target_hat
 ```
 
----
 
-# ✅ Pipeline Placement
+## ✅ Pipeline Placement
 
 ```text
-Shots Model
+Implemented Shots Model
     ↓
 SOT Model
     ↓
 Player props
 ```
 
----
+# 2. PLAYER PROP MODELS
 
-# =========================================================
-# 3. PLAYER PROP MODELS
-# =========================================================
-
-# ✅ What This Is
+## ✅ What This Is
 
 Convert team-level probabilities into:
 
@@ -277,9 +145,7 @@ Convert team-level probabilities into:
 - tackles
 - cards
 
----
-
-# ✅ What It Improves
+## ✅ What It Improves
 
 This is where sportsbooks are weakest.
 
@@ -289,9 +155,8 @@ Player props are MUCH softer markets than:
 - totals
 - BTTS
 
----
 
-# ✅ Core Idea
+## ✅ Core Idea
 
 First predict:
 
@@ -301,11 +166,10 @@ team shot volume
 
 Then allocate share to players.
 
----
 
-# ✅ Recommended Architecture
+## ✅ Recommended Architecture
 
-## Team Layer
+### Team Layer
 
 Predict:
 
@@ -315,9 +179,7 @@ team_xg_hat
 team_sot_hat
 ```
 
----
-
-## Allocation Layer
+### Allocation Layer
 
 Allocate using:
 
@@ -332,15 +194,14 @@ player_expected_shots =
     team_shots_hat * player_rolling_shot_share
 ```
 
----
 
-# ✅ Inputs
+## ✅ Inputs
 
-## Team Inputs
+### Team Inputs
 
 Existing team features.
 
-## Player Inputs
+### Player Inputs
 
 ```text
 rolling_shots_per90
@@ -352,9 +213,7 @@ position
 opponent weakness
 ```
 
----
-
-# ✅ Outputs
+## ✅ Outputs
 
 ```text
 player_shots_mean
@@ -363,13 +222,11 @@ player_goal_prob
 player_assist_prob
 ```
 
----
+## ✅ Distribution Choice
 
-# ✅ Distribution Choice
+### Recommended
 
-## Recommended
-
-### Poisson
+#### Poisson
 
 Good for:
 
@@ -377,19 +234,16 @@ Good for:
 - SOT
 - passes
 
----
+### Alternative
 
-## Alternative
-
-### Negative Binomial
+#### Negative Binomial
 
 Better tails.
 
 Use if variance > mean.
 
----
 
-# ✅ Pipeline Placement
+## ✅ Pipeline Placement
 
 ```text
 Team models
@@ -401,13 +255,9 @@ Player distributions
 Player prop probabilities
 ```
 
----
+# 3. CALIBRATION LAYER (CRITICAL)
 
-# =========================================================
-# 4. CALIBRATION LAYER (CRITICAL)
-# =========================================================
-
-# ✅ What This Is
+## ✅ What This Is
 
 Raw probabilities are NOT calibrated.
 
@@ -426,9 +276,7 @@ those events only occur 62% of the time
 
 Calibration fixes this.
 
----
-
-# ✅ What It Improves
+## ✅ What It Improves
 
 Massively improves:
 
@@ -439,38 +287,36 @@ Massively improves:
 
 This is one of the MOST IMPORTANT components.
 
----
 
-# ✅ Recommended Methods
+## ✅ Recommended Methods
 
-## Option A — Isotonic Regression (RECOMMENDED)
+### Option A — Isotonic Regression (RECOMMENDED)
 
-### Pros
+#### Pros
 
 - non-linear
 - excellent for betting
 - very common professionally
 
-### Cons
+#### Cons
 
 - can overfit small samples
 
 ---
 
-## Option B — Platt Scaling
+### Option B — Platt Scaling
 
-### Pros
+#### Pros
 
 - stable
 - simple
 
-### Cons
+#### Cons
 
 - less flexible
 
----
 
-# ✅ Recommendation
+## ✅ Recommendation
 
 Use:
 
@@ -479,26 +325,23 @@ Isotonic for large datasets
 Platt for small datasets
 ```
 
----
 
-# ✅ Inputs
+## ✅ Inputs
 
 ```text
 raw_market_probability
 actual_outcome
 ```
 
----
 
-# ✅ Outputs
+## ✅ Outputs
 
 ```text
 calibrated_probability
 ```
 
----
 
-# ✅ Pipeline Placement
+## ✅ Pipeline Placement
 
 ```text
 Raw probability model
@@ -508,13 +351,10 @@ Calibration layer
 Final probability
 ```
 
----
 
-# =========================================================
-# 5. PROPER JOINT GOAL MODEL
-# =========================================================
+# 4. PROPER JOINT GOAL MODEL
 
-# ✅ What This Is
+## ✅ What This Is
 
 You already use Dixon-Coles.
 
@@ -525,9 +365,8 @@ home_goals
 away_goals
 ```
 
----
 
-# ✅ What It Improves
+## ✅ What It Improves
 
 Better:
 
@@ -537,52 +376,50 @@ Better:
 - totals
 - tails
 
----
 
-# ✅ Options
+## ✅ Options
 
-## Option A — Dixon-Coles Only (RECOMMENDED)
+### Option A — Dixon-Coles Only (RECOMMENDED)
 
-### Pros
+#### Pros
 
 - proven
 - stable
 - simple
 - industry standard
 
-### Cons
+#### Cons
 
 - limited dependency flexibility
 
 ---
 
-## Option B — Bivariate Poisson
+### Option B — Bivariate Poisson
 
-### Pros
+#### Pros
 
 - explicit covariance
 
-### Cons
+#### Cons
 
 - often unstable
 - little real-world gain
 
 ---
 
-## Option C — Copula Models
+### Option C — Copula Models
 
-### Pros
+#### Pros
 
 - extremely flexible
 
-### Cons
+#### Cons
 
 - hard to calibrate
 - overkill for football
 
----
 
-# ✅ Recommendation
+## ✅ Recommendation
 
 Use:
 
@@ -593,9 +430,8 @@ Independent Poisson
 
 This is the best tradeoff.
 
----
 
-# ✅ Pipeline Placement
+## ✅ Pipeline Placement
 
 ```text
 xG estimates
@@ -607,29 +443,23 @@ Dixon-Coles adjustment
 Final score matrix
 ```
 
----
+# 5. MARKET CALIBRATION AGAINST BOOKMAKERS
 
-# =========================================================
-# 6. MARKET CALIBRATION AGAINST BOOKMAKERS
-# =========================================================
-
-# ✅ What This Is
+## ✅ What This Is
 
 Use bookmaker odds AFTER modelling.
 
 NOT inside the football prediction model.
 
----
 
-# ✅ What It Improves
+## ✅ What It Improves
 
 - catches structural biases
 - improves EV filtering
 - reduces catastrophic errors
 
----
 
-# ✅ Recommendation
+## ✅ Recommendation
 
 Use bookmaker probabilities ONLY for:
 
@@ -645,9 +475,8 @@ NOT:
 core football prediction
 ```
 
----
 
-# ✅ Example
+## ✅ Example
 
 ```python
 edge =
@@ -660,9 +489,8 @@ Then train:
 edge reliability model
 ```
 
----
 
-# ✅ Pipeline Placement
+## ✅ Pipeline Placement
 
 ```text
 Football probabilities
@@ -672,19 +500,15 @@ Compare with market
 EV filtering / meta-model
 ```
 
----
 
-# =========================================================
-# 7. SIMULATION ENGINE
-# =========================================================
+# 6. SIMULATION ENGINE
 
-# ✅ What This Is
+## ✅ What This Is
 
 Monte Carlo match simulation.
 
----
 
-# ✅ What It Improves
+## ✅ What It Improves
 
 Allows:
 
@@ -693,9 +517,8 @@ Allows:
 - player correlations
 - portfolio betting
 
----
 
-# ✅ Inputs
+## ✅ Inputs
 
 ```text
 goal distributions
@@ -703,31 +526,25 @@ player distributions
 tempo distributions
 ```
 
----
 
-# ✅ Outputs
+## ✅ Outputs
 
 Simulated match universe.
 
----
 
-# ✅ Recommendation
+## ✅ Recommendation
 
 Do AFTER calibration.
 
----
 
-# =========================================================
-# 8. UNCERTAINTY MODELLING
-# =========================================================
+# 7. UNCERTAINTY MODELLING
 
-# ✅ What This Is
+## ✅ What This Is
 
 Model confidence / variance.
 
----
 
-# ✅ What It Improves
+## ✅ What It Improves
 
 Critical for:
 
@@ -736,11 +553,10 @@ Critical for:
 - injuries
 - sparse data
 
----
 
-# ✅ Recommended Methods
+## ✅ Recommended Methods
 
-## Quantile XGBoost (RECOMMENDED)
+### Quantile XGBoost (RECOMMENDED)
 
 Predict:
 
@@ -750,17 +566,15 @@ P50
 P90
 ```
 
----
 
-## Bayesian Boosting
+### Bayesian Boosting
 
 More advanced.
 
 Harder operationally.
 
----
 
-# ✅ Pipeline Placement
+## ✅ Pipeline Placement
 
 ```text
 Feature layer
@@ -770,21 +584,16 @@ Prediction intervals
 Probability distributions
 ```
 
----
+# 8. FEATURE IMPROVEMENTS
 
-# =========================================================
-# 9. FEATURE IMPROVEMENTS
-# =========================================================
-
-# ✅ Tempo Features
+## ✅ Tempo Features
 
 Already helping substantially.
 
 Continue expanding.
 
----
 
-# ✅ Recommended Additions
+## ✅ Recommended Additions
 
 ```text
 pressing intensity
@@ -795,9 +604,8 @@ zone entries
 set-piece quality
 ```
 
----
 
-# ✅ What It Improves
+## ✅ What It Improves
 
 Especially:
 
@@ -806,19 +614,15 @@ Especially:
 - props
 - over/under
 
----
 
-# =========================================================
-# 10. PLAYER MINUTES MODEL
-# =========================================================
+# 9. PLAYER MINUTES MODEL
 
-# ✅ What This Is
+## ✅ What This Is
 
 Predict expected minutes played.
 
----
 
-# ✅ Why Important
+## ✅ Why Important
 
 Player props are impossible without this.
 
@@ -836,9 +640,8 @@ vs
 
 changes everything.
 
----
 
-# ✅ Outputs
+## ✅ Outputs
 
 ```text
 expected_minutes
@@ -846,25 +649,20 @@ starting_probability
 sub_probability
 ```
 
----
 
-# ✅ Recommendation
+## ✅ Recommendation
 
 Very important before advanced player props.
 
----
 
-# =========================================================
-# 11. CORNERS MODEL
-# =========================================================
+# 10. CORNERS MODEL
 
-# ✅ What This Is
+## ✅ What This Is
 
 Dedicated corners prediction model.
 
----
 
-# ✅ Why Corners Need Separate Modelling
+## ✅ Why Corners Need Separate Modelling
 
 Corners are more related to:
 
@@ -874,9 +672,8 @@ Corners are more related to:
 
 than raw xG.
 
----
 
-# ✅ Important Features
+## ✅ Important Features
 
 ```text
 cross accuracy
@@ -886,28 +683,23 @@ tempo
 shots blocked
 ```
 
----
 
-# ✅ Outputs
+## ✅ Outputs
 
 ```text
 team_corners_hat
 match_corners_hat
 ```
 
----
 
-# =========================================================
-# 12. META-MODEL / BET FILTER
-# =========================================================
+# 11. META-MODEL / BET FILTER
 
-# ✅ What This Is
+## ✅ What This Is
 
 Model which bets are ACTUALLY profitable.
 
----
 
-# ✅ Inputs
+## ✅ Inputs
 
 ```text
 edge
@@ -918,41 +710,26 @@ calibration
 liquidity
 ```
 
----
 
-# ✅ Outputs
+## ✅ Outputs
 
 ```text
 bet_quality_score
 ```
 
----
 
-# ✅ Why Important
+## ✅ Why Important
 
 Many positive-EV bets are still bad bets.
 
 This layer filters noise.
 
----
 
-# =========================================================
 # IMPLEMENTATION ORDER (RECOMMENDED)
-# =========================================================
 
-# 🥇 Tier 1 — MUST DO NEXT
+## 🥇 Tier 1 — MUST DO NEXT
 
-## 1. Shots model
-
-Unlocks:
-- player props
-- corners
-- SOT
-- decomposition
-
----
-
-## 2. SOT model
+### 1. SOT model
 
 Unlocks:
 - goalkeeper props
@@ -961,49 +738,49 @@ Unlocks:
 
 ---
 
-## 3. Calibration layer
+### 2. Calibration layer
 
 Essential before serious EV betting.
 
 ---
 
-## 4. Player minutes model
+### 3. Player minutes model
 
 Required before meaningful player props.
 
 ---
 
-# 🥈 Tier 2 — HIGH VALUE
+## 🥈 Tier 2 — HIGH VALUE
 
-## 5. Player allocation layer
+### 4. Player allocation layer
 
 Convert team outputs → player probabilities.
 
 ---
 
-## 6. Corners model
+### 5. Corners model
 
 Very beatable market.
 
 ---
 
-## 7. Simulation engine
+### 6. Simulation engine
 
 Needed for correlated betting.
 
 ---
 
-# 🥉 Tier 3 — ADVANCED
+## 🥉 Tier 3 — ADVANCED
 
-## 8. Quantile uncertainty models
-
----
-
-## 9. Meta-model / bet filter
+### 7. Quantile uncertainty models
 
 ---
 
-## 10. Advanced dependency structures
+### 8. Meta-model / bet filter
+
+---
+
+### 9. Advanced dependency structures
 
 Only after everything else works well.
 
