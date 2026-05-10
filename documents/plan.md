@@ -47,91 +47,7 @@ Market probabilities
 EV calculation
 ```
 
-# 1. SHOTS ON TARGET MODEL
-
-## ✅ What This Is
-
-Separate model for:
-
-```text
-shots_on_target_hat
-```
-
-## ✅ What It Improves
-
-Massively improves:
-
-- goalkeeper saves props
-- SOT props
-- BTTS
-- over/under
-- player SOT markets
-
-## ✅ Options
-
-### Option A — Derived
-
-```text
-SOT = shots × shot_accuracy
-```
-
-#### Pros
-
-- simple
-
-#### Cons
-
-- compounds errors
-- weaker calibration
-
----
-
-### Option B — Direct Model (RECOMMENDED)
-
-Predict directly with XGBoost.
-
-#### Pros
-
-- better calibration
-- better props
-- better tails
-
-#### Cons
-
-- another model to maintain
-
-
-## ✅ Inputs
-
-Use the existing shots-model feature set.
-
-Add:
-
-```text
-shot_accuracy_5
-rolling_xgot_for_5
-rolling_shot_box_share_5
-```
-
-
-## ✅ Outputs
-
-```text
-shots_on_target_hat
-```
-
-
-## ✅ Pipeline Placement
-
-```text
-Implemented Shots Model
-    ↓
-SOT Model
-    ↓
-Player props
-```
-
-# 2. PLAYER PROP MODELS
+# 1. PLAYER PROP MODELS
 
 ## ✅ What This Is
 
@@ -255,7 +171,7 @@ Player distributions
 Player prop probabilities
 ```
 
-# 3. CALIBRATION LAYER (CRITICAL)
+# 2. CALIBRATION LAYER (CRITICAL)
 
 ## ✅ What This Is
 
@@ -352,7 +268,7 @@ Final probability
 ```
 
 
-# 4. PROPER JOINT GOAL MODEL
+# 3. PROPER JOINT GOAL MODEL
 
 ## ✅ What This Is
 
@@ -443,7 +359,7 @@ Dixon-Coles adjustment
 Final score matrix
 ```
 
-# 5. MARKET CALIBRATION AGAINST BOOKMAKERS
+# 4. MARKET CALIBRATION AGAINST BOOKMAKERS
 
 ## ✅ What This Is
 
@@ -501,7 +417,7 @@ EV filtering / meta-model
 ```
 
 
-# 6. SIMULATION ENGINE
+# 5. SIMULATION ENGINE
 
 ## ✅ What This Is
 
@@ -537,7 +453,7 @@ Simulated match universe.
 Do AFTER calibration.
 
 
-# 7. UNCERTAINTY MODELLING
+# 6. UNCERTAINTY MODELLING
 
 ## ✅ What This Is
 
@@ -584,7 +500,7 @@ Prediction intervals
 Probability distributions
 ```
 
-# 8. FEATURE IMPROVEMENTS
+# 7. FEATURE IMPROVEMENTS
 
 ## ✅ Tempo Features
 
@@ -615,7 +531,7 @@ Especially:
 - over/under
 
 
-# 9. PLAYER MINUTES MODEL
+# 8. PLAYER MINUTES MODEL
 
 ## ✅ What This Is
 
@@ -655,7 +571,7 @@ sub_probability
 Very important before advanced player props.
 
 
-# 10. CORNERS MODEL
+# 9. CORNERS MODEL
 
 ## ✅ What This Is
 
@@ -692,7 +608,7 @@ match_corners_hat
 ```
 
 
-# 11. META-MODEL / BET FILTER
+# 10. META-MODEL / BET FILTER
 
 ## ✅ What This Is
 
@@ -729,22 +645,13 @@ This layer filters noise.
 
 ## 🥇 Tier 1 — MUST DO NEXT
 
-### 1. SOT model
-
-Unlocks:
-- goalkeeper props
-- player SOT
-- better BTTS
-
----
-
-### 2. Calibration layer
+### 1. Calibration layer
 
 Essential before serious EV betting.
 
 ---
 
-### 3. Player minutes model
+### 2. Player minutes model
 
 Required before meaningful player props.
 
@@ -752,19 +659,19 @@ Required before meaningful player props.
 
 ## 🥈 Tier 2 — HIGH VALUE
 
-### 4. Player allocation layer
+### 3. Player allocation layer
 
 Convert team outputs → player probabilities.
 
 ---
 
-### 5. Corners model
+### 4. Corners model
 
 Very beatable market.
 
 ---
 
-### 6. Simulation engine
+### 5. Simulation engine
 
 Needed for correlated betting.
 
@@ -772,15 +679,15 @@ Needed for correlated betting.
 
 ## 🥉 Tier 3 — ADVANCED
 
-### 7. Quantile uncertainty models
+### 6. Quantile uncertainty models
 
 ---
 
-### 8. Meta-model / bet filter
+### 7. Meta-model / bet filter
 
 ---
 
-### 9. Advanced dependency structures
+### 8. Advanced dependency structures
 
 Only after everything else works well.
 

@@ -67,5 +67,6 @@ The XGBoost layer consumes the feature table through `xgboost_xg_model.py`. Curr
 - `xg_against_actual`
 - `shots_actual`
 - `shots_against_actual`
+- `shots_on_target`
 
-The shots labels power the independent `shots_for` and `shots_against` rate models.
+The shots labels power the independent `shots_for`, `shots_against`, and `shots_on_target` rate models.

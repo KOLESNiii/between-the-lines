@@ -12,6 +12,7 @@ Sofascore raw data
        - xG_for_hat
        - shots_for_hat
        - shots_against_hat
+       - shots_on_target_hat
        - shot_quality_hat
        - fragility_hat
     -> probabilistic team markets
@@ -48,6 +49,7 @@ Train validated rate models:
 python3 xgboost_xg_model.py train
 python3 xgboost_xg_model.py --model shots_for train
 python3 xgboost_xg_model.py --model shots_against train
+python3 xgboost_xg_model.py --model shots_on_target train
 python3 xgboost_xg_model.py --model shot_quality train
 python3 xgboost_xg_model.py --model fragility train
 ```
@@ -58,6 +60,7 @@ Fit final all-history rate models after validation:
 python3 xgboost_xg_model.py train-final
 python3 xgboost_xg_model.py --model shots_for train-final
 python3 xgboost_xg_model.py --model shots_against train-final
+python3 xgboost_xg_model.py --model shots_on_target train-final
 python3 xgboost_xg_model.py --model shot_quality train-final
 python3 xgboost_xg_model.py --model fragility train-final
 ```

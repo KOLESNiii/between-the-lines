@@ -80,6 +80,15 @@ MODEL_SPECS = {
         clip_min=0.0,
         clip_max=40.0,
     ),
+    "shots_on_target": ModelSpec(
+        name="shots_on_target",
+        target_column="target_shots_on_target",
+        prediction_column="shots_on_target_hat",
+        default_model_dir=Path("models/xgboost_shots_on_target"),
+        default_final_model_dir=Path("models/xgboost_shots_on_target_final"),
+        clip_min=0.0,
+        clip_max=20.0,
+    ),
 }
 
 META_COLUMNS = [
@@ -890,6 +899,8 @@ def target_expression(model_spec: ModelSpec) -> str:
         return "f.shots_actual"
     if model_spec.name == "shots_against":
         return "f.shots_against_actual"
+    if model_spec.name == "shots_on_target":
+        return "f.shots_on_target"
     raise ValueError(f"Unsupported model spec: {model_spec.name}")
 
 
@@ -914,6 +925,8 @@ def baseline_expression(model_spec: ModelSpec) -> str:
         return "rolling.rolling_shots_5"
     if model_spec.name == "shots_against":
         return "rolling.rolling_shots_against_5"
+    if model_spec.name == "shots_on_target":
+        return "rolling.rolling_shots_5 * rolling.shot_accuracy_5"
     raise ValueError(f"Unsupported model spec: {model_spec.name}")
 
 
@@ -937,6 +950,8 @@ def labelled_filter(model_spec: ModelSpec, min_shots: int | None = None) -> str:
         return "f.shots_actual IS NOT NULL"
     if model_spec.name == "shots_against":
         return "f.shots_against_actual IS NOT NULL"
+    if model_spec.name == "shots_on_target":
+        return "f.shots_on_target IS NOT NULL"
     raise ValueError(f"Unsupported model spec: {model_spec.name}")
 
 

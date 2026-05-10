@@ -6,7 +6,22 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_DB_URL = "postgresql://user:pwd@localhost:5432/betting_historical_data"
-ALL_MODELS = ["xg_for", "shots_for", "shots_against", "shot_quality", "fragility"]
+ALL_MODELS = [
+    "xg_for",
+    "shots_for",
+    "shots_against",
+    "shots_on_target",
+    "shot_quality",
+    "fragility",
+]
+MODEL_COLORS = {
+    "xg_for": "#1f77b4",
+    "shots_for": "#ff7f0e",
+    "shots_against": "#2ca02c",
+    "shots_on_target": "#17becf",
+    "shot_quality": "#d62728",
+    "fragility": "#9467bd",
+}
 
 
 def _require_plotting_dependencies():
@@ -323,56 +338,42 @@ def compare_abs_contributions(args) -> None:
 
     csv_rows: list[dict[str, Any]] = []
     for feature in feature_order:
-        csv_rows.append(
-            {
-                "feature": feature,
-                "xg_for_mean_abs_contribution": model_rows["xg_for"].get(feature, 0.0),
-                "shots_for_mean_abs_contribution": model_rows["shots_for"].get(feature, 0.0),
-                "shots_against_mean_abs_contribution": model_rows["shots_against"].get(feature, 0.0),
-                "shot_quality_mean_abs_contribution": model_rows["shot_quality"].get(feature, 0.0),
-                "fragility_mean_abs_contribution": model_rows["fragility"].get(feature, 0.0),
-            }
-        )
+        row = {"feature": feature}
+        for model_name in ALL_MODELS:
+            row[f"{model_name}_mean_abs_contribution"] = model_rows[model_name].get(
+                feature,
+                0.0,
+            )
+        csv_rows.append(row)
 
     csv_path = args.output_dir / "all_models_mean_abs_contributions_side_by_side.csv"
+    contribution_fields = [
+        f"{model_name}_mean_abs_contribution" for model_name in ALL_MODELS
+    ]
     _write_rows(
         csv_path,
         csv_rows,
-        [
-            "feature",
-            "xg_for_mean_abs_contribution",
-            "shots_for_mean_abs_contribution",
-            "shots_against_mean_abs_contribution",
-            "shot_quality_mean_abs_contribution",
-            "fragility_mean_abs_contribution",
-        ],
+        ["feature", *contribution_fields],
     )
 
     # One horizontal grouped-bar figure containing all features.
     fig_height = max(18.0, 0.32 * len(feature_order))
     fig, ax = plt.subplots(figsize=(18, fig_height))
     y_positions = list(range(len(feature_order)))
-    bar_width = 0.16
-    offsets = [-2, -1, 0, 1, 2]
-    colors = {
-        "xg_for": "#1f77b4",
-        "shots_for": "#ff7f0e",
-        "shots_against": "#2ca02c",
-        "shot_quality": "#d62728",
-        "fragility": "#9467bd",
-    }
-    labels = {
-        "xg_for": "xg_for",
-        "shots_for": "shots_for",
-        "shots_against": "shots_against",
-        "shot_quality": "shot_quality",
-        "fragility": "fragility",
-    }
+    bar_width = min(0.8 / max(1, len(ALL_MODELS)), 0.16)
+    center = (len(ALL_MODELS) - 1) / 2.0
 
     for idx, model_name in enumerate(ALL_MODELS):
         values = [model_rows[model_name].get(feature, 0.0) for feature in feature_order]
-        y = [position + offsets[idx] * bar_width for position in y_positions]
-        ax.barh(y, values, height=bar_width, color=colors[model_name], label=labels[model_name])
+        offset = (idx - center) * bar_width
+        y = [position + offset for position in y_positions]
+        ax.barh(
+            y,
+            values,
+            height=bar_width,
+            color=MODEL_COLORS.get(model_name, "#4a5568"),
+            label=model_name,
+        )
 
     ax.set_yticks(y_positions)
     ax.set_yticklabels(feature_order)
@@ -594,7 +595,7 @@ def main() -> None:
         "compare-abs",
         help=(
             "Create one side-by-side chart of mean absolute contributions for all features "
-            "across all five models."
+            "across all configured models."
         ),
     )
     compare_parser.add_argument(

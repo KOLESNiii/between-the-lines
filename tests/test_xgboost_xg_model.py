@@ -48,7 +48,9 @@ def test_model_specs_define_independent_targets_and_outputs():
     assert MODEL_SPECS["shots_for"].prediction_column == "shots_for_hat"
     assert MODEL_SPECS["shots_against"].target_column == "target_shots_against"
     assert MODEL_SPECS["shots_against"].prediction_column == "shots_against_hat"
-    assert len({spec.prediction_column for spec in MODEL_SPECS.values()}) == 5
+    assert MODEL_SPECS["shots_on_target"].target_column == "target_shots_on_target"
+    assert MODEL_SPECS["shots_on_target"].prediction_column == "shots_on_target_hat"
+    assert len({spec.prediction_column for spec in MODEL_SPECS.values()}) == 6
 
 
 def test_model_specs_define_default_artifact_directories():
@@ -63,6 +65,9 @@ def test_model_specs_define_default_artifact_directories():
     assert MODEL_SPECS["shots_against"].default_model_dir == Path(
         "models/xgboost_shots_against"
     )
+    assert MODEL_SPECS["shots_on_target"].default_model_dir == Path(
+        "models/xgboost_shots_on_target"
+    )
     assert MODEL_SPECS["shot_quality"].default_final_model_dir == Path(
         "models/xgboost_shot_quality_final"
     )
@@ -74,6 +79,9 @@ def test_model_specs_define_default_artifact_directories():
     )
     assert MODEL_SPECS["shots_against"].default_final_model_dir == Path(
         "models/xgboost_shots_against_final"
+    )
+    assert MODEL_SPECS["shots_on_target"].default_final_model_dir == Path(
+        "models/xgboost_shots_on_target_final"
     )
 
 
@@ -142,6 +150,24 @@ def test_shots_against_sql_uses_direct_target_and_rolling_baseline():
     assert "rolling.rolling_shots_against_5 AS baseline_prediction" in sql
     assert "WHERE f.shots_against_actual IS NOT NULL" in sql
     assert "f.xg_against_actual / GREATEST" not in sql
+    assert "xg_hat_for" not in sql
+
+
+def test_shots_on_target_sql_uses_direct_target_and_derived_rolling_baseline():
+    sql = compact_sql(
+        build_model_dataset_sql(
+            labelled_only=True,
+            model_spec=MODEL_SPECS["shots_on_target"],
+        )
+    )
+
+    assert "f.shots_on_target AS target_shots_on_target" in sql
+    assert (
+        "rolling.rolling_shots_5 * rolling.shot_accuracy_5 AS baseline_prediction"
+        in sql
+    )
+    assert "WHERE f.shots_on_target IS NOT NULL" in sql
+    assert "f.shots_actual *" not in sql
     assert "xg_hat_for" not in sql
 
 
@@ -248,6 +274,12 @@ def test_where_clause_uses_target_specific_label_filters():
     assert (
         build_where_clause(labelled_only=True, model_spec=MODEL_SPECS["shots_against"])
         == "WHERE f.shots_against_actual IS NOT NULL"
+    )
+    assert (
+        build_where_clause(
+            labelled_only=True, model_spec=MODEL_SPECS["shots_on_target"]
+        )
+        == "WHERE f.shots_on_target IS NOT NULL"
     )
 
 

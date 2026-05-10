@@ -10,6 +10,7 @@ MODELS=(
   xg_for
   shots_for
   shots_against
+  shots_on_target
   shot_quality
   fragility
 )
