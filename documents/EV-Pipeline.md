@@ -21,7 +21,7 @@ Sofascore raw data
        - total goals
        - exact score
     -> bookmaker odds comparison
-    -> EV calculation
+    -> EV candidate generation
 ```
 
 The implemented probability layer currently uses goal-rate outputs for team goal markets. The new shots models produce upstream rate signals for future team count markets, SOT, corners, and player props.
@@ -33,6 +33,8 @@ The implemented probability layer currently uses goal-rate outputs for team goal
 3. [XGBoost rate models](pipeline/03-xgboost-rate-models.md)
 4. [Probabilistic markets](pipeline/04-probabilistic-markets.md)
 5. [Odds and EV](pipeline/05-odds-and-ev.md)
+   - [Odds normalisation](pipeline/05a-odds-normalisation.md)
+   - [EV candidate generation](pipeline/05b-ev-candidate-generation.md)
 
 ## Command Summary
 
@@ -79,7 +81,15 @@ Fetch bookmaker odds through the application API:
 from odds_api import OddsClient
 
 client = OddsClient.from_env()
-snapshot = client.get_live_odds(sport="soccer", providers=["pinnacle", "bet365"])
+snapshot = client.get_live_odds(sport="soccer", providers=["pinnacle"])
+```
+
+Persist odds and generate EV candidates:
+
+```bash
+./venv/bin/python ev_pipeline.py --create-schema fetch-live
+./venv/bin/python ev_pipeline.py from-json path/to/snapshot.json
+./venv/bin/python ev_pipeline.py candidates --probability-run-id 123
 ```
 
 ## Documentation Rules

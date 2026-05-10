@@ -12,13 +12,15 @@ You already have:
 - Probability generation
 - Calibration framework
 - Historical backfill + feature coverage tracking
+- Bookmaker odds normalisation
+- EV candidate generation
 
 The next phase is turning this into a:
 
 1. Strong probabilistic football engine
 2. Multi-market betting model
 3. Player props prediction system
-4. Production-grade EV pipeline
+4. Production-grade EV monitoring and bet filtering
 
 ---
 
@@ -359,65 +361,7 @@ Dixon-Coles adjustment
 Final score matrix
 ```
 
-# 4. MARKET CALIBRATION AGAINST BOOKMAKERS
-
-## ✅ What This Is
-
-Use bookmaker odds AFTER modelling.
-
-NOT inside the football prediction model.
-
-
-## ✅ What It Improves
-
-- catches structural biases
-- improves EV filtering
-- reduces catastrophic errors
-
-
-## ✅ Recommendation
-
-Use bookmaker probabilities ONLY for:
-
-```text
-validation
-monitoring
-meta-models
-```
-
-NOT:
-
-```text
-core football prediction
-```
-
-
-## ✅ Example
-
-```python
-edge =
-    model_probability - market_probability
-```
-
-Then train:
-
-```text
-edge reliability model
-```
-
-
-## ✅ Pipeline Placement
-
-```text
-Football probabilities
-    ↓
-Compare with market
-    ↓
-EV filtering / meta-model
-```
-
-
-# 5. SIMULATION ENGINE
+# 4. SIMULATION ENGINE
 
 ## ✅ What This Is
 
@@ -453,7 +397,7 @@ Simulated match universe.
 Do AFTER calibration.
 
 
-# 6. UNCERTAINTY MODELLING
+# 5. UNCERTAINTY MODELLING
 
 ## ✅ What This Is
 
@@ -500,7 +444,7 @@ Prediction intervals
 Probability distributions
 ```
 
-# 7. FEATURE IMPROVEMENTS
+# 6. FEATURE IMPROVEMENTS
 
 ## ✅ Tempo Features
 
@@ -531,7 +475,7 @@ Especially:
 - over/under
 
 
-# 8. PLAYER MINUTES MODEL
+# 7. PLAYER MINUTES MODEL
 
 ## ✅ What This Is
 
@@ -571,7 +515,7 @@ sub_probability
 Very important before advanced player props.
 
 
-# 9. CORNERS MODEL
+# 8. CORNERS MODEL
 
 ## ✅ What This Is
 
@@ -608,7 +552,7 @@ match_corners_hat
 ```
 
 
-# 10. META-MODEL / BET FILTER
+# 9. META-MODEL / BET FILTER
 
 ## ✅ What This Is
 
