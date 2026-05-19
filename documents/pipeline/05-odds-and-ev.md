@@ -22,6 +22,23 @@ snapshot = client.get_live_odds(
 )
 ```
 
+## Bet365 Web Scraper Reference
+
+`bet365_web_scraper.py` is documented in [ODDS_API.md](../ODDS_API.md). It is the raw Bet365 web reference scraper for pre-match fixture inspection and saved JSON snapshots.
+
+Important boundaries:
+
+- Rendered mode opens fixture-level Bet365 tabs and extracts structured selections.
+- `homepage_pods` is discovery-only; prices from homepage pods are stripped before output.
+- JSON output contains `matches[]` with nested `odds[]`, plus a `requests[]` audit trail.
+- The scraper may expose markets that V1 EV does not yet persist.
+
+Example:
+
+```bash
+./venv/bin/python bet365_web_scraper.py --headed --json --test-mode
+```
+
 ## EV Pipeline
 
 Implemented in `ev_pipeline.py`.

@@ -84,6 +84,12 @@ client = OddsClient.from_env()
 snapshot = client.get_live_odds(sport="soccer", providers=["pinnacle"])
 ```
 
+Inspect Bet365 pre-match web markets as structured JSON:
+
+```bash
+./venv/bin/python bet365_web_scraper.py --headed --json --test-mode
+```
+
 Persist odds and generate EV candidates:
 
 ```bash
