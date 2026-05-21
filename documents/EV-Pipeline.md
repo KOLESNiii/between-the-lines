@@ -15,6 +15,7 @@ Sofascore raw data
        - shots_on_target_hat
        - shot_quality_hat
        - fragility_hat
+       - corners_for_hat
     -> probabilistic team markets
        - 1X2
        - BTTS
@@ -24,82 +25,42 @@ Sofascore raw data
     -> EV candidate generation
 ```
 
-The implemented probability layer currently uses goal-rate outputs for team goal markets. The new shots models produce upstream rate signals for future team count markets, SOT, corners, and player props.
+The implemented probability layer currently uses goal-rate outputs for team goal markets. Shots, SOT, and corners rate models produce upstream signals for future team count markets, corners markets, and player props.
+
+## Player Props Extension
+
+```text
+raw player appearances and lineup context
+    -> player minutes model
+       - expected_minutes
+       - starting_probability
+       - sub_probability
+    -> team shots/SOT rates plus player allocation
+    -> player prop distributions
+       - player_shots
+       - player_shots_on_target
+    -> player prop market probabilities
+    -> bookmaker odds comparison once prop odds joins exist
+```
+
+The player minutes model feeds the implemented player prop allocation stage. Player prop probabilities are generated separately from EV candidate generation until bookmaker prop odds can be matched by player identity.
 
 ## Stage Order
 
 1. [Data ingestion](pipeline/01-data-ingestion.md)
 2. [Team feature engineering](pipeline/02-team-feature-engineering.md)
 3. [XGBoost rate models](pipeline/03-xgboost-rate-models.md)
+   - [Corners rate model](pipeline/03a-corners-rate-model.md)
 4. [Probabilistic markets](pipeline/04-probabilistic-markets.md)
 5. [Odds and EV](pipeline/05-odds-and-ev.md)
    - [Odds normalisation](pipeline/05a-odds-normalisation.md)
    - [EV candidate generation](pipeline/05b-ev-candidate-generation.md)
-
-## Command Summary
-
-Refresh raw and feature data:
-
-```bash
-python3 sofascore_ingestion.py
-python3 team_feature_pipeline.py --create-schema --refresh
-```
-
-Train validated rate models:
-
-```bash
-python3 xgboost_xg_model.py train
-python3 xgboost_xg_model.py --model shots_for train
-python3 xgboost_xg_model.py --model shots_against train
-python3 xgboost_xg_model.py --model shots_on_target train
-python3 xgboost_xg_model.py --model shot_quality train
-python3 xgboost_xg_model.py --model fragility train
-```
-
-Fit final all-history rate models after validation:
-
-```bash
-python3 xgboost_xg_model.py train-final
-python3 xgboost_xg_model.py --model shots_for train-final
-python3 xgboost_xg_model.py --model shots_against train-final
-python3 xgboost_xg_model.py --model shots_on_target train-final
-python3 xgboost_xg_model.py --model shot_quality train-final
-python3 xgboost_xg_model.py --model fragility train-final
-```
-
-Fit and score team market probabilities:
-
-```bash
-./venv/bin/python probabilistic_markets.py --create-schema fit-calibration
-./venv/bin/python probabilistic_markets.py fit-final
-./venv/bin/python probabilistic_markets.py predict-history
-```
-
-Fetch bookmaker odds through the application API:
-
-```python
-from odds_api import OddsClient
-
-client = OddsClient.from_env()
-snapshot = client.get_live_odds(sport="soccer", providers=["pinnacle"])
-```
-
-Inspect Bet365 pre-match web markets as structured JSON:
-
-```bash
-./venv/bin/python bet365_web_scraper.py --headed --json --test-mode
-```
-
-Persist odds and generate EV candidates:
-
-```bash
-./venv/bin/python ev_pipeline.py --create-schema fetch-live
-./venv/bin/python ev_pipeline.py from-json path/to/snapshot.json
-./venv/bin/python ev_pipeline.py candidates --probability-run-id 123
-```
+6. [Player minutes model](pipeline/06-player-minutes-model.md)
+7. [Player prop allocation](pipeline/07-player-prop-allocation.md)
 
 ## Documentation Rules
 
 - Keep this file as the high-level index.
 - Put stage-specific details in `documents/pipeline/`.
 - Document new model outputs in the stage where they are created and mention downstream use only where that integration exists.
+- Keep planned extensions marked as planned until code, schemas, and validation artifacts exist.

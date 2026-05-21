@@ -11,6 +11,7 @@ MODELS=(
   shots_for
   shots_against
   shots_on_target
+  corners_for
   shot_quality
   fragility
 )

@@ -68,5 +68,6 @@ The XGBoost layer consumes the feature table through `xgboost_xg_model.py`. Curr
 - `shots_actual`
 - `shots_against_actual`
 - `shots_on_target`
+- `tempo_corners`
 
-The shots labels power the independent `shots_for`, `shots_against`, and `shots_on_target` rate models.
+The shots and corners labels power the independent `shots_for`, `shots_against`, `shots_on_target`, and `corners_for` rate models.

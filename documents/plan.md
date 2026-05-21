@@ -7,6 +7,7 @@ You already have:
 - Team feature engineering
 - XGBoost xG models
 - XGBoost team shots models
+- XGBoost team corners rate model
 - Shot quality + fragility models
 - Dixon-Coles score adjustment
 - Probability generation
@@ -37,6 +38,7 @@ XGBoost regressors
     ├── xG_for_hat
     ├── shots_for_hat
     ├── shots_against_hat
+    ├── corners_for_hat
     ├── shot_quality_hat
     └── fragility_hat
     ↓
@@ -49,131 +51,7 @@ Market probabilities
 EV calculation
 ```
 
-# 1. PLAYER PROP MODELS
-
-## ✅ What This Is
-
-Convert team-level probabilities into:
-
-- player shots
-- player SOT
-- assists
-- goals
-- passes
-- tackles
-- cards
-
-## ✅ What It Improves
-
-This is where sportsbooks are weakest.
-
-Player props are MUCH softer markets than:
-
-- 1X2
-- totals
-- BTTS
-
-
-## ✅ Core Idea
-
-First predict:
-
-```text
-team shot volume
-```
-
-Then allocate share to players.
-
-
-## ✅ Recommended Architecture
-
-### Team Layer
-
-Predict:
-
-```text
-team_shots_hat
-team_xg_hat
-team_sot_hat
-```
-
-### Allocation Layer
-
-Allocate using:
-
-```text
-player_share
-```
-
-Example:
-
-```python
-player_expected_shots =
-    team_shots_hat * player_rolling_shot_share
-```
-
-
-## ✅ Inputs
-
-### Team Inputs
-
-Existing team features.
-
-### Player Inputs
-
-```text
-rolling_shots_per90
-rolling_sot_per90
-rolling_xg_per90
-expected_minutes
-starting_probability
-position
-opponent weakness
-```
-
-## ✅ Outputs
-
-```text
-player_shots_mean
-player_sot_mean
-player_goal_prob
-player_assist_prob
-```
-
-## ✅ Distribution Choice
-
-### Recommended
-
-#### Poisson
-
-Good for:
-
-- shots
-- SOT
-- passes
-
-### Alternative
-
-#### Negative Binomial
-
-Better tails.
-
-Use if variance > mean.
-
-
-## ✅ Pipeline Placement
-
-```text
-Team models
-    ↓
-Player allocation
-    ↓
-Player distributions
-    ↓
-Player prop probabilities
-```
-
-# 2. CALIBRATION LAYER (CRITICAL)
+# 1. CALIBRATION LAYER (CRITICAL)
 
 ## ✅ What This Is
 
@@ -270,7 +148,7 @@ Final probability
 ```
 
 
-# 3. PROPER JOINT GOAL MODEL
+# 2. PROPER JOINT GOAL MODEL
 
 ## ✅ What This Is
 
@@ -361,7 +239,7 @@ Dixon-Coles adjustment
 Final score matrix
 ```
 
-# 4. SIMULATION ENGINE
+# 3. SIMULATION ENGINE
 
 ## ✅ What This Is
 
@@ -397,7 +275,7 @@ Simulated match universe.
 Do AFTER calibration.
 
 
-# 5. UNCERTAINTY MODELLING
+# 4. UNCERTAINTY MODELLING
 
 ## ✅ What This Is
 
@@ -444,7 +322,7 @@ Prediction intervals
 Probability distributions
 ```
 
-# 6. FEATURE IMPROVEMENTS
+# 5. FEATURE IMPROVEMENTS
 
 ## ✅ Tempo Features
 
@@ -475,84 +353,7 @@ Especially:
 - over/under
 
 
-# 7. PLAYER MINUTES MODEL
-
-## ✅ What This Is
-
-Predict expected minutes played.
-
-
-## ✅ Why Important
-
-Player props are impossible without this.
-
-A striker projected:
-
-```text
-90 mins
-```
-
-vs
-
-```text
-28 mins
-```
-
-changes everything.
-
-
-## ✅ Outputs
-
-```text
-expected_minutes
-starting_probability
-sub_probability
-```
-
-
-## ✅ Recommendation
-
-Very important before advanced player props.
-
-
-# 8. CORNERS MODEL
-
-## ✅ What This Is
-
-Dedicated corners prediction model.
-
-
-## ✅ Why Corners Need Separate Modelling
-
-Corners are more related to:
-
-- pressure
-- crossing
-- territorial dominance
-
-than raw xG.
-
-
-## ✅ Important Features
-
-```text
-cross accuracy
-box entries
-final third entries
-tempo
-shots blocked
-```
-
-
-## ✅ Outputs
-
-```text
-team_corners_hat
-match_corners_hat
-```
-
-
-# 9. META-MODEL / BET FILTER
+# 6. META-MODEL / BET FILTER
 
 ## ✅ What This Is
 
@@ -595,27 +396,9 @@ Essential before serious EV betting.
 
 ---
 
-### 2. Player minutes model
-
-Required before meaningful player props.
-
----
-
 ## 🥈 Tier 2 — HIGH VALUE
 
-### 3. Player allocation layer
-
-Convert team outputs → player probabilities.
-
----
-
-### 4. Corners model
-
-Very beatable market.
-
----
-
-### 5. Simulation engine
+### 2. Simulation engine
 
 Needed for correlated betting.
 
@@ -623,15 +406,15 @@ Needed for correlated betting.
 
 ## 🥉 Tier 3 — ADVANCED
 
-### 6. Quantile uncertainty models
+### 3. Quantile uncertainty models
 
 ---
 
-### 7. Meta-model / bet filter
+### 4. Meta-model / bet filter
 
 ---
 
-### 8. Advanced dependency structures
+### 5. Advanced dependency structures
 
 Only after everything else works well.
 
@@ -652,12 +435,8 @@ XGBoost Models
     ├── shots on target
     ├── shot quality
     ├── fragility
-    ├── corners
+    ├── corners rate (implemented as corners_for_hat)
     └── tempo
-    ↓
-Player Minutes Model
-    ↓
-Player Allocation Layer
     ↓
 Goal Distributions
     ↓

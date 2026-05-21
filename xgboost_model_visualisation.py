@@ -11,6 +11,7 @@ ALL_MODELS = [
     "shots_for",
     "shots_against",
     "shots_on_target",
+    "corners_for",
     "shot_quality",
     "fragility",
 ]
@@ -19,6 +20,7 @@ MODEL_COLORS = {
     "shots_for": "#ff7f0e",
     "shots_against": "#2ca02c",
     "shots_on_target": "#17becf",
+    "corners_for": "#8c564b",
     "shot_quality": "#d62728",
     "fragility": "#9467bd",
 }

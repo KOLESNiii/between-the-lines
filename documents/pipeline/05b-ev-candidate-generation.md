@@ -63,4 +63,4 @@ Use a stricter threshold:
 
 ## Scope
 
-V1 covers `1x2` and `total_goals`. Meta bet filtering, staking, spread joins, player props, corners, and closing-line value modelling remain future stages.
+V1 covers `1x2` and `total_goals`. Player prop probabilities exist in the player prop allocation stage, but they are excluded from EV joins until odds normalisation supports prop lines and stable player identity matching. The `corners_for` rate model does not create corners EV candidates until corners probability distributions and odds joins are implemented. Meta bet filtering, staking, spread joins, corners EV, and closing-line value modelling remain future stages.

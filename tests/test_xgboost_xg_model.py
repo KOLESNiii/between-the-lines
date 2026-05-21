@@ -50,7 +50,9 @@ def test_model_specs_define_independent_targets_and_outputs():
     assert MODEL_SPECS["shots_against"].prediction_column == "shots_against_hat"
     assert MODEL_SPECS["shots_on_target"].target_column == "target_shots_on_target"
     assert MODEL_SPECS["shots_on_target"].prediction_column == "shots_on_target_hat"
-    assert len({spec.prediction_column for spec in MODEL_SPECS.values()}) == 6
+    assert MODEL_SPECS["corners_for"].target_column == "target_corners_for"
+    assert MODEL_SPECS["corners_for"].prediction_column == "corners_for_hat"
+    assert len({spec.prediction_column for spec in MODEL_SPECS.values()}) == 7
 
 
 def test_model_specs_define_default_artifact_directories():
@@ -68,6 +70,9 @@ def test_model_specs_define_default_artifact_directories():
     assert MODEL_SPECS["shots_on_target"].default_model_dir == Path(
         "models/xgboost_shots_on_target"
     )
+    assert MODEL_SPECS["corners_for"].default_model_dir == Path(
+        "models/xgboost_corners_for"
+    )
     assert MODEL_SPECS["shot_quality"].default_final_model_dir == Path(
         "models/xgboost_shot_quality_final"
     )
@@ -82,6 +87,9 @@ def test_model_specs_define_default_artifact_directories():
     )
     assert MODEL_SPECS["shots_on_target"].default_final_model_dir == Path(
         "models/xgboost_shots_on_target_final"
+    )
+    assert MODEL_SPECS["corners_for"].default_final_model_dir == Path(
+        "models/xgboost_corners_for_final"
     )
 
 
@@ -168,6 +176,20 @@ def test_shots_on_target_sql_uses_direct_target_and_derived_rolling_baseline():
     )
     assert "WHERE f.shots_on_target IS NOT NULL" in sql
     assert "f.shots_actual *" not in sql
+    assert "xg_hat_for" not in sql
+
+
+def test_corners_for_sql_uses_direct_target_and_rolling_baseline():
+    sql = compact_sql(
+        build_model_dataset_sql(
+            labelled_only=True,
+            model_spec=MODEL_SPECS["corners_for"],
+        )
+    )
+
+    assert "f.tempo_corners AS target_corners_for" in sql
+    assert "rolling.rolling_tempo_corners_5 AS baseline_prediction" in sql
+    assert "WHERE f.tempo_corners IS NOT NULL" in sql
     assert "xg_hat_for" not in sql
 
 
@@ -281,10 +303,15 @@ def test_where_clause_uses_target_specific_label_filters():
         )
         == "WHERE f.shots_on_target IS NOT NULL"
     )
+    assert (
+        build_where_clause(labelled_only=True, model_spec=MODEL_SPECS["corners_for"])
+        == "WHERE f.tempo_corners IS NOT NULL"
+    )
 
 
 def test_resolve_model_spec_rejects_unknown_model():
     assert resolve_model_spec("xg_for") == MODEL_SPECS["xg_for"]
+    assert resolve_model_spec("corners_for") == MODEL_SPECS["corners_for"]
     with pytest.raises(ValueError):
         resolve_model_spec("goals")
 

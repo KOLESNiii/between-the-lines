@@ -114,7 +114,7 @@ V1 only joins markets that already exist in `model_outputs.market_probabilities`
 | `moneyline` | `1x2` | `home`, `draw`, `away` |
 | `total` | `total_goals` | `over`, `under` |
 
-Unsupported markets are skipped before odds-price persistence. Spread, team total, player props, corners, and exact-score joins are intentionally out of scope for V1.
+Unsupported markets are skipped before odds-price persistence. Spread, team total, player props, corners, and exact-score joins are intentionally out of scope for V1. The `corners_for` rate model is available upstream, but corners EV still needs probability distribution validation and an odds join before it can produce candidates.
 
 ## Event Matching
 

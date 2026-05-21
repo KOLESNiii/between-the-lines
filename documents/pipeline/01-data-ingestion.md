@@ -51,3 +51,4 @@ python3 sofascore_ingestion.py
 - The checkpoint lives in `raw.sofascore_pipeline_state` under `sofascore_pl_stats`.
 - After the first successful backfill, later runs ingest finished events newer than the stored checkpoint.
 - Raw payloads are stored as `JSONB` so stat keys can be inspected later if Sofascore changes response shape.
+- Player appearance and lineup rows are the raw source for the [player minutes model](06-player-minutes-model.md).
