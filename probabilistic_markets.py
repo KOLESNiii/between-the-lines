@@ -573,6 +573,56 @@ def fit_validated_market_calibrators(
     )
 
 
+def select_calibrators_by_walkforward(
+    matches: list[dict[str, Any]],
+    max_goals: int = DEFAULT_MAX_GOALS,
+    test_seasons: int = 4,
+) -> tuple[set[str], dict[str, Any]]:
+    """Robustly choose which markets to calibrate, by walk-forward evaluation.
+
+    Selecting a calibrator on a single held-out season is noisy (a market may
+    help on average yet hurt on one anomalous season, e.g. COVID 20/21). Here we
+    walk forward over the most recent seasons that have at least two seasons of
+    history: for each, fit params + calibrators on all prior seasons and compare
+    the calibrated vs uncalibrated log-loss on the held-out season. A market is
+    selected only if calibration improves the *mean* held-out log-loss.
+    """
+    season_order = sorted({str(m["season_year"]) for m in matches})
+    index = {s: i for i, s in enumerate(season_order)}
+    metric_for = {
+        "1x2": "one_x_two_log_loss",
+        "btts": "btts_log_loss",
+        "total_goals": "over_2_5_log_loss",
+    }
+    agg = {market: {"base": [], "cand": []} for market in metric_for}
+    candidates = [s for s in season_order[-test_seasons:] if index[s] >= 2]
+    for ts in candidates:
+        train = [m for m in matches if index[str(m["season_year"])] < index[ts]]
+        test = [m for m in matches if str(m["season_year"]) == ts]
+        if not train or not test:
+            continue
+        params = fit_calibration_params(train, max_goals=max_goals)
+        calibrated = fit_market_calibrators(train, params, max_goals=max_goals)
+        base_m = evaluate_matches(test, params, max_goals=max_goals)
+        cand_m = evaluate_matches(test, calibrated, max_goals=max_goals)
+        for market, metric in metric_for.items():
+            agg[market]["base"].append(base_m[metric])
+            agg[market]["cand"].append(cand_m[metric])
+    selected: set[str] = set()
+    detail = {}
+    for market, metric in metric_for.items():
+        base_vals, cand_vals = agg[market]["base"], agg[market]["cand"]
+        if not base_vals:
+            continue
+        base_mean, cand_mean = mean(base_vals), mean(cand_vals)
+        improved = cand_mean + 1e-12 < base_mean
+        if improved:
+            selected.add(market)
+        detail[market] = {"base": base_mean, "candidate": cand_mean,
+                          "selected": improved, "seasons": len(base_vals)}
+    return selected, {"test_seasons": candidates, "comparisons": detail}
+
+
 def validated_market_families(path: Path = DEFAULT_MODEL_DIR / "calibration.json") -> set[str] | None:
     if not path.exists():
         return None
@@ -1492,10 +1542,12 @@ def fit_final(
         fit_calibration_params(training_matches, max_goals=max_goals),
         max_goals=max_goals,
     )
-    selected_markets = validated_market_families()
-    if selected_markets is not None:
-        params = filter_market_calibrators(params, selected_markets)
+    selected_markets, walkforward_selection = select_calibrators_by_walkforward(
+        training_matches, max_goals=max_goals
+    )
+    params = filter_market_calibrators(params, selected_markets)
     metrics = {
+        "walkforward_calibrator_selection": walkforward_selection,
         "training": evaluate_matches(training_matches, params, max_goals=max_goals),
         "training_by_season": per_season_metrics(
             training_matches,
@@ -1528,9 +1580,7 @@ def fit_final(
         validation_season=None,
         extra={
             "max_goals": max_goals,
-            "selected_market_calibrators": sorted(selected_markets)
-            if selected_markets is not None
-            else sorted((params.market_calibrators or {}).keys()),
+            "selected_market_calibrators": sorted(selected_markets),
         },
     )
     paths = probability_artifact_paths(model_dir)
