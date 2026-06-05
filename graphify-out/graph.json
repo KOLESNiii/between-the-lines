@@ -4,1741 +4,2140 @@
   "graph": {},
   "nodes": [
     {
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "dashboard/README.md",
+      "source_location": "L1",
+      "id": "dashboard_readme_md",
+      "community": 51,
+      "norm_label": "readme.md"
+    },
+    {
+      "label": "BetPredictor Dashboard",
+      "file_type": "document",
+      "source_file": "dashboard/README.md",
+      "source_location": "L1",
+      "id": "dashboard_readme_betpredictor_dashboard",
+      "community": 51,
+      "norm_label": "betpredictor dashboard"
+    },
+    {
+      "label": "Run",
+      "file_type": "document",
+      "source_file": "dashboard/README.md",
+      "source_location": "L7",
+      "id": "dashboard_readme_run",
+      "community": 51,
+      "norm_label": "run"
+    },
+    {
+      "label": "code:bash (./dashboard/run.sh          # starts the DB (port 5433) if n)",
+      "file_type": "document",
+      "source_file": "dashboard/README.md",
+      "source_location": "L9",
+      "id": "dashboard_readme_codeblock_1",
+      "community": 51,
+      "norm_label": "code:bash (./dashboard/run.sh          # starts the db (port 5433) if n)"
+    },
+    {
+      "label": "code:bash (DB_URL=postgresql://user:pwd@localhost:5433/betting_historic)",
+      "file_type": "document",
+      "source_file": "dashboard/README.md",
+      "source_location": "L21",
+      "id": "dashboard_readme_codeblock_2",
+      "community": 51,
+      "norm_label": "code:bash (db_url=postgresql://user:pwd@localhost:5433/betting_historic)"
+    },
+    {
+      "label": "Views",
+      "file_type": "document",
+      "source_file": "dashboard/README.md",
+      "source_location": "L26",
+      "id": "dashboard_readme_views",
+      "community": 51,
+      "norm_label": "views"
+    },
+    {
+      "label": "Architecture",
+      "file_type": "document",
+      "source_file": "dashboard/README.md",
+      "source_location": "L42",
+      "id": "dashboard_readme_architecture",
+      "community": 51,
+      "norm_label": "architecture"
+    },
+    {
+      "label": "app.py",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L1",
+      "id": "dashboard_app_py",
+      "community": 50,
+      "norm_label": "app.py"
+    },
+    {
+      "label": "get_conn()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L51",
+      "id": "dashboard_app_get_conn",
+      "community": 50,
+      "norm_label": "get_conn()"
+    },
+    {
+      "label": "q()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L58",
+      "id": "dashboard_app_q",
+      "community": 50,
+      "norm_label": "q()"
+    },
+    {
+      "label": "q1()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L77",
+      "id": "dashboard_app_q1",
+      "community": 50,
+      "norm_label": "q1()"
+    },
+    {
+      "label": "default_run_id()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L82",
+      "id": "dashboard_app_default_run_id",
+      "community": 50,
+      "norm_label": "default_run_id()"
+    },
+    {
+      "label": "Enc",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L90",
+      "id": "dashboard_app_enc",
+      "community": 50,
+      "norm_label": "enc"
+    },
+    {
+      "label": ".default()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L91",
+      "id": "dashboard_app_enc_default",
+      "community": 50,
+      "norm_label": ".default()"
+    },
+    {
+      "label": "api_overview()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L102",
+      "id": "dashboard_app_api_overview",
+      "community": 50,
+      "norm_label": "api_overview()"
+    },
+    {
+      "label": "api_matches()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L172",
+      "id": "dashboard_app_api_matches",
+      "community": 50,
+      "norm_label": "api_matches()"
+    },
+    {
+      "label": "api_match()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L217",
+      "id": "dashboard_app_api_match",
+      "community": 50,
+      "norm_label": "api_match()"
+    },
+    {
+      "label": "api_teams()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L293",
+      "id": "dashboard_app_api_teams",
+      "community": 50,
+      "norm_label": "api_teams()"
+    },
+    {
+      "label": "api_team()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L312",
+      "id": "dashboard_app_api_team",
+      "community": 50,
+      "norm_label": "api_team()"
+    },
+    {
+      "label": "api_players()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L342",
+      "id": "dashboard_app_api_players",
+      "community": 50,
+      "norm_label": "api_players()"
+    },
+    {
+      "label": "api_probabilities()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L362",
+      "id": "dashboard_app_api_probabilities",
+      "community": 50,
+      "norm_label": "api_probabilities()"
+    },
+    {
+      "label": "api_runs()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L395",
+      "id": "dashboard_app_api_runs",
+      "community": 50,
+      "norm_label": "api_runs()"
+    },
+    {
+      "label": "api_player_props()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L415",
+      "id": "dashboard_app_api_player_props",
+      "community": 50,
+      "norm_label": "api_player_props()"
+    },
+    {
+      "label": "api_value()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L446",
+      "id": "dashboard_app_api_value",
+      "community": 50,
+      "norm_label": "api_value()"
+    },
+    {
+      "label": "api_models()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L490",
+      "id": "dashboard_app_api_models",
+      "community": 50,
+      "norm_label": "api_models()"
+    },
+    {
+      "label": "_read_json()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L517",
+      "id": "dashboard_app_read_json",
+      "community": 50,
+      "norm_label": "_read_json()"
+    },
+    {
+      "label": "Path",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L517",
+      "id": "path",
+      "community": 50,
+      "norm_label": "path"
+    },
+    {
+      "label": "api_graph_report()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L526",
+      "id": "dashboard_app_api_graph_report",
+      "community": 50,
+      "norm_label": "api_graph_report()"
+    },
+    {
+      "label": "api_graph_data()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L534",
+      "id": "dashboard_app_api_graph_data",
+      "community": 50,
+      "norm_label": "api_graph_data()"
+    },
+    {
+      "label": "_node_brief()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L567",
+      "id": "dashboard_app_node_brief",
+      "community": 50,
+      "norm_label": "_node_brief()"
+    },
+    {
+      "label": "Handler",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L597",
+      "id": "dashboard_app_handler",
+      "community": 50,
+      "norm_label": "handler"
+    },
+    {
+      "label": "BaseHTTPRequestHandler",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "basehttprequesthandler",
+      "community": 50,
+      "norm_label": "basehttprequesthandler"
+    },
+    {
+      "label": ".log_message()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L598",
+      "id": "dashboard_app_handler_log_message",
+      "community": 50,
+      "norm_label": ".log_message()"
+    },
+    {
+      "label": "._send()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L601",
+      "id": "dashboard_app_handler_send",
+      "community": 50,
+      "norm_label": "._send()"
+    },
+    {
+      "label": ".do_GET()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L612",
+      "id": "dashboard_app_handler_do_get",
+      "community": 50,
+      "norm_label": ".do_get()"
+    },
+    {
+      "label": "._serve_file()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L643",
+      "id": "dashboard_app_handler_serve_file",
+      "community": 50,
+      "norm_label": "._serve_file()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "dashboard/app.py",
+      "source_location": "L664",
+      "id": "dashboard_app_main",
+      "community": 50,
+      "norm_label": "main()"
+    },
+    {
+      "label": "Run a query, return list[dict]. Reconnects once on a dropped conn.",
+      "file_type": "rationale",
+      "source_file": "dashboard/app.py",
+      "source_location": "L59",
+      "id": "dashboard_app_rationale_59",
+      "community": 50,
+      "norm_label": "run a query, return list[dict]. reconnects once on a dropped conn."
+    },
+    {
+      "label": "Surface edges: where the calibrated model probability disagrees most     with th",
+      "file_type": "rationale",
+      "source_file": "dashboard/app.py",
+      "source_location": "L447",
+      "id": "dashboard_app_rationale_447",
+      "community": 50,
+      "norm_label": "surface edges: where the calibrated model probability disagrees most     with th"
+    },
+    {
+      "label": "Read model artifacts from disk.",
+      "file_type": "rationale",
+      "source_file": "dashboard/app.py",
+      "source_location": "L491",
+      "id": "dashboard_app_rationale_491",
+      "community": 50,
+      "norm_label": "read model artifacts from disk."
+    },
+    {
+      "label": "Summaries + node search over graphify-out/graph.json.",
+      "file_type": "rationale",
+      "source_file": "dashboard/app.py",
+      "source_location": "L535",
+      "id": "dashboard_app_rationale_535",
+      "community": 50,
+      "norm_label": "summaries + node search over graphify-out/graph.json."
+    },
+    {
+      "label": "run.sh",
+      "file_type": "code",
+      "source_file": "dashboard/run.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "id": "dashboard_run_sh",
+      "community": 52,
+      "norm_label": "run.sh"
+    },
+    {
+      "label": "run.sh script",
+      "file_type": "code",
+      "source_file": "dashboard/run.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "id": "home_kolesniii_betpredictor_dashboard_run_sh__entry",
+      "community": 52,
+      "norm_label": "run.sh script"
+    },
+    {
+      "label": "DB_URL",
+      "file_type": "code",
+      "source_file": "dashboard/run.sh",
+      "source_location": "L28",
+      "metadata": {
+        "language": "bash",
+        "kind": "code"
+      },
+      "id": "dashboard_run_db_url",
+      "community": 52,
+      "norm_label": "db_url"
+    },
+    {
       "label": "EV-Pipeline.md",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L1",
-      "id": "documents_ev_pipeline_md",
       "community": 26,
-      "norm_label": "ev-pipeline.md"
+      "norm_label": "ev-pipeline.md",
+      "id": "documents_ev_pipeline_md"
     },
     {
       "label": "BetPredictor EV Pipeline",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L1",
-      "id": "documents_ev_pipeline_betpredictor_ev_pipeline",
       "community": 26,
-      "norm_label": "betpredictor ev pipeline"
+      "norm_label": "betpredictor ev pipeline",
+      "id": "documents_ev_pipeline_betpredictor_ev_pipeline"
     },
     {
       "label": "Current Pipeline Map",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L5",
-      "id": "documents_ev_pipeline_current_pipeline_map",
       "community": 26,
-      "norm_label": "current pipeline map"
+      "norm_label": "current pipeline map",
+      "id": "documents_ev_pipeline_current_pipeline_map"
     },
     {
       "label": "code:text (Sofascore raw data)",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L7",
-      "id": "documents_ev_pipeline_codeblock_1",
       "community": 26,
-      "norm_label": "code:text (sofascore raw data)"
+      "norm_label": "code:text (sofascore raw data)",
+      "id": "documents_ev_pipeline_codeblock_1"
     },
     {
       "label": "Player Props Extension",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L30",
-      "id": "documents_ev_pipeline_player_props_extension",
       "community": 26,
-      "norm_label": "player props extension"
+      "norm_label": "player props extension",
+      "id": "documents_ev_pipeline_player_props_extension"
     },
     {
       "label": "code:text (raw player appearances and lineup context)",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L32",
-      "id": "documents_ev_pipeline_codeblock_2",
       "community": 26,
-      "norm_label": "code:text (raw player appearances and lineup context)"
+      "norm_label": "code:text (raw player appearances and lineup context)",
+      "id": "documents_ev_pipeline_codeblock_2"
     },
     {
       "label": "Simulation Extension",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L48",
-      "id": "documents_ev_pipeline_simulation_extension",
       "community": 26,
-      "norm_label": "simulation extension"
+      "norm_label": "simulation extension",
+      "id": "documents_ev_pipeline_simulation_extension"
     },
     {
       "label": "code:text (probabilistic team markets)",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L50",
-      "id": "documents_ev_pipeline_codeblock_3",
       "community": 26,
-      "norm_label": "code:text (probabilistic team markets)"
+      "norm_label": "code:text (probabilistic team markets)",
+      "id": "documents_ev_pipeline_codeblock_3"
     },
     {
       "label": "Stage Order",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L63",
-      "id": "documents_ev_pipeline_stage_order",
       "community": 26,
-      "norm_label": "stage order"
+      "norm_label": "stage order",
+      "id": "documents_ev_pipeline_stage_order"
     },
     {
       "label": "Documentation Rules",
       "file_type": "document",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L77",
-      "id": "documents_ev_pipeline_documentation_rules",
       "community": 26,
-      "norm_label": "documentation rules"
+      "norm_label": "documentation rules",
+      "id": "documents_ev_pipeline_documentation_rules"
     },
     {
       "label": "04-probabilistic-markets.md",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L1",
-      "id": "documents_pipeline_04_probabilistic_markets_md",
       "community": 16,
-      "norm_label": "04-probabilistic-markets.md"
+      "norm_label": "04-probabilistic-markets.md",
+      "id": "documents_pipeline_04_probabilistic_markets_md"
     },
     {
       "label": "Stage 4: Probabilistic Markets",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L1",
-      "id": "pipeline_04_probabilistic_markets_stage_4_probabilistic_markets",
       "community": 16,
-      "norm_label": "stage 4: probabilistic markets"
+      "norm_label": "stage 4: probabilistic markets",
+      "id": "pipeline_04_probabilistic_markets_stage_4_probabilistic_markets"
     },
     {
       "label": "Purpose",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L3",
-      "id": "pipeline_04_probabilistic_markets_purpose",
       "community": 16,
-      "norm_label": "purpose"
+      "norm_label": "purpose",
+      "id": "pipeline_04_probabilistic_markets_purpose"
     },
     {
       "label": "Current Team Goal Markets",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L7",
-      "id": "pipeline_04_probabilistic_markets_current_team_goal_markets",
       "community": 16,
-      "norm_label": "current team goal markets"
+      "norm_label": "current team goal markets",
+      "id": "pipeline_04_probabilistic_markets_current_team_goal_markets"
     },
     {
       "label": "Inputs",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L16",
-      "id": "pipeline_04_probabilistic_markets_inputs",
       "community": 16,
-      "norm_label": "inputs"
+      "norm_label": "inputs",
+      "id": "pipeline_04_probabilistic_markets_inputs"
     },
     {
       "label": "Rate Construction",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L26",
-      "id": "pipeline_04_probabilistic_markets_rate_construction",
       "community": 16,
-      "norm_label": "rate construction"
+      "norm_label": "rate construction",
+      "id": "pipeline_04_probabilistic_markets_rate_construction"
     },
     {
       "label": "code:text (lambda_home = tempo_multiplier * home_multiplier * xg_home *)",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L30",
-      "id": "pipeline_04_probabilistic_markets_codeblock_1",
       "community": 16,
-      "norm_label": "code:text (lambda_home = tempo_multiplier * home_multiplier * xg_home *)"
+      "norm_label": "code:text (lambda_home = tempo_multiplier * home_multiplier * xg_home *)",
+      "id": "pipeline_04_probabilistic_markets_codeblock_1"
     },
     {
       "label": "Calibration",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L37",
-      "id": "pipeline_04_probabilistic_markets_calibration",
       "community": 16,
-      "norm_label": "calibration"
+      "norm_label": "calibration",
+      "id": "pipeline_04_probabilistic_markets_calibration"
     },
     {
       "label": "Commands",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L47",
-      "id": "pipeline_04_probabilistic_markets_commands",
       "community": 16,
-      "norm_label": "commands"
+      "norm_label": "commands",
+      "id": "pipeline_04_probabilistic_markets_commands"
     },
     {
       "label": "code:bash (./venv/bin/python probabilistic_markets.py --create-schema f)",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L51",
-      "id": "pipeline_04_probabilistic_markets_codeblock_2",
       "community": 16,
-      "norm_label": "code:bash (./venv/bin/python probabilistic_markets.py --create-schema f)"
+      "norm_label": "code:bash (./venv/bin/python probabilistic_markets.py --create-schema f)",
+      "id": "pipeline_04_probabilistic_markets_codeblock_2"
     },
     {
       "label": "code:bash (./venv/bin/python probabilistic_markets.py fit-final)",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L57",
-      "id": "pipeline_04_probabilistic_markets_codeblock_3",
       "community": 16,
-      "norm_label": "code:bash (./venv/bin/python probabilistic_markets.py fit-final)"
+      "norm_label": "code:bash (./venv/bin/python probabilistic_markets.py fit-final)",
+      "id": "pipeline_04_probabilistic_markets_codeblock_3"
     },
     {
       "label": "code:bash (./venv/bin/python probabilistic_markets.py predict-history)",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L63",
-      "id": "pipeline_04_probabilistic_markets_codeblock_4",
       "community": 16,
-      "norm_label": "code:bash (./venv/bin/python probabilistic_markets.py predict-history)"
+      "norm_label": "code:bash (./venv/bin/python probabilistic_markets.py predict-history)",
+      "id": "pipeline_04_probabilistic_markets_codeblock_4"
     },
     {
       "label": "code:bash (./venv/bin/python probabilistic_markets.py predict-match --m)",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L69",
-      "id": "pipeline_04_probabilistic_markets_codeblock_5",
       "community": 16,
-      "norm_label": "code:bash (./venv/bin/python probabilistic_markets.py predict-match --m)"
+      "norm_label": "code:bash (./venv/bin/python probabilistic_markets.py predict-match --m)",
+      "id": "pipeline_04_probabilistic_markets_codeblock_5"
     },
     {
       "label": "Outputs",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L73",
-      "id": "pipeline_04_probabilistic_markets_outputs",
       "community": 16,
-      "norm_label": "outputs"
+      "norm_label": "outputs",
+      "id": "pipeline_04_probabilistic_markets_outputs"
     },
     {
       "label": "Future Extension",
       "file_type": "document",
       "source_file": "documents/pipeline/04-probabilistic-markets.md",
       "source_location": "L86",
-      "id": "pipeline_04_probabilistic_markets_future_extension",
       "community": 16,
-      "norm_label": "future extension"
+      "norm_label": "future extension",
+      "id": "pipeline_04_probabilistic_markets_future_extension"
     },
     {
       "label": "06-player-minutes-model.md",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L1",
-      "id": "documents_pipeline_06_player_minutes_model_md",
       "community": 15,
-      "norm_label": "06-player-minutes-model.md"
+      "norm_label": "06-player-minutes-model.md",
+      "id": "documents_pipeline_06_player_minutes_model_md"
     },
     {
       "label": "Stage 6: Player Minutes Model",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L1",
-      "id": "pipeline_06_player_minutes_model_stage_6_player_minutes_model",
       "community": 15,
-      "norm_label": "stage 6: player minutes model"
+      "norm_label": "stage 6: player minutes model",
+      "id": "pipeline_06_player_minutes_model_stage_6_player_minutes_model"
     },
     {
       "label": "Purpose",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L3",
-      "id": "pipeline_06_player_minutes_model_purpose",
       "community": 15,
-      "norm_label": "purpose"
+      "norm_label": "purpose",
+      "id": "pipeline_06_player_minutes_model_purpose"
     },
     {
       "label": "Why This Stage Comes Next",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L9",
-      "id": "pipeline_06_player_minutes_model_why_this_stage_comes_next",
       "community": 15,
-      "norm_label": "why this stage comes next"
+      "norm_label": "why this stage comes next",
+      "id": "pipeline_06_player_minutes_model_why_this_stage_comes_next"
     },
     {
       "label": "Outputs",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L13",
-      "id": "pipeline_06_player_minutes_model_outputs",
       "community": 15,
-      "norm_label": "outputs"
+      "norm_label": "outputs",
+      "id": "pipeline_06_player_minutes_model_outputs"
     },
     {
       "label": "Inputs",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L24",
-      "id": "pipeline_06_player_minutes_model_inputs",
       "community": 15,
-      "norm_label": "inputs"
+      "norm_label": "inputs",
+      "id": "pipeline_06_player_minutes_model_inputs"
     },
     {
       "label": "Feature Plan",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L36",
-      "id": "pipeline_06_player_minutes_model_feature_plan",
       "community": 15,
-      "norm_label": "feature plan"
+      "norm_label": "feature plan",
+      "id": "pipeline_06_player_minutes_model_feature_plan"
     },
     {
       "label": "Model Plan",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L51",
-      "id": "pipeline_06_player_minutes_model_model_plan",
       "community": 15,
-      "norm_label": "model plan"
+      "norm_label": "model plan",
+      "id": "pipeline_06_player_minutes_model_model_plan"
     },
     {
       "label": "Validation",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L63",
-      "id": "pipeline_06_player_minutes_model_validation",
       "community": 15,
-      "norm_label": "validation"
+      "norm_label": "validation",
+      "id": "pipeline_06_player_minutes_model_validation"
     },
     {
       "label": "Persistence",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L78",
-      "id": "pipeline_06_player_minutes_model_persistence",
       "community": 15,
-      "norm_label": "persistence"
+      "norm_label": "persistence",
+      "id": "pipeline_06_player_minutes_model_persistence"
     },
     {
       "label": "code:bash (./venv/bin/python player_minutes_model.py --create-schema re)",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L86",
-      "id": "pipeline_06_player_minutes_model_codeblock_1",
       "community": 15,
-      "norm_label": "code:bash (./venv/bin/python player_minutes_model.py --create-schema re)"
+      "norm_label": "code:bash (./venv/bin/python player_minutes_model.py --create-schema re)",
+      "id": "pipeline_06_player_minutes_model_codeblock_1"
     },
     {
       "label": "code:bash (./venv/bin/python player_minutes_model.py train)",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L92",
-      "id": "pipeline_06_player_minutes_model_codeblock_2",
       "community": 15,
-      "norm_label": "code:bash (./venv/bin/python player_minutes_model.py train)"
+      "norm_label": "code:bash (./venv/bin/python player_minutes_model.py train)",
+      "id": "pipeline_06_player_minutes_model_codeblock_2"
     },
     {
       "label": "code:bash (./venv/bin/python player_minutes_model.py train-final)",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L98",
-      "id": "pipeline_06_player_minutes_model_codeblock_3",
       "community": 15,
-      "norm_label": "code:bash (./venv/bin/python player_minutes_model.py train-final)"
+      "norm_label": "code:bash (./venv/bin/python player_minutes_model.py train-final)",
+      "id": "pipeline_06_player_minutes_model_codeblock_3"
     },
     {
       "label": "code:bash (./venv/bin/python player_minutes_model.py predict-history)",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L104",
-      "id": "pipeline_06_player_minutes_model_codeblock_4",
       "community": 15,
-      "norm_label": "code:bash (./venv/bin/python player_minutes_model.py predict-history)"
+      "norm_label": "code:bash (./venv/bin/python player_minutes_model.py predict-history)",
+      "id": "pipeline_06_player_minutes_model_codeblock_4"
     },
     {
       "label": "Downstream Contract",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L109",
-      "id": "pipeline_06_player_minutes_model_downstream_contract",
       "community": 15,
-      "norm_label": "downstream contract"
+      "norm_label": "downstream contract",
+      "id": "pipeline_06_player_minutes_model_downstream_contract"
     },
     {
       "label": "code:text (player_expected_shots = team_shots_hat * player_shot_share *)",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L113",
-      "id": "pipeline_06_player_minutes_model_codeblock_5",
       "community": 15,
-      "norm_label": "code:text (player_expected_shots = team_shots_hat * player_shot_share *)"
+      "norm_label": "code:text (player_expected_shots = team_shots_hat * player_shot_share *)",
+      "id": "pipeline_06_player_minutes_model_codeblock_5"
     },
     {
       "label": "Documentation Refactor Plan",
       "file_type": "document",
       "source_file": "documents/pipeline/06-player-minutes-model.md",
       "source_location": "L120",
-      "id": "pipeline_06_player_minutes_model_documentation_refactor_plan",
       "community": 15,
-      "norm_label": "documentation refactor plan"
+      "norm_label": "documentation refactor plan",
+      "id": "pipeline_06_player_minutes_model_documentation_refactor_plan"
     },
     {
       "label": "07-player-prop-allocation.md",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L1",
-      "id": "documents_pipeline_07_player_prop_allocation_md",
       "community": 25,
-      "norm_label": "07-player-prop-allocation.md"
+      "norm_label": "07-player-prop-allocation.md",
+      "id": "documents_pipeline_07_player_prop_allocation_md"
     },
     {
       "label": "Stage 7: Player Prop Allocation",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L1",
-      "id": "pipeline_07_player_prop_allocation_stage_7_player_prop_allocation",
       "community": 25,
-      "norm_label": "stage 7: player prop allocation"
+      "norm_label": "stage 7: player prop allocation",
+      "id": "pipeline_07_player_prop_allocation_stage_7_player_prop_allocation"
     },
     {
       "label": "Purpose",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L3",
-      "id": "pipeline_07_player_prop_allocation_purpose",
       "community": 25,
-      "norm_label": "purpose"
+      "norm_label": "purpose",
+      "id": "pipeline_07_player_prop_allocation_purpose"
     },
     {
       "label": "Inputs",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L9",
-      "id": "pipeline_07_player_prop_allocation_inputs",
       "community": 25,
-      "norm_label": "inputs"
+      "norm_label": "inputs",
+      "id": "pipeline_07_player_prop_allocation_inputs"
     },
     {
       "label": "Allocation Contract",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L18",
-      "id": "pipeline_07_player_prop_allocation_allocation_contract",
       "community": 25,
-      "norm_label": "allocation contract"
+      "norm_label": "allocation contract",
+      "id": "pipeline_07_player_prop_allocation_allocation_contract"
     },
     {
       "label": "code:text (minutes_factor = expected_minutes / 90)",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L27",
-      "id": "pipeline_07_player_prop_allocation_codeblock_1",
       "community": 25,
-      "norm_label": "code:text (minutes_factor = expected_minutes / 90)"
+      "norm_label": "code:text (minutes_factor = expected_minutes / 90)",
+      "id": "pipeline_07_player_prop_allocation_codeblock_1"
     },
     {
       "label": "Probability Outputs",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L35",
-      "id": "pipeline_07_player_prop_allocation_probability_outputs",
       "community": 25,
-      "norm_label": "probability outputs"
+      "norm_label": "probability outputs",
+      "id": "pipeline_07_player_prop_allocation_probability_outputs"
     },
     {
       "label": "code:text (0.5, 1.5, 2.5, 3.5)",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L39",
-      "id": "pipeline_07_player_prop_allocation_codeblock_2",
       "community": 25,
-      "norm_label": "code:text (0.5, 1.5, 2.5, 3.5)"
+      "norm_label": "code:text (0.5, 1.5, 2.5, 3.5)",
+      "id": "pipeline_07_player_prop_allocation_codeblock_2"
     },
     {
       "label": "code:bash (./venv/bin/python player_prop_allocation.py --create-schema )",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L51",
-      "id": "pipeline_07_player_prop_allocation_codeblock_3",
       "community": 25,
-      "norm_label": "code:bash (./venv/bin/python player_prop_allocation.py --create-schema )"
+      "norm_label": "code:bash (./venv/bin/python player_prop_allocation.py --create-schema )",
+      "id": "pipeline_07_player_prop_allocation_codeblock_3"
     },
     {
       "label": "Validation Checks",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L59",
-      "id": "pipeline_07_player_prop_allocation_validation_checks",
       "community": 25,
-      "norm_label": "validation checks"
+      "norm_label": "validation checks",
+      "id": "pipeline_07_player_prop_allocation_validation_checks"
     },
     {
       "label": "Downstream Boundary",
       "file_type": "document",
       "source_file": "documents/pipeline/07-player-prop-allocation.md",
       "source_location": "L66",
-      "id": "pipeline_07_player_prop_allocation_downstream_boundary",
       "community": 25,
-      "norm_label": "downstream boundary"
+      "norm_label": "downstream boundary",
+      "id": "pipeline_07_player_prop_allocation_downstream_boundary"
     },
     {
       "label": "08-match-simulation.md",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L1",
-      "id": "documents_pipeline_08_match_simulation_md",
       "community": 23,
-      "norm_label": "08-match-simulation.md"
+      "norm_label": "08-match-simulation.md",
+      "id": "documents_pipeline_08_match_simulation_md"
     },
     {
       "label": "Stage 8: Match Simulation",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L1",
-      "id": "pipeline_08_match_simulation_stage_8_match_simulation",
       "community": 23,
-      "norm_label": "stage 8: match simulation"
+      "norm_label": "stage 8: match simulation",
+      "id": "pipeline_08_match_simulation_stage_8_match_simulation"
     },
     {
       "label": "Purpose",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L3",
-      "id": "pipeline_08_match_simulation_purpose",
       "community": 23,
-      "norm_label": "purpose"
+      "norm_label": "purpose",
+      "id": "pipeline_08_match_simulation_purpose"
     },
     {
       "label": "Inputs",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L9",
-      "id": "pipeline_08_match_simulation_inputs",
       "community": 23,
-      "norm_label": "inputs"
+      "norm_label": "inputs",
+      "id": "pipeline_08_match_simulation_inputs"
     },
     {
       "label": "Draw Rules",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L18",
-      "id": "pipeline_08_match_simulation_draw_rules",
       "community": 23,
-      "norm_label": "draw rules"
+      "norm_label": "draw rules",
+      "id": "pipeline_08_match_simulation_draw_rules"
     },
     {
       "label": "code:text (player_shots ~ Poisson(player_shots_expected_value))",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L24",
-      "id": "pipeline_08_match_simulation_codeblock_1",
       "community": 23,
-      "norm_label": "code:text (player_shots ~ poisson(player_shots_expected_value))"
+      "norm_label": "code:text (player_shots ~ poisson(player_shots_expected_value))",
+      "id": "pipeline_08_match_simulation_codeblock_1"
     },
     {
       "label": "code:text (player_shots_on_target <= player_shots)",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L32",
-      "id": "pipeline_08_match_simulation_codeblock_2",
       "community": 23,
-      "norm_label": "code:text (player_shots_on_target <= player_shots)"
+      "norm_label": "code:text (player_shots_on_target <= player_shots)",
+      "id": "pipeline_08_match_simulation_codeblock_2"
     },
     {
       "label": "Outputs",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L38",
-      "id": "pipeline_08_match_simulation_outputs",
       "community": 23,
-      "norm_label": "outputs"
+      "norm_label": "outputs",
+      "id": "pipeline_08_match_simulation_outputs"
     },
     {
       "label": "Commands",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L60",
-      "id": "pipeline_08_match_simulation_commands",
       "community": 23,
-      "norm_label": "commands"
+      "norm_label": "commands",
+      "id": "pipeline_08_match_simulation_commands"
     },
     {
       "label": "code:bash (./venv/bin/python match_simulation.py --create-schema simula)",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L64",
-      "id": "pipeline_08_match_simulation_codeblock_3",
       "community": 23,
-      "norm_label": "code:bash (./venv/bin/python match_simulation.py --create-schema simula)"
+      "norm_label": "code:bash (./venv/bin/python match_simulation.py --create-schema simula)",
+      "id": "pipeline_08_match_simulation_codeblock_3"
     },
     {
       "label": "code:bash (./venv/bin/python match_simulation.py simulate-match \\)",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L74",
-      "id": "pipeline_08_match_simulation_codeblock_4",
       "community": 23,
-      "norm_label": "code:bash (./venv/bin/python match_simulation.py simulate-match \\)"
+      "norm_label": "code:bash (./venv/bin/python match_simulation.py simulate-match \\)",
+      "id": "pipeline_08_match_simulation_codeblock_4"
     },
     {
       "label": "Boundaries",
       "file_type": "document",
       "source_file": "documents/pipeline/08-match-simulation.md",
       "source_location": "L85",
-      "id": "pipeline_08_match_simulation_boundaries",
       "community": 23,
-      "norm_label": "boundaries"
+      "norm_label": "boundaries",
+      "id": "pipeline_08_match_simulation_boundaries"
     },
     {
       "label": "plan.md",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L1",
-      "id": "documents_plan_md",
       "community": 36,
-      "norm_label": "plan.md"
+      "norm_label": "plan.md",
+      "id": "documents_plan_md"
     },
     {
       "label": "BetPredictor \u2014 Next Steps Roadmap (`plan.md`)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L1",
-      "id": "documents_plan_betpredictor_next_steps_roadmap_plan_md",
       "community": 36,
-      "norm_label": "betpredictor \u2014 next steps roadmap (`plan.md`)"
+      "norm_label": "betpredictor \u2014 next steps roadmap (`plan.md`)",
+      "id": "documents_plan_betpredictor_next_steps_roadmap_plan_md"
     },
     {
       "label": "\ud83c\udfaf Objective",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L3",
-      "id": "documents_plan_objective",
       "community": 36,
-      "norm_label": "\ud83c\udfaf objective"
+      "norm_label": "\ud83c\udfaf objective",
+      "id": "documents_plan_objective"
     },
     {
       "label": "\ud83d\udccc CURRENT PIPELINE",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L28",
-      "id": "documents_plan_current_pipeline",
       "community": 36,
-      "norm_label": "\ud83d\udccc current pipeline"
+      "norm_label": "\ud83d\udccc current pipeline",
+      "id": "documents_plan_current_pipeline"
     },
     {
       "label": "code:text (RAW PLAYER DATA)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L30",
-      "id": "documents_plan_codeblock_1",
       "community": 36,
-      "norm_label": "code:text (raw player data)"
+      "norm_label": "code:text (raw player data)",
+      "id": "documents_plan_codeblock_1"
     },
     {
       "label": "1. CALIBRATION LAYER (CRITICAL)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L54",
-      "id": "documents_plan_1_calibration_layer_critical",
       "community": 20,
-      "norm_label": "1. calibration layer (critical)"
+      "norm_label": "1. calibration layer (critical)",
+      "id": "documents_plan_1_calibration_layer_critical"
     },
     {
       "label": "\u2705 What This Is",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L56",
-      "id": "documents_plan_what_this_is",
       "community": 20,
-      "norm_label": "\u2705 what this is"
+      "norm_label": "\u2705 what this is",
+      "id": "documents_plan_what_this_is"
     },
     {
       "label": "code:text (Model says:)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L62",
-      "id": "documents_plan_codeblock_2",
       "community": 20,
-      "norm_label": "code:text (model says:)"
+      "norm_label": "code:text (model says:)",
+      "id": "documents_plan_codeblock_2"
     },
     {
       "label": "code:text (those events only occur 62% of the time)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L69",
-      "id": "documents_plan_codeblock_3",
       "community": 20,
-      "norm_label": "code:text (those events only occur 62% of the time)"
+      "norm_label": "code:text (those events only occur 62% of the time)",
+      "id": "documents_plan_codeblock_3"
     },
     {
       "label": "\u2705 What It Improves",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L75",
-      "id": "documents_plan_what_it_improves",
       "community": 20,
-      "norm_label": "\u2705 what it improves"
+      "norm_label": "\u2705 what it improves",
+      "id": "documents_plan_what_it_improves"
     },
     {
       "label": "\u2705 Recommended Methods",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L87",
-      "id": "documents_plan_recommended_methods",
       "community": 38,
-      "norm_label": "\u2705 recommended methods"
+      "norm_label": "\u2705 recommended methods",
+      "id": "documents_plan_recommended_methods"
     },
     {
       "label": "Option A \u2014 Isotonic Regression (RECOMMENDED)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L89",
-      "id": "documents_plan_option_a_isotonic_regression_recommended",
       "community": 38,
-      "norm_label": "option a \u2014 isotonic regression (recommended)"
+      "norm_label": "option a \u2014 isotonic regression (recommended)",
+      "id": "documents_plan_option_a_isotonic_regression_recommended"
     },
     {
       "label": "Pros",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L91",
-      "id": "documents_plan_pros",
       "community": 38,
-      "norm_label": "pros"
+      "norm_label": "pros",
+      "id": "documents_plan_pros"
     },
     {
       "label": "Cons",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L97",
-      "id": "documents_plan_cons",
       "community": 38,
-      "norm_label": "cons"
+      "norm_label": "cons",
+      "id": "documents_plan_cons"
     },
     {
       "label": "Option B \u2014 Platt Scaling",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L103",
-      "id": "documents_plan_option_b_platt_scaling",
       "community": 38,
-      "norm_label": "option b \u2014 platt scaling"
+      "norm_label": "option b \u2014 platt scaling",
+      "id": "documents_plan_option_b_platt_scaling"
     },
     {
       "label": "Pros",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L105",
-      "id": "documents_plan_pros_105",
       "community": 38,
-      "norm_label": "pros"
+      "norm_label": "pros",
+      "id": "documents_plan_pros_105"
     },
     {
       "label": "Cons",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L110",
-      "id": "documents_plan_cons_110",
       "community": 38,
-      "norm_label": "cons"
+      "norm_label": "cons",
+      "id": "documents_plan_cons_110"
     },
     {
       "label": "\u2705 Recommendation",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L115",
-      "id": "documents_plan_recommendation",
       "community": 20,
-      "norm_label": "\u2705 recommendation"
+      "norm_label": "\u2705 recommendation",
+      "id": "documents_plan_recommendation"
     },
     {
       "label": "code:text (Isotonic for large datasets)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L119",
-      "id": "documents_plan_codeblock_4",
       "community": 20,
-      "norm_label": "code:text (isotonic for large datasets)"
+      "norm_label": "code:text (isotonic for large datasets)",
+      "id": "documents_plan_codeblock_4"
     },
     {
       "label": "\u2705 Inputs",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L125",
-      "id": "documents_plan_inputs",
       "community": 20,
-      "norm_label": "\u2705 inputs"
+      "norm_label": "\u2705 inputs",
+      "id": "documents_plan_inputs"
     },
     {
       "label": "code:text (raw_market_probability)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L127",
-      "id": "documents_plan_codeblock_5",
       "community": 20,
-      "norm_label": "code:text (raw_market_probability)"
+      "norm_label": "code:text (raw_market_probability)",
+      "id": "documents_plan_codeblock_5"
     },
     {
       "label": "\u2705 Outputs",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L133",
-      "id": "documents_plan_outputs",
       "community": 20,
-      "norm_label": "\u2705 outputs"
+      "norm_label": "\u2705 outputs",
+      "id": "documents_plan_outputs"
     },
     {
       "label": "code:text (calibrated_probability)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L135",
-      "id": "documents_plan_codeblock_6",
       "community": 20,
-      "norm_label": "code:text (calibrated_probability)"
+      "norm_label": "code:text (calibrated_probability)",
+      "id": "documents_plan_codeblock_6"
     },
     {
       "label": "\u2705 Pipeline Placement",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L140",
-      "id": "documents_plan_pipeline_placement",
       "community": 20,
-      "norm_label": "\u2705 pipeline placement"
+      "norm_label": "\u2705 pipeline placement",
+      "id": "documents_plan_pipeline_placement"
     },
     {
       "label": "code:text (Raw probability model)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L142",
-      "id": "documents_plan_codeblock_7",
       "community": 20,
-      "norm_label": "code:text (raw probability model)"
+      "norm_label": "code:text (raw probability model)",
+      "id": "documents_plan_codeblock_7"
     },
     {
       "label": "2. PROPER JOINT GOAL MODEL",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L151",
-      "id": "documents_plan_2_proper_joint_goal_model",
       "community": 34,
-      "norm_label": "2. proper joint goal model"
+      "norm_label": "2. proper joint goal model",
+      "id": "documents_plan_2_proper_joint_goal_model"
     },
     {
       "label": "\u2705 What This Is",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L153",
-      "id": "documents_plan_what_this_is_153",
       "community": 34,
-      "norm_label": "\u2705 what this is"
+      "norm_label": "\u2705 what this is",
+      "id": "documents_plan_what_this_is_153"
     },
     {
       "label": "code:text (home_goals)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L159",
-      "id": "documents_plan_codeblock_8",
       "community": 34,
-      "norm_label": "code:text (home_goals)"
+      "norm_label": "code:text (home_goals)",
+      "id": "documents_plan_codeblock_8"
     },
     {
       "label": "\u2705 What It Improves",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L165",
-      "id": "documents_plan_what_it_improves_165",
       "community": 34,
-      "norm_label": "\u2705 what it improves"
+      "norm_label": "\u2705 what it improves",
+      "id": "documents_plan_what_it_improves_165"
     },
     {
       "label": "\u2705 Options",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L176",
-      "id": "documents_plan_options",
       "community": 27,
-      "norm_label": "\u2705 options"
+      "norm_label": "\u2705 options",
+      "id": "documents_plan_options"
     },
     {
       "label": "Option A \u2014 Dixon-Coles Only (RECOMMENDED)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L178",
-      "id": "documents_plan_option_a_dixon_coles_only_recommended",
       "community": 27,
-      "norm_label": "option a \u2014 dixon-coles only (recommended)"
+      "norm_label": "option a \u2014 dixon-coles only (recommended)",
+      "id": "documents_plan_option_a_dixon_coles_only_recommended"
     },
     {
       "label": "Pros",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L180",
-      "id": "documents_plan_pros_180",
       "community": 27,
-      "norm_label": "pros"
+      "norm_label": "pros",
+      "id": "documents_plan_pros_180"
     },
     {
       "label": "Cons",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L187",
-      "id": "documents_plan_cons_187",
       "community": 27,
-      "norm_label": "cons"
+      "norm_label": "cons",
+      "id": "documents_plan_cons_187"
     },
     {
       "label": "Option B \u2014 Bivariate Poisson",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L193",
-      "id": "documents_plan_option_b_bivariate_poisson",
       "community": 27,
-      "norm_label": "option b \u2014 bivariate poisson"
+      "norm_label": "option b \u2014 bivariate poisson",
+      "id": "documents_plan_option_b_bivariate_poisson"
     },
     {
       "label": "Pros",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L195",
-      "id": "documents_plan_pros_195",
       "community": 27,
-      "norm_label": "pros"
+      "norm_label": "pros",
+      "id": "documents_plan_pros_195"
     },
     {
       "label": "Cons",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L199",
-      "id": "documents_plan_cons_199",
       "community": 27,
-      "norm_label": "cons"
+      "norm_label": "cons",
+      "id": "documents_plan_cons_199"
     },
     {
       "label": "Option C \u2014 Copula Models",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L206",
-      "id": "documents_plan_option_c_copula_models",
       "community": 27,
-      "norm_label": "option c \u2014 copula models"
+      "norm_label": "option c \u2014 copula models",
+      "id": "documents_plan_option_c_copula_models"
     },
     {
       "label": "Pros",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L208",
-      "id": "documents_plan_pros_208",
       "community": 27,
-      "norm_label": "pros"
+      "norm_label": "pros",
+      "id": "documents_plan_pros_208"
     },
     {
       "label": "Cons",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L212",
-      "id": "documents_plan_cons_212",
       "community": 27,
-      "norm_label": "cons"
+      "norm_label": "cons",
+      "id": "documents_plan_cons_212"
     },
     {
       "label": "\u2705 Recommendation",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L218",
-      "id": "documents_plan_recommendation_218",
       "community": 34,
-      "norm_label": "\u2705 recommendation"
+      "norm_label": "\u2705 recommendation",
+      "id": "documents_plan_recommendation_218"
     },
     {
       "label": "code:text (Independent Poisson)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L222",
-      "id": "documents_plan_codeblock_9",
       "community": 34,
-      "norm_label": "code:text (independent poisson)"
+      "norm_label": "code:text (independent poisson)",
+      "id": "documents_plan_codeblock_9"
     },
     {
       "label": "\u2705 Pipeline Placement",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L230",
-      "id": "documents_plan_pipeline_placement_230",
       "community": 34,
-      "norm_label": "\u2705 pipeline placement"
+      "norm_label": "\u2705 pipeline placement",
+      "id": "documents_plan_pipeline_placement_230"
     },
     {
       "label": "code:text (xG estimates)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L232",
-      "id": "documents_plan_codeblock_10",
       "community": 34,
-      "norm_label": "code:text (xg estimates)"
+      "norm_label": "code:text (xg estimates)",
+      "id": "documents_plan_codeblock_10"
     },
     {
       "label": "3. UNCERTAINTY MODELLING",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L242",
-      "id": "documents_plan_3_uncertainty_modelling",
       "community": 32,
-      "norm_label": "3. uncertainty modelling"
+      "norm_label": "3. uncertainty modelling",
+      "id": "documents_plan_3_uncertainty_modelling"
     },
     {
       "label": "\u2705 What This Is",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L244",
-      "id": "documents_plan_what_this_is_244",
       "community": 32,
-      "norm_label": "\u2705 what this is"
+      "norm_label": "\u2705 what this is",
+      "id": "documents_plan_what_this_is_244"
     },
     {
       "label": "\u2705 What It Improves",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L249",
-      "id": "documents_plan_what_it_improves_249",
       "community": 32,
-      "norm_label": "\u2705 what it improves"
+      "norm_label": "\u2705 what it improves",
+      "id": "documents_plan_what_it_improves_249"
     },
     {
       "label": "\u2705 Recommended Methods",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L259",
-      "id": "documents_plan_recommended_methods_259",
       "community": 32,
-      "norm_label": "\u2705 recommended methods"
+      "norm_label": "\u2705 recommended methods",
+      "id": "documents_plan_recommended_methods_259"
     },
     {
       "label": "Quantile XGBoost (RECOMMENDED)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L261",
-      "id": "documents_plan_quantile_xgboost_recommended",
       "community": 32,
-      "norm_label": "quantile xgboost (recommended)"
+      "norm_label": "quantile xgboost (recommended)",
+      "id": "documents_plan_quantile_xgboost_recommended"
     },
     {
       "label": "code:text (P10)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L265",
-      "id": "documents_plan_codeblock_11",
       "community": 32,
-      "norm_label": "code:text (p10)"
+      "norm_label": "code:text (p10)",
+      "id": "documents_plan_codeblock_11"
     },
     {
       "label": "Bayesian Boosting",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L272",
-      "id": "documents_plan_bayesian_boosting",
       "community": 32,
-      "norm_label": "bayesian boosting"
+      "norm_label": "bayesian boosting",
+      "id": "documents_plan_bayesian_boosting"
     },
     {
       "label": "\u2705 Pipeline Placement",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L279",
-      "id": "documents_plan_pipeline_placement_279",
       "community": 32,
-      "norm_label": "\u2705 pipeline placement"
+      "norm_label": "\u2705 pipeline placement",
+      "id": "documents_plan_pipeline_placement_279"
     },
     {
       "label": "code:text (Feature layer)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L281",
-      "id": "documents_plan_codeblock_12",
       "community": 32,
-      "norm_label": "code:text (feature layer)"
+      "norm_label": "code:text (feature layer)",
+      "id": "documents_plan_codeblock_12"
     },
     {
       "label": "4. FEATURE IMPROVEMENTS",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L289",
-      "id": "documents_plan_4_feature_improvements",
       "community": 42,
-      "norm_label": "4. feature improvements"
+      "norm_label": "4. feature improvements",
+      "id": "documents_plan_4_feature_improvements"
     },
     {
       "label": "\u2705 Tempo Features",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L291",
-      "id": "documents_plan_tempo_features",
       "community": 42,
-      "norm_label": "\u2705 tempo features"
+      "norm_label": "\u2705 tempo features",
+      "id": "documents_plan_tempo_features"
     },
     {
       "label": "\u2705 Recommended Additions",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L298",
-      "id": "documents_plan_recommended_additions",
       "community": 42,
-      "norm_label": "\u2705 recommended additions"
+      "norm_label": "\u2705 recommended additions",
+      "id": "documents_plan_recommended_additions"
     },
     {
       "label": "code:text (pressing intensity)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L300",
-      "id": "documents_plan_codeblock_13",
       "community": 42,
-      "norm_label": "code:text (pressing intensity)"
+      "norm_label": "code:text (pressing intensity)",
+      "id": "documents_plan_codeblock_13"
     },
     {
       "label": "\u2705 What It Improves",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L310",
-      "id": "documents_plan_what_it_improves_310",
       "community": 42,
-      "norm_label": "\u2705 what it improves"
+      "norm_label": "\u2705 what it improves",
+      "id": "documents_plan_what_it_improves_310"
     },
     {
       "label": "5. META-MODEL / BET FILTER",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L320",
-      "id": "documents_plan_5_meta_model_bet_filter",
       "community": 37,
-      "norm_label": "5. meta-model / bet filter"
+      "norm_label": "5. meta-model / bet filter",
+      "id": "documents_plan_5_meta_model_bet_filter"
     },
     {
       "label": "\u2705 What This Is",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L322",
-      "id": "documents_plan_what_this_is_322",
       "community": 37,
-      "norm_label": "\u2705 what this is"
+      "norm_label": "\u2705 what this is",
+      "id": "documents_plan_what_this_is_322"
     },
     {
       "label": "\u2705 Inputs",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L327",
-      "id": "documents_plan_inputs_327",
       "community": 37,
-      "norm_label": "\u2705 inputs"
+      "norm_label": "\u2705 inputs",
+      "id": "documents_plan_inputs_327"
     },
     {
       "label": "code:text (edge)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L329",
-      "id": "documents_plan_codeblock_14",
       "community": 37,
-      "norm_label": "code:text (edge)"
+      "norm_label": "code:text (edge)",
+      "id": "documents_plan_codeblock_14"
     },
     {
       "label": "\u2705 Outputs",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L339",
-      "id": "documents_plan_outputs_339",
       "community": 37,
-      "norm_label": "\u2705 outputs"
+      "norm_label": "\u2705 outputs",
+      "id": "documents_plan_outputs_339"
     },
     {
       "label": "code:text (bet_quality_score)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L341",
-      "id": "documents_plan_codeblock_15",
       "community": 37,
-      "norm_label": "code:text (bet_quality_score)"
+      "norm_label": "code:text (bet_quality_score)",
+      "id": "documents_plan_codeblock_15"
     },
     {
       "label": "\u2705 Why Important",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L346",
-      "id": "documents_plan_why_important",
       "community": 37,
-      "norm_label": "\u2705 why important"
+      "norm_label": "\u2705 why important",
+      "id": "documents_plan_why_important"
     },
     {
       "label": "IMPLEMENTATION ORDER (RECOMMENDED)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L353",
-      "id": "documents_plan_implementation_order_recommended",
       "community": 35,
-      "norm_label": "implementation order (recommended)"
+      "norm_label": "implementation order (recommended)",
+      "id": "documents_plan_implementation_order_recommended"
     },
     {
       "label": "\ud83e\udd47 Tier 1 \u2014 MUST DO NEXT",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L355",
-      "id": "documents_plan_tier_1_must_do_next",
       "community": 35,
-      "norm_label": "\ud83e\udd47 tier 1 \u2014 must do next"
+      "norm_label": "\ud83e\udd47 tier 1 \u2014 must do next",
+      "id": "documents_plan_tier_1_must_do_next"
     },
     {
       "label": "1. Calibration layer",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L357",
-      "id": "documents_plan_1_calibration_layer",
       "community": 35,
-      "norm_label": "1. calibration layer"
+      "norm_label": "1. calibration layer",
+      "id": "documents_plan_1_calibration_layer"
     },
     {
       "label": "\ud83e\udd48 Tier 2 \u2014 HIGH VALUE",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L363",
-      "id": "documents_plan_tier_2_high_value",
       "community": 35,
-      "norm_label": "\ud83e\udd48 tier 2 \u2014 high value"
+      "norm_label": "\ud83e\udd48 tier 2 \u2014 high value",
+      "id": "documents_plan_tier_2_high_value"
     },
     {
       "label": "2. Quantile uncertainty models",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L365",
-      "id": "documents_plan_2_quantile_uncertainty_models",
       "community": 35,
-      "norm_label": "2. quantile uncertainty models"
+      "norm_label": "2. quantile uncertainty models",
+      "id": "documents_plan_2_quantile_uncertainty_models"
     },
     {
       "label": "\ud83e\udd49 Tier 3 \u2014 ADVANCED",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L369",
-      "id": "documents_plan_tier_3_advanced",
       "community": 35,
-      "norm_label": "\ud83e\udd49 tier 3 \u2014 advanced"
+      "norm_label": "\ud83e\udd49 tier 3 \u2014 advanced",
+      "id": "documents_plan_tier_3_advanced"
     },
     {
       "label": "3. Meta-model / bet filter",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L371",
-      "id": "documents_plan_3_meta_model_bet_filter",
       "community": 35,
-      "norm_label": "3. meta-model / bet filter"
+      "norm_label": "3. meta-model / bet filter",
+      "id": "documents_plan_3_meta_model_bet_filter"
     },
     {
       "label": "4. Advanced dependency structures",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L375",
-      "id": "documents_plan_4_advanced_dependency_structures",
       "community": 35,
-      "norm_label": "4. advanced dependency structures"
+      "norm_label": "4. advanced dependency structures",
+      "id": "documents_plan_4_advanced_dependency_structures"
     },
     {
       "label": "\u2705 FINAL RECOMMENDED ARCHITECTURE",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L381",
-      "id": "documents_plan_final_recommended_architecture",
       "community": 36,
-      "norm_label": "\u2705 final recommended architecture"
+      "norm_label": "\u2705 final recommended architecture",
+      "id": "documents_plan_final_recommended_architecture"
     },
     {
       "label": "code:text (RAW PLAYER DATA)",
       "file_type": "document",
       "source_file": "documents/plan.md",
       "source_location": "L383",
-      "id": "documents_plan_codeblock_16",
       "community": 36,
-      "norm_label": "code:text (raw player data)"
+      "norm_label": "code:text (raw player data)",
+      "id": "documents_plan_codeblock_16"
     },
     {
       "label": "match_simulation.py",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L1",
-      "id": "match_simulation_py",
       "community": 5,
-      "norm_label": "match_simulation.py"
+      "norm_label": "match_simulation.py",
+      "id": "match_simulation_py"
     },
     {
       "label": "MissingSimulationInputError",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L25",
-      "id": "betpredictor_match_simulation_missingsimulationinputerror",
       "community": 5,
-      "norm_label": "missingsimulationinputerror"
+      "norm_label": "missingsimulationinputerror",
+      "id": "betpredictor_match_simulation_missingsimulationinputerror"
     },
     {
       "label": "ValueError",
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "id": "valueerror",
       "community": 5,
-      "norm_label": "valueerror"
+      "norm_label": "valueerror",
+      "id": "valueerror"
     },
     {
       "label": "ScoreOutcome",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L30",
-      "id": "betpredictor_match_simulation_scoreoutcome",
       "community": 5,
-      "norm_label": "scoreoutcome"
+      "norm_label": "scoreoutcome",
+      "id": "betpredictor_match_simulation_scoreoutcome"
     },
     {
       "label": ".selection()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L35",
-      "id": "betpredictor_match_simulation_scoreoutcome_selection",
       "community": 5,
-      "norm_label": ".selection()"
+      "norm_label": ".selection()",
+      "id": "betpredictor_match_simulation_scoreoutcome_selection"
     },
     {
       "label": "str",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L35",
-      "id": "str",
       "community": 5,
-      "norm_label": "str"
+      "norm_label": "str",
+      "id": "str"
     },
     {
       "label": "PlayerSimulationInput",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L40",
-      "id": "betpredictor_match_simulation_playersimulationinput",
       "community": 5,
-      "norm_label": "playersimulationinput"
+      "norm_label": "playersimulationinput",
+      "id": "betpredictor_match_simulation_playersimulationinput"
     },
     {
       "label": "PlayerSimulationDraws",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L51",
-      "id": "betpredictor_match_simulation_playersimulationdraws",
       "community": 5,
-      "norm_label": "playersimulationdraws"
+      "norm_label": "playersimulationdraws",
+      "id": "betpredictor_match_simulation_playersimulationdraws"
     },
     {
       "label": "require_database_dependency()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L59",
-      "id": "betpredictor_match_simulation_require_database_dependency",
       "community": 5,
-      "norm_label": "require_database_dependency()"
+      "norm_label": "require_database_dependency()",
+      "id": "betpredictor_match_simulation_require_database_dependency"
     },
     {
       "label": "create_schema()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L72",
-      "id": "betpredictor_match_simulation_create_schema",
       "community": 5,
-      "norm_label": "create_schema()"
-    },
-    {
-      "label": "Path",
-      "file_type": "code",
-      "source_file": "match_simulation.py",
-      "source_location": "L72",
-      "id": "path",
-      "community": 5,
-      "norm_label": "path"
+      "norm_label": "create_schema()",
+      "id": "betpredictor_match_simulation_create_schema"
     },
     {
       "label": "row_value()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L80",
-      "id": "betpredictor_match_simulation_row_value",
       "community": 5,
-      "norm_label": "row_value()"
+      "norm_label": "row_value()",
+      "id": "betpredictor_match_simulation_row_value"
     },
     {
       "label": "Any",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L80",
-      "id": "any",
       "community": 5,
-      "norm_label": "any"
+      "norm_label": "any",
+      "id": "any"
     },
     {
       "label": "parse_exact_score()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L86",
-      "id": "betpredictor_match_simulation_parse_exact_score",
       "community": 5,
-      "norm_label": "parse_exact_score()"
+      "norm_label": "parse_exact_score()",
+      "id": "betpredictor_match_simulation_parse_exact_score"
     },
     {
       "label": "finite_nonnegative()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L93",
-      "id": "betpredictor_match_simulation_finite_nonnegative",
       "community": 5,
-      "norm_label": "finite_nonnegative()"
+      "norm_label": "finite_nonnegative()",
+      "id": "betpredictor_match_simulation_finite_nonnegative"
     },
     {
       "label": "float",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L93",
-      "id": "float",
       "community": 5,
-      "norm_label": "float"
+      "norm_label": "float",
+      "id": "float"
     },
     {
       "label": "normalize_exact_score_rows()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L103",
-      "id": "betpredictor_match_simulation_normalize_exact_score_rows",
       "community": 5,
-      "norm_label": "normalize_exact_score_rows()"
+      "norm_label": "normalize_exact_score_rows()",
+      "id": "betpredictor_match_simulation_normalize_exact_score_rows"
     },
     {
       "label": "sample_scorelines()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L130",
-      "id": "betpredictor_match_simulation_sample_scorelines",
       "community": 5,
-      "norm_label": "sample_scorelines()"
+      "norm_label": "sample_scorelines()",
+      "id": "betpredictor_match_simulation_sample_scorelines"
     },
     {
       "label": "int",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L130",
-      "id": "int",
       "community": 5,
-      "norm_label": "int"
+      "norm_label": "int",
+      "id": "int"
     },
     {
       "label": "ndarray",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L130",
-      "id": "ndarray",
       "community": 5,
-      "norm_label": "ndarray"
+      "norm_label": "ndarray",
+      "id": "ndarray"
     },
     {
       "label": "summary_row()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L152",
-      "id": "betpredictor_match_simulation_summary_row",
       "community": 5,
-      "norm_label": "summary_row()"
+      "norm_label": "summary_row()",
+      "id": "betpredictor_match_simulation_summary_row"
     },
     {
       "label": "summarize_goal_draws()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L171",
-      "id": "betpredictor_match_simulation_summarize_goal_draws",
       "community": 5,
-      "norm_label": "summarize_goal_draws()"
+      "norm_label": "summarize_goal_draws()",
+      "id": "betpredictor_match_simulation_summarize_goal_draws"
     },
     {
       "label": "int_field()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L210",
-      "id": "betpredictor_match_simulation_int_field",
       "community": 5,
-      "norm_label": "int_field()"
+      "norm_label": "int_field()",
+      "id": "betpredictor_match_simulation_int_field"
     },
     {
       "label": "text_field()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L217",
-      "id": "betpredictor_match_simulation_text_field",
       "community": 5,
-      "norm_label": "text_field()"
+      "norm_label": "text_field()",
+      "id": "betpredictor_match_simulation_text_field"
     },
     {
       "label": "collapse_player_prop_rows()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L222",
-      "id": "betpredictor_match_simulation_collapse_player_prop_rows",
       "community": 5,
-      "norm_label": "collapse_player_prop_rows()"
+      "norm_label": "collapse_player_prop_rows()",
+      "id": "betpredictor_match_simulation_collapse_player_prop_rows"
     },
     {
       "label": "sot_probability()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L305",
-      "id": "betpredictor_match_simulation_sot_probability",
       "community": 5,
-      "norm_label": "sot_probability()"
+      "norm_label": "sot_probability()",
+      "id": "betpredictor_match_simulation_sot_probability"
     },
     {
       "label": "bool",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L305",
-      "id": "bool",
       "community": 5,
-      "norm_label": "bool"
+      "norm_label": "bool",
+      "id": "bool"
     },
     {
       "label": "simulate_player_draws()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L312",
-      "id": "betpredictor_match_simulation_simulate_player_draws",
       "community": 5,
-      "norm_label": "simulate_player_draws()"
+      "norm_label": "simulate_player_draws()",
+      "id": "betpredictor_match_simulation_simulate_player_draws"
     },
     {
       "label": "player_summary_rows()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L348",
-      "id": "betpredictor_match_simulation_player_summary_rows",
       "community": 5,
-      "norm_label": "player_summary_rows()"
+      "norm_label": "player_summary_rows()",
+      "id": "betpredictor_match_simulation_player_summary_rows"
     },
     {
       "label": "simulate_match_summaries()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L383",
-      "id": "betpredictor_match_simulation_simulate_match_summaries",
       "community": 5,
-      "norm_label": "simulate_match_summaries()"
+      "norm_label": "simulate_match_summaries()",
+      "id": "betpredictor_match_simulation_simulate_match_summaries"
     },
     {
       "label": "load_exact_score_rows()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L404",
-      "id": "betpredictor_match_simulation_load_exact_score_rows",
       "community": 5,
-      "norm_label": "load_exact_score_rows()"
+      "norm_label": "load_exact_score_rows()",
+      "id": "betpredictor_match_simulation_load_exact_score_rows"
     },
     {
       "label": "load_player_prop_rows()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L429",
-      "id": "betpredictor_match_simulation_load_player_prop_rows",
       "community": 5,
-      "norm_label": "load_player_prop_rows()"
+      "norm_label": "load_player_prop_rows()",
+      "id": "betpredictor_match_simulation_load_player_prop_rows"
     },
     {
       "label": "group_by_match()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L459",
-      "id": "betpredictor_match_simulation_group_by_match",
       "community": 5,
-      "norm_label": "group_by_match()"
+      "norm_label": "group_by_match()",
+      "id": "betpredictor_match_simulation_group_by_match"
     },
     {
       "label": "json_ready()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L466",
-      "id": "betpredictor_match_simulation_json_ready",
       "community": 5,
-      "norm_label": "json_ready()"
+      "norm_label": "json_ready()",
+      "id": "betpredictor_match_simulation_json_ready"
     },
     {
       "label": "write_simulation_outputs()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L478",
-      "id": "betpredictor_match_simulation_write_simulation_outputs",
       "community": 5,
-      "norm_label": "write_simulation_outputs()"
+      "norm_label": "write_simulation_outputs()",
+      "id": "betpredictor_match_simulation_write_simulation_outputs"
     },
     {
       "label": "resolve_seed()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L596",
-      "id": "betpredictor_match_simulation_resolve_seed",
       "community": 5,
-      "norm_label": "resolve_seed()"
+      "norm_label": "resolve_seed()",
+      "id": "betpredictor_match_simulation_resolve_seed"
     },
     {
       "label": "run_simulation()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L604",
-      "id": "betpredictor_match_simulation_run_simulation",
       "community": 5,
-      "norm_label": "run_simulation()"
+      "norm_label": "run_simulation()",
+      "id": "betpredictor_match_simulation_run_simulation"
     },
     {
       "label": "build_parser()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L735",
-      "id": "betpredictor_match_simulation_build_parser",
       "community": 5,
-      "norm_label": "build_parser()"
+      "norm_label": "build_parser()",
+      "id": "betpredictor_match_simulation_build_parser"
     },
     {
       "label": "ArgumentParser",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L735",
-      "id": "argumentparser",
       "community": 5,
-      "norm_label": "argumentparser"
+      "norm_label": "argumentparser",
+      "id": "argumentparser"
     },
     {
       "label": "add_subcommand_runtime_options()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L765",
-      "id": "betpredictor_match_simulation_add_subcommand_runtime_options",
       "community": 5,
-      "norm_label": "add_subcommand_runtime_options()"
+      "norm_label": "add_subcommand_runtime_options()",
+      "id": "betpredictor_match_simulation_add_subcommand_runtime_options"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "match_simulation.py",
       "source_location": "L771",
-      "id": "betpredictor_match_simulation_main",
       "community": 5,
-      "norm_label": "main()"
+      "norm_label": "main()",
+      "id": "betpredictor_match_simulation_main"
     },
     {
       "label": "test_match_simulation.py",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L1",
-      "id": "tests_test_match_simulation_py",
       "community": 5,
-      "norm_label": "test_match_simulation.py"
+      "norm_label": "test_match_simulation.py",
+      "id": "tests_test_match_simulation_py"
     },
     {
       "label": "probability()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L21",
-      "id": "tests_test_match_simulation_probability",
       "community": 5,
-      "norm_label": "probability()"
+      "norm_label": "probability()",
+      "id": "tests_test_match_simulation_probability"
     },
     {
       "label": "player_prop_row()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L32",
-      "id": "tests_test_match_simulation_player_prop_row",
       "community": 5,
-      "norm_label": "player_prop_row()"
+      "norm_label": "player_prop_row()",
+      "id": "tests_test_match_simulation_player_prop_row"
     },
     {
       "label": "test_exact_score_rows_normalize_and_seed_score_sampling()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L46",
-      "id": "tests_test_match_simulation_test_exact_score_rows_normalize_and_seed_score_sampling",
       "community": 5,
-      "norm_label": "test_exact_score_rows_normalize_and_seed_score_sampling()"
+      "norm_label": "test_exact_score_rows_normalize_and_seed_score_sampling()",
+      "id": "tests_test_match_simulation_test_exact_score_rows_normalize_and_seed_score_sampling"
     },
     {
       "label": "test_goal_draw_summaries_cover_supported_goal_markets()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L65",
-      "id": "tests_test_match_simulation_test_goal_draw_summaries_cover_supported_goal_markets",
       "community": 5,
-      "norm_label": "test_goal_draw_summaries_cover_supported_goal_markets()"
+      "norm_label": "test_goal_draw_summaries_cover_supported_goal_markets()",
+      "id": "tests_test_match_simulation_test_goal_draw_summaries_cover_supported_goal_markets"
     },
     {
       "label": "test_player_prop_rows_collapse_repeated_lines_and_selections()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L81",
-      "id": "tests_test_match_simulation_test_player_prop_rows_collapse_repeated_lines_and_selections",
       "community": 5,
-      "norm_label": "test_player_prop_rows_collapse_repeated_lines_and_selections()"
+      "norm_label": "test_player_prop_rows_collapse_repeated_lines_and_selections()",
+      "id": "tests_test_match_simulation_test_player_prop_rows_collapse_repeated_lines_and_selections"
     },
     {
       "label": "test_player_shot_chain_keeps_sot_below_shots_and_records_clipping()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L107",
-      "id": "tests_test_match_simulation_test_player_shot_chain_keeps_sot_below_shots_and_records_clipping",
       "community": 5,
-      "norm_label": "test_player_shot_chain_keeps_sot_below_shots_and_records_clipping()"
+      "norm_label": "test_player_shot_chain_keeps_sot_below_shots_and_records_clipping()",
+      "id": "tests_test_match_simulation_test_player_shot_chain_keeps_sot_below_shots_and_records_clipping"
     },
     {
       "label": "test_invalid_player_expected_value_is_rejected()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L126",
-      "id": "tests_test_match_simulation_test_invalid_player_expected_value_is_rejected",
       "community": 5,
-      "norm_label": "test_invalid_player_expected_value_is_rejected()"
+      "norm_label": "test_invalid_player_expected_value_is_rejected()",
+      "id": "tests_test_match_simulation_test_invalid_player_expected_value_is_rejected"
     },
     {
       "label": "test_synthetic_match_simulation_builds_goal_and_player_summaries()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L136",
-      "id": "tests_test_match_simulation_test_synthetic_match_simulation_builds_goal_and_player_summaries",
       "community": 5,
-      "norm_label": "test_synthetic_match_simulation_builds_goal_and_player_summaries()"
+      "norm_label": "test_synthetic_match_simulation_builds_goal_and_player_summaries()",
+      "id": "tests_test_match_simulation_test_synthetic_match_simulation_builds_goal_and_player_summaries"
     },
     {
       "label": "test_cli_requires_source_run_ids()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L166",
-      "id": "tests_test_match_simulation_test_cli_requires_source_run_ids",
       "community": 5,
-      "norm_label": "test_cli_requires_source_run_ids()"
+      "norm_label": "test_cli_requires_source_run_ids()",
+      "id": "tests_test_match_simulation_test_cli_requires_source_run_ids"
     },
     {
       "label": "test_cli_accepts_runtime_options_after_subcommand()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L175",
-      "id": "tests_test_match_simulation_test_cli_accepts_runtime_options_after_subcommand",
       "community": 5,
-      "norm_label": "test_cli_accepts_runtime_options_after_subcommand()"
+      "norm_label": "test_cli_accepts_runtime_options_after_subcommand()",
+      "id": "tests_test_match_simulation_test_cli_accepts_runtime_options_after_subcommand"
     },
     {
       "label": "test_simulate_match_fails_when_goal_inputs_are_missing()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L194",
-      "id": "tests_test_match_simulation_test_simulate_match_fails_when_goal_inputs_are_missing",
       "community": 5,
-      "norm_label": "test_simulate_match_fails_when_goal_inputs_are_missing()"
+      "norm_label": "test_simulate_match_fails_when_goal_inputs_are_missing()",
+      "id": "tests_test_match_simulation_test_simulate_match_fails_when_goal_inputs_are_missing"
     },
     {
       "label": "test_simulation_schema_contract()",
       "file_type": "code",
       "source_file": "tests/test_match_simulation.py",
       "source_location": "L211",
-      "id": "tests_test_match_simulation_test_simulation_schema_contract",
-      "community": 5,
-      "norm_label": "test_simulation_schema_contract()"
+      "community": 50,
+      "norm_label": "test_simulation_schema_contract()",
+      "id": "tests_test_match_simulation_test_simulation_schema_contract"
     },
     {
       "label": "probabilistic_markets.py",
@@ -2672,7 +3071,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L1",
-      "community": 1,
+      "community": 6,
       "norm_label": "ev_pipeline.py",
       "id": "ev_pipeline_py"
     },
@@ -2681,7 +3080,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L24",
-      "community": 1,
+      "community": 6,
       "norm_label": "normalizedoddsprice",
       "id": "betpredictor_ev_pipeline_normalizedoddsprice"
     },
@@ -2690,7 +3089,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L42",
-      "community": 1,
+      "community": 6,
       "norm_label": "matchreference",
       "id": "betpredictor_ev_pipeline_matchreference"
     },
@@ -2699,7 +3098,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L50",
-      "community": 1,
+      "community": 6,
       "norm_label": "evresult",
       "id": "betpredictor_ev_pipeline_evresult"
     },
@@ -2708,7 +3107,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L56",
-      "community": 1,
+      "community": 6,
       "norm_label": "create_schema()",
       "id": "betpredictor_ev_pipeline_create_schema"
     },
@@ -2717,7 +3116,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L56",
-      "community": 1,
+      "community": 6,
       "norm_label": "str",
       "id": "ev_pipeline_py_str"
     },
@@ -2726,7 +3125,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L56",
-      "community": 1,
+      "community": 6,
       "norm_label": "path",
       "id": "ev_pipeline_py_path"
     },
@@ -2735,7 +3134,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L70",
-      "community": 1,
+      "community": 6,
       "norm_label": "decimal_or_none()",
       "id": "betpredictor_ev_pipeline_decimal_or_none"
     },
@@ -2744,7 +3143,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L70",
-      "community": 1,
+      "community": 6,
       "norm_label": "any",
       "id": "ev_pipeline_py_any"
     },
@@ -2753,7 +3152,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L70",
-      "community": 1,
+      "community": 6,
       "norm_label": "decimal",
       "id": "ev_pipeline_py_decimal"
     },
@@ -2762,7 +3161,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L79",
-      "community": 1,
+      "community": 6,
       "norm_label": "valid_decimal_odds()",
       "id": "betpredictor_ev_pipeline_valid_decimal_odds"
     },
@@ -2771,7 +3170,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L86",
-      "community": 1,
+      "community": 6,
       "norm_label": "calculate_ev()",
       "id": "betpredictor_ev_pipeline_calculate_ev"
     },
@@ -2780,7 +3179,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L101",
-      "community": 1,
+      "community": 6,
       "norm_label": "normalize_name()",
       "id": "betpredictor_ev_pipeline_normalize_name"
     },
@@ -2789,7 +3188,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L110",
-      "community": 1,
+      "community": 6,
       "norm_label": "attr()",
       "id": "betpredictor_ev_pipeline_attr"
     },
@@ -2798,7 +3197,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L116",
-      "community": 1,
+      "community": 6,
       "norm_label": "parse_datetime()",
       "id": "betpredictor_ev_pipeline_parse_datetime"
     },
@@ -2807,7 +3206,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L116",
-      "community": 1,
+      "community": 6,
       "norm_label": "datetime",
       "id": "ev_pipeline_py_datetime"
     },
@@ -2816,7 +3215,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L125",
-      "community": 1,
+      "community": 6,
       "norm_label": "parse_date()",
       "id": "betpredictor_ev_pipeline_parse_date"
     },
@@ -2825,7 +3224,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L125",
-      "community": 1,
+      "community": 6,
       "norm_label": "date",
       "id": "ev_pipeline_py_date"
     },
@@ -2834,7 +3233,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L139",
-      "community": 1,
+      "community": 6,
       "norm_label": "whole_match_period()",
       "id": "betpredictor_ev_pipeline_whole_match_period"
     },
@@ -2843,7 +3242,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L139",
-      "community": 1,
+      "community": 6,
       "norm_label": "bool",
       "id": "ev_pipeline_py_bool"
     },
@@ -2852,7 +3251,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L143",
-      "community": 1,
+      "community": 6,
       "norm_label": "normalize_market_outcome()",
       "id": "betpredictor_ev_pipeline_normalize_market_outcome"
     },
@@ -2861,7 +3260,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L199",
-      "community": 1,
+      "community": 6,
       "norm_label": "normalize_snapshot()",
       "id": "betpredictor_ev_pipeline_normalize_snapshot"
     },
@@ -2870,7 +3269,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L215",
-      "community": 1,
+      "community": 6,
       "norm_label": "jsonable()",
       "id": "betpredictor_ev_pipeline_jsonable"
     },
@@ -2879,7 +3278,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L229",
-      "community": 1,
+      "community": 6,
       "norm_label": "read_snapshot_json()",
       "id": "betpredictor_ev_pipeline_read_snapshot_json"
     },
@@ -2888,7 +3287,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L236",
-      "community": 1,
+      "community": 6,
       "norm_label": "explicit_mapping_key()",
       "id": "betpredictor_ev_pipeline_explicit_mapping_key"
     },
@@ -2897,7 +3296,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L242",
-      "community": 1,
+      "community": 6,
       "norm_label": "match_odds_price()",
       "id": "betpredictor_ev_pipeline_match_odds_price"
     },
@@ -2906,7 +3305,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L242",
-      "community": 1,
+      "community": 6,
       "norm_label": "int",
       "id": "ev_pipeline_py_int"
     },
@@ -2915,7 +3314,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L268",
-      "community": 1,
+      "community": 6,
       "norm_label": "load_latest_probability_run_id()",
       "id": "betpredictor_ev_pipeline_load_latest_probability_run_id"
     },
@@ -2924,7 +3323,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L284",
-      "community": 1,
+      "community": 6,
       "norm_label": "load_latest_snapshot_id()",
       "id": "betpredictor_ev_pipeline_load_latest_snapshot_id"
     },
@@ -2933,7 +3332,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L300",
-      "community": 1,
+      "community": 6,
       "norm_label": "load_explicit_mappings()",
       "id": "betpredictor_ev_pipeline_load_explicit_mappings"
     },
@@ -2942,7 +3341,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L314",
-      "community": 1,
+      "community": 6,
       "norm_label": "load_match_refs()",
       "id": "betpredictor_ev_pipeline_load_match_refs"
     },
@@ -2951,7 +3350,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L335",
-      "community": 1,
+      "community": 6,
       "norm_label": "persist_snapshot()",
       "id": "betpredictor_ev_pipeline_persist_snapshot"
     },
@@ -2960,7 +3359,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L402",
-      "community": 1,
+      "community": 6,
       "norm_label": "write_ev_candidates()",
       "id": "betpredictor_ev_pipeline_write_ev_candidates"
     },
@@ -2969,7 +3368,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L458",
-      "community": 1,
+      "community": 6,
       "norm_label": "fetch_live_snapshot()",
       "id": "betpredictor_ev_pipeline_fetch_live_snapshot"
     },
@@ -2978,7 +3377,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L464",
-      "community": 1,
+      "community": 6,
       "norm_label": "run_fetch_live()",
       "id": "betpredictor_ev_pipeline_run_fetch_live"
     },
@@ -2987,7 +3386,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L498",
-      "community": 1,
+      "community": 6,
       "norm_label": "run_from_json()",
       "id": "betpredictor_ev_pipeline_run_from_json"
     },
@@ -2996,7 +3395,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L532",
-      "community": 1,
+      "community": 6,
       "norm_label": "run_candidates()",
       "id": "betpredictor_ev_pipeline_run_candidates"
     },
@@ -3005,7 +3404,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L558",
-      "community": 1,
+      "community": 6,
       "norm_label": "parse_decimal_arg()",
       "id": "betpredictor_ev_pipeline_parse_decimal_arg"
     },
@@ -3014,7 +3413,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L565",
-      "community": 1,
+      "community": 6,
       "norm_label": "build_arg_parser()",
       "id": "betpredictor_ev_pipeline_build_arg_parser"
     },
@@ -3023,7 +3422,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L565",
-      "community": 1,
+      "community": 6,
       "norm_label": "argumentparser",
       "id": "ev_pipeline_py_argumentparser"
     },
@@ -3032,7 +3431,7 @@
       "file_type": "code",
       "source_file": "ev_pipeline.py",
       "source_location": "L606",
-      "community": 1,
+      "community": 6,
       "norm_label": "main()",
       "id": "betpredictor_ev_pipeline_main"
     },
@@ -6946,7 +7345,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L1",
-      "community": 1,
+      "community": 6,
       "norm_label": "test_ev_pipeline.py",
       "id": "tests_test_ev_pipeline_py"
     },
@@ -6955,7 +7354,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L21",
-      "community": 1,
+      "community": 6,
       "norm_label": "sample_snapshot()",
       "id": "tests_test_ev_pipeline_sample_snapshot"
     },
@@ -6964,7 +7363,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L75",
-      "community": 1,
+      "community": 6,
       "norm_label": "test_market_mapping_supports_moneyline_and_totals_only()",
       "id": "tests_test_ev_pipeline_test_market_mapping_supports_moneyline_and_totals_only"
     },
@@ -6973,7 +7372,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L88",
-      "community": 1,
+      "community": 6,
       "norm_label": "test_ev_math_rejects_invalid_odds()",
       "id": "tests_test_ev_pipeline_test_ev_math_rejects_invalid_odds"
     },
@@ -6982,7 +7381,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L99",
-      "community": 1,
+      "community": 6,
       "norm_label": "test_event_matching_uses_explicit_mapping_before_fallback()",
       "id": "tests_test_ev_pipeline_test_event_matching_uses_explicit_mapping_before_fallback"
     },
@@ -6991,7 +7390,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L111",
-      "community": 1,
+      "community": 6,
       "norm_label": "test_event_matching_falls_back_to_normalized_names_and_date()",
       "id": "tests_test_ev_pipeline_test_event_matching_falls_back_to_normalized_names_and_date"
     },
@@ -7000,7 +7399,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L124",
-      "community": 1,
+      "community": 6,
       "norm_label": "test_unmatched_event_returns_none()",
       "id": "tests_test_ev_pipeline_test_unmatched_event_returns_none"
     },
@@ -7009,7 +7408,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L136",
-      "community": 1,
+      "community": 6,
       "norm_label": "test_fallback_matching_requires_start_date()",
       "id": "tests_test_ev_pipeline_test_fallback_matching_requires_start_date"
     },
@@ -7018,7 +7417,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L148",
-      "community": 1,
+      "community": 6,
       "norm_label": "test_schema_contains_ev_tables_and_indexes()",
       "id": "tests_test_ev_pipeline_test_schema_contains_ev_tables_and_indexes"
     },
@@ -7027,7 +7426,7 @@
       "file_type": "code",
       "source_file": "tests/test_ev_pipeline.py",
       "source_location": "L158",
-      "community": 1,
+      "community": 6,
       "norm_label": "test_json_snapshot_and_cli_smoke()",
       "id": "tests_test_ev_pipeline_test_json_snapshot_and_cli_smoke"
     },
@@ -9853,6 +10252,758 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "dashboard/README.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "dashboard_readme_md",
+      "target": "dashboard_readme_betpredictor_dashboard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/README.md",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "dashboard_readme_betpredictor_dashboard",
+      "target": "dashboard_readme_architecture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/README.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "dashboard_readme_betpredictor_dashboard",
+      "target": "dashboard_readme_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/README.md",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "dashboard_readme_betpredictor_dashboard",
+      "target": "dashboard_readme_views",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/README.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "dashboard_readme_run",
+      "target": "dashboard_readme_codeblock_1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/README.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "dashboard_readme_run",
+      "target": "dashboard_readme_codeblock_2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L534",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_graph_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L526",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_graph_report",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L217",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_match",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L172",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_matches",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L490",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_models",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L102",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_overview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L415",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_player_props",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L342",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_players",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L362",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_probabilities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L395",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_runs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L312",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_team",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L293",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_teams",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L446",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_api_value",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L82",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_default_run_id",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L90",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_enc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_get_conn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L597",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_handler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L664",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L567",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_node_brief",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_q1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L517",
+      "weight": 1.0,
+      "source": "dashboard_app_py",
+      "target": "dashboard_app_read_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "dashboard_app_q",
+      "target": "dashboard_app_get_conn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L233",
+      "weight": 1.0,
+      "source": "dashboard_app_api_match",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L199",
+      "weight": 1.0,
+      "source": "dashboard_app_api_matches",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L117",
+      "weight": 1.0,
+      "source": "dashboard_app_api_overview",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L431",
+      "weight": 1.0,
+      "source": "dashboard_app_api_player_props",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L350",
+      "weight": 1.0,
+      "source": "dashboard_app_api_players",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L377",
+      "weight": 1.0,
+      "source": "dashboard_app_api_probabilities",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L396",
+      "weight": 1.0,
+      "source": "dashboard_app_api_runs",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L315",
+      "weight": 1.0,
+      "source": "dashboard_app_api_team",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L294",
+      "weight": 1.0,
+      "source": "dashboard_app_api_teams",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L453",
+      "weight": 1.0,
+      "source": "dashboard_app_api_value",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "source": "dashboard_app_q1",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "dashboard_app_rationale_59",
+      "target": "dashboard_app_q",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L220",
+      "weight": 1.0,
+      "source": "dashboard_app_api_match",
+      "target": "dashboard_app_q1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L191",
+      "weight": 1.0,
+      "source": "dashboard_app_api_matches",
+      "target": "dashboard_app_q1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "dashboard_app_api_overview",
+      "target": "dashboard_app_q1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L374",
+      "weight": 1.0,
+      "source": "dashboard_app_api_probabilities",
+      "target": "dashboard_app_q1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L314",
+      "weight": 1.0,
+      "source": "dashboard_app_api_team",
+      "target": "dashboard_app_q1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "dashboard_app_default_run_id",
+      "target": "dashboard_app_q1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L219",
+      "weight": 1.0,
+      "source": "dashboard_app_api_match",
+      "target": "dashboard_app_default_run_id",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L168",
+      "weight": 1.0,
+      "source": "dashboard_app_api_overview",
+      "target": "dashboard_app_default_run_id",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L363",
+      "weight": 1.0,
+      "source": "dashboard_app_api_probabilities",
+      "target": "dashboard_app_default_run_id",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L450",
+      "weight": 1.0,
+      "source": "dashboard_app_api_value",
+      "target": "dashboard_app_default_run_id",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L669",
+      "weight": 1.0,
+      "source": "dashboard_app_main",
+      "target": "dashboard_app_default_run_id",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "dashboard_app_enc",
+      "target": "dashboard_app_enc_default",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L447",
+      "weight": 1.0,
+      "source": "dashboard_app_rationale_447",
+      "target": "dashboard_app_api_value",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L496",
+      "weight": 1.0,
+      "source": "dashboard_app_api_models",
+      "target": "dashboard_app_read_json",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L491",
+      "weight": 1.0,
+      "source": "dashboard_app_rationale_491",
+      "target": "dashboard_app_api_models",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L517",
+      "weight": 1.0,
+      "source": "dashboard_app_read_json",
+      "target": "path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "match_simulation.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "betpredictor_match_simulation_create_schema",
+      "target": "path"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L643",
+      "weight": 1.0,
+      "source": "dashboard_app_handler_serve_file",
+      "target": "path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_match_simulation.py",
+      "source_location": "L212",
+      "weight": 1.0,
+      "source": "tests_test_match_simulation_test_simulation_schema_contract",
+      "target": "path"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L549",
+      "weight": 1.0,
+      "source": "dashboard_app_api_graph_data",
+      "target": "dashboard_app_node_brief",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L535",
+      "weight": 1.0,
+      "source": "dashboard_app_rationale_535",
+      "target": "dashboard_app_api_graph_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L597",
+      "weight": 1.0,
+      "source": "dashboard_app_handler",
+      "target": "basehttprequesthandler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L612",
+      "weight": 1.0,
+      "source": "dashboard_app_handler",
+      "target": "dashboard_app_handler_do_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L598",
+      "weight": 1.0,
+      "source": "dashboard_app_handler",
+      "target": "dashboard_app_handler_log_message",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L601",
+      "weight": 1.0,
+      "source": "dashboard_app_handler",
+      "target": "dashboard_app_handler_send",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L643",
+      "weight": 1.0,
+      "source": "dashboard_app_handler",
+      "target": "dashboard_app_handler_serve_file",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L618",
+      "weight": 1.0,
+      "source": "dashboard_app_handler_do_get",
+      "target": "dashboard_app_handler_send",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L645",
+      "weight": 1.0,
+      "source": "dashboard_app_handler_serve_file",
+      "target": "dashboard_app_handler_send",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/app.py",
+      "source_location": "L625",
+      "weight": 1.0,
+      "source": "dashboard_app_handler_do_get",
+      "target": "dashboard_app_handler_serve_file",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/run.sh",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "dashboard_run_sh",
+      "target": "dashboard_run_db_url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "dashboard/run.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "dashboard_run_sh",
+      "target": "home_kolesniii_betpredictor_dashboard_run_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "documents/EV-Pipeline.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -11892,9 +13043,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L35",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_scoreoutcome_selection",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -11903,9 +13054,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L222",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_collapse_player_prop_rows",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -11914,9 +13065,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L72",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_create_schema",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -11925,9 +13076,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L93",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_finite_nonnegative",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -11936,9 +13087,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L210",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_int_field",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -11947,9 +13098,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L404",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_load_exact_score_rows",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -11958,9 +13109,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L429",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_load_player_prop_rows",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -11969,9 +13120,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L348",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_player_summary_rows",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -11980,9 +13131,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L80",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_row_value",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -11991,9 +13142,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L604",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_run_simulation",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -12002,9 +13153,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L383",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_simulate_match_summaries",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -12013,9 +13164,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L312",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_simulate_player_draws",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -12024,9 +13175,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L171",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_summarize_goal_draws",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -12035,9 +13186,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L152",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_summary_row",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -12046,9 +13197,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L217",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_text_field",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -12057,9 +13208,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L478",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_write_simulation_outputs",
-      "target": "str",
-      "confidence_score": 1.0
+      "target": "str"
     },
     {
       "relation": "references",
@@ -12194,17 +13345,6 @@
       "target": "betpredictor_match_simulation_require_database_dependency"
     },
     {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "match_simulation.py",
-      "source_location": "L72",
-      "weight": 1.0,
-      "source": "betpredictor_match_simulation_create_schema",
-      "target": "path",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -12214,17 +13354,6 @@
       "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_main",
       "target": "betpredictor_match_simulation_create_schema"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "tests/test_match_simulation.py",
-      "source_location": "L212",
-      "weight": 1.0,
-      "source": "tests_test_match_simulation_test_simulation_schema_contract",
-      "target": "path"
     },
     {
       "relation": "calls",
@@ -12266,9 +13395,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L80",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_row_value",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "calls",
@@ -12288,9 +13417,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L222",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_collapse_player_prop_rows",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12299,9 +13428,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L93",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_finite_nonnegative",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12310,9 +13439,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L459",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_group_by_match",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12321,9 +13450,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L210",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_int_field",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12332,9 +13461,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L466",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_json_ready",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12343,9 +13472,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L404",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_load_exact_score_rows",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12354,9 +13483,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L429",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_load_player_prop_rows",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12365,9 +13494,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L103",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_normalize_exact_score_rows",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12376,9 +13505,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L86",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_parse_exact_score",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12387,9 +13516,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L348",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_player_summary_rows",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12398,9 +13527,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L604",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_run_simulation",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12409,9 +13538,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_sample_scorelines",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12420,9 +13549,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L383",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_simulate_match_summaries",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12431,9 +13560,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L312",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_simulate_player_draws",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12442,9 +13571,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L171",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_summarize_goal_draws",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12453,9 +13582,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L152",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_summary_row",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12464,9 +13593,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L217",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_text_field",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "references",
@@ -12475,9 +13604,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L478",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_write_simulation_outputs",
-      "target": "any",
-      "confidence_score": 1.0
+      "target": "any"
     },
     {
       "relation": "calls",
@@ -12508,9 +13637,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L93",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_finite_nonnegative",
-      "target": "float",
-      "confidence_score": 1.0
+      "target": "float"
     },
     {
       "relation": "calls",
@@ -12530,9 +13659,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L103",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_normalize_exact_score_rows",
-      "target": "float",
-      "confidence_score": 1.0
+      "target": "float"
     },
     {
       "relation": "references",
@@ -12541,9 +13670,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L348",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_player_summary_rows",
-      "target": "float",
-      "confidence_score": 1.0
+      "target": "float"
     },
     {
       "relation": "references",
@@ -12552,9 +13681,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L305",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_sot_probability",
-      "target": "float",
-      "confidence_score": 1.0
+      "target": "float"
     },
     {
       "relation": "references",
@@ -12563,9 +13692,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L171",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_summarize_goal_draws",
-      "target": "float",
-      "confidence_score": 1.0
+      "target": "float"
     },
     {
       "relation": "references",
@@ -12574,9 +13703,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L152",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_summary_row",
-      "target": "float",
-      "confidence_score": 1.0
+      "target": "float"
     },
     {
       "relation": "calls",
@@ -12618,9 +13747,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_sample_scorelines",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12673,9 +13802,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L459",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_group_by_match",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12684,9 +13813,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L210",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_int_field",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12695,9 +13824,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L404",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_load_exact_score_rows",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12706,9 +13835,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L429",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_load_player_prop_rows",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12717,9 +13846,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L596",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_resolve_seed",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12728,9 +13857,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L604",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_run_simulation",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12739,9 +13868,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L383",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_simulate_match_summaries",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12750,9 +13879,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L312",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_simulate_player_draws",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12761,9 +13890,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L171",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_summarize_goal_draws",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12772,9 +13901,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L152",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_summary_row",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12783,9 +13912,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L478",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_write_simulation_outputs",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "references",
@@ -12937,9 +14066,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L305",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_sot_probability",
-      "target": "bool",
-      "confidence_score": 1.0
+      "target": "bool"
     },
     {
       "relation": "references",
@@ -12948,9 +14077,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L604",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_run_simulation",
-      "target": "bool",
-      "confidence_score": 1.0
+      "target": "bool"
     },
     {
       "relation": "calls",
@@ -13135,9 +14264,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L735",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_build_parser",
-      "target": "argumentparser",
-      "confidence_score": 1.0
+      "target": "argumentparser"
     },
     {
       "relation": "calls",
@@ -13201,9 +14330,9 @@
       "source_file": "match_simulation.py",
       "source_location": "L765",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "betpredictor_match_simulation_add_subcommand_runtime_options",
-      "target": "argumentparser",
-      "confidence_score": 1.0
+      "target": "argumentparser"
     },
     {
       "relation": "contains",
@@ -40320,5 +41449,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "2058fb5543b84879629929372172fa4c1303a54f"
+  "built_at_commit": "dce5fbc048e460447d23c88ea7444911221f9fc6"
 }
