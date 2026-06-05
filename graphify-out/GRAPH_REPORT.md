@@ -1,16 +1,16 @@
 # Graph Report - BetPredictor  (2026-06-05)
 
 ## Corpus Check
-- 55 files · ~233,146 words
+- 60 files · ~237,174 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1136 nodes · 2938 edges · 53 communities (51 shown, 2 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 144 edges (avg confidence: 0.55)
+- 1199 nodes · 3121 edges · 57 communities (53 shown, 4 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 145 edges (avg confidence: 0.55)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `dce5fbc0`
+- Built from commit: `32c73dc0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -67,32 +67,36 @@
 - [[_COMMUNITY_Community 50|Community 50]]
 - [[_COMMUNITY_Community 51|Community 51]]
 - [[_COMMUNITY_Community 52|Community 52]]
+- [[_COMMUNITY_Community 54|Community 54]]
+- [[_COMMUNITY_Community 55|Community 55]]
+- [[_COMMUNITY_Community 56|Community 56]]
+- [[_COMMUNITY_Community 57|Community 57]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `str` - 59 edges
-2. `Match` - 46 edges
-3. `str` - 44 edges
-4. `Any` - 39 edges
-5. `PinnacleProvider` - 33 edges
-6. `CalibrationParams` - 27 edges
-7. `str` - 27 edges
-8. `Bet365WebScraper` - 26 edges
-9. `RateLimitSkipped` - 26 edges
-10. `int` - 24 edges
+1. `str` - 71 edges
+2. `Any` - 60 edges
+3. `str` - 59 edges
+4. `Match` - 46 edges
+5. `int` - 42 edges
+6. `float` - 34 edges
+7. `PinnacleProvider` - 33 edges
+8. `CalibrationParams` - 27 edges
+9. `str` - 27 edges
+10. `Bet365WebScraper` - 26 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `create_schema()` --references--> `Path`  [EXTRACTED]
-  match_simulation.py → dashboard/app.py
 - `test_simulation_schema_contract()` --calls--> `Path`  [INFERRED]
   tests/test_match_simulation.py → dashboard/app.py
-- `test_simulate_match_fails_when_goal_inputs_are_missing()` --calls--> `run_simulation()`  [EXTRACTED]
-  tests/test_match_simulation.py → match_simulation.py
-- `test_cli_accepts_runtime_options_after_subcommand()` --calls--> `build_parser()`  [EXTRACTED]
-  tests/test_match_simulation.py → match_simulation.py
-- `test_cli_requires_source_run_ids()` --calls--> `build_parser()`  [EXTRACTED]
-  tests/test_match_simulation.py → match_simulation.py
+- `backtest()` --calls--> `mean()`  [INFERRED]
+  experiments/calib_backtest.py → probabilistic_markets.py
+- `create_schema()` --references--> `Path`  [EXTRACTED]
+  match_simulation.py → dashboard/app.py
+- `collapse_player_prop_rows()` --references--> `str`  [EXTRACTED]
+  match_simulation.py → dashboard/upcoming.py
+- `create_schema()` --references--> `str`  [EXTRACTED]
+  match_simulation.py → dashboard/upcoming.py
 
-## Communities (53 total, 2 thin omitted)
+## Communities (57 total, 4 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.07
@@ -103,8 +107,8 @@ Cohesion: 0.09
 Nodes (49): LiveEvent, LiveOddsSnapshot, Market, OddsClient, int, ProviderSnapshot, str, LiveEvent (+41 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.11
-Nodes (83): base_market_context(), baseline_params(), binary_brier(), binary_log_loss(), build_match_inputs(), build_probability_outputs(), calibrated_market_rows_for_match(), CalibrationParams (+75 more)
+Cohesion: 0.07
+Nodes (114): Any, base_market_context(), baseline_params(), binary_brier(), binary_log_loss(), build_match_inputs(), build_probability_outputs(), calibrated_market_rows_for_match() (+106 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.09
@@ -115,8 +119,8 @@ Cohesion: 0.12
 Nodes (59): aggregate_fold_metrics(), artifact_paths(), best_iteration_count(), binary_metrics(), build_cross_validation_folds(), build_player_minutes_dataset_sql(), build_refresh_features_sql(), build_where_clause() (+51 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.13
-Nodes (49): Any, ArgumentParser, add_subcommand_runtime_options(), build_parser(), collapse_player_prop_rows(), create_schema(), finite_nonnegative(), group_by_match() (+41 more)
+Cohesion: 0.12
+Nodes (52): ArgumentParser, add_subcommand_runtime_options(), build_parser(), collapse_player_prop_rows(), create_schema(), finite_nonnegative(), group_by_match(), int_field() (+44 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.13
@@ -191,8 +195,8 @@ Cohesion: 0.17
 Nodes (11): Boundaries, code:text (player_shots ~ Poisson(player_shots_expected_value)), code:text (player_shots_on_target <= player_shots), code:bash (./venv/bin/python match_simulation.py --create-schema simula), code:bash (./venv/bin/python match_simulation.py simulate-match \), Commands, Draw Rules, Inputs (+3 more)
 
 ### Community 24 - "Community 24"
-Cohesion: 0.18
-Nodes (11): code:bash (python3 -m pip install -r requirements.txt), code:bash (python3 team_feature_pipeline.py --create-schema --refresh), code:bash (python3 xgboost_xg_model.py train), code:bash (python3 xgboost_xg_model.py train-final), code:bash (python3 xgboost_xg_model.py train-final --refresh-source-tra), code:bash (python3 xgboost_xg_model.py cross-validate), code:text (models/xgboost_xg_for/), code:text (models/xgboost_xg_for_final/) (+3 more)
+Cohesion: 0.20
+Nodes (14): base_params(), combined(), construct_lambdas(), fit_structural(), grids(), market_probs(), poisson_pmf(), Vectorised reimplementation of the probabilistic-markets structural model (lambd (+6 more)
 
 ### Community 25 - "Community 25"
 Cohesion: 0.18
@@ -255,8 +259,8 @@ Cohesion: 0.29
 Nodes (7): 3️⃣ Normalisation Layer, code:python (possession_proxy = team_passes / (team_passes + opponent_pas), code:block8 (feature_per90 = total_feature / total_team_minutes * 90), code:python (pass_accuracy = accuratePass / totalPass), Possession Proxy, Ratios, Team Per-90
 
 ### Community 40 - "Community 40"
-Cohesion: 0.29
-Nodes (7): 1) Team Attacking Form (rolling), 2) Team Defensive Form (rolling), 3) Opponent Features (CRITICAL), 4) Lineup / Player Aggregation (YOUR EDGE), 5) Control & Tempo, 6) Context Features, 🧱 Inputs (Features)
+Cohesion: 0.43
+Nodes (5): backtest(), by_seasons(), fit_model(), Walk-forward backtest for the probabilistic markets model.  For each test season, Fit structural params on train, then select calibrators on an inner split.
 
 ### Community 41 - "Community 41"
 Cohesion: 0.33
@@ -278,41 +282,49 @@ Nodes (5): 5️⃣ Opponent Adjustment, Basic Adjustment, code:block12 (adjusted
 Cohesion: 0.40
 Nodes (5): ⚠️ Common Mistakes, ❌ Data Leakage, ❌ Double Counting, ❌ No Minutes Normalisation, ❌ No Opponent Adjustment
 
-### Community 46 - "Community 46"
-Cohesion: 0.40
-Nodes (5): ⚠️ Common Mistakes, Data leakage, Double counting, Ignoring lineups, Predicting goals
-
 ### Community 47 - "Community 47"
 Cohesion: 0.50
 Nodes (4): 1️⃣ Filter + Minutes Weighting (CRITICAL), code:sql (stat_per90 = stat_value / minutesPlayed * 90), Per-90 Normalisation, Why this matters
 
 ### Community 50 - "Community 50"
-Cohesion: 0.11
+Cohesion: 0.10
 Nodes (28): BaseHTTPRequestHandler, api_graph_data(), api_match(), api_matches(), api_models(), api_overview(), api_player_props(), api_players() (+20 more)
 
 ### Community 51 - "Community 51"
+Cohesion: 0.25
+Nodes (7): Architecture, BetPredictor Dashboard, code:bash (./dashboard/run.sh          # starts the DB (port 5433) if n), code:bash (DB_URL=postgresql://user:pwd@localhost:5433/betting_historic), Run, Upcoming & EV pipeline (`dashboard/upcoming.py`), Views
+
+### Community 54 - "Community 54"
+Cohesion: 0.18
+Nodes (11): code:bash (python3 -m pip install -r requirements.txt), code:bash (python3 team_feature_pipeline.py --create-schema --refresh), code:bash (python3 xgboost_xg_model.py train), code:bash (python3 xgboost_xg_model.py train-final), code:bash (python3 xgboost_xg_model.py train-final --refresh-source-tra), code:bash (python3 xgboost_xg_model.py cross-validate), code:text (models/xgboost_xg_for/), code:text (models/xgboost_xg_for_final/) (+3 more)
+
+### Community 55 - "Community 55"
 Cohesion: 0.29
-Nodes (6): Architecture, BetPredictor Dashboard, code:bash (./dashboard/run.sh          # starts the DB (port 5433) if n), code:bash (DB_URL=postgresql://user:pwd@localhost:5433/betting_historic), Run, Views
+Nodes (7): 1) Team Attacking Form (rolling), 2) Team Defensive Form (rolling), 3) Opponent Features (CRITICAL), 4) Lineup / Player Aggregation (YOUR EDGE), 5) Control & Tempo, 6) Context Features, 🧱 Inputs (Features)
+
+### Community 56 - "Community 56"
+Cohesion: 0.40
+Nodes (5): ⚠️ Common Mistakes, Data leakage, Double counting, Ignoring lineups, Predicting goals
 
 ## Knowledge Gaps
-- **311 isolated node(s):** `code:bash (./dashboard/run.sh          # starts the DB (port 5433) if n)`, `code:bash (DB_URL=postgresql://user:pwd@localhost:5433/betting_historic)`, `Views`, `Architecture`, `run.sh script` (+306 more)
+- **313 isolated node(s):** `code:bash (./dashboard/run.sh          # starts the DB (port 5433) if n)`, `code:bash (DB_URL=postgresql://user:pwd@localhost:5433/betting_historic)`, `Views`, `Upcoming & EV pipeline (`dashboard/upcoming.py`)`, `Architecture` (+308 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `validate_rolling_window()` connect `Community 12` to `Community 5`?**
-  _High betweenness centrality (0.025) - this node is a cross-community bridge._
-- **Why does `build_cross_validation_folds()` connect `Community 3` to `Community 5`?**
-  _High betweenness centrality (0.021) - this node is a cross-community bridge._
-- **Are the 16 inferred relationships involving `PinnacleProvider` (e.g. with `LiveOddsSnapshot` and `OddsClient`) actually correct?**
-  _`PinnacleProvider` has 16 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `str` connect `Community 2` to `Community 5`?**
+  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+- **Why does `utc_now()` connect `Community 1` to `Community 6`?**
+  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+- **Why does `add_team_ids()` connect `Community 31` to `Community 5`?**
+  _High betweenness centrality (0.020) - this node is a cross-community bridge._
 - **What connects `code:bash (./dashboard/run.sh          # starts the DB (port 5433) if n)`, `code:bash (DB_URL=postgresql://user:pwd@localhost:5433/betting_historic)`, `Views` to the rest of the system?**
-  _316 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _334 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.0680018630647415 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.0946271050521251 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.11135430916552667 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07141822396059684 - nodes in this community are weakly interconnected._

@@ -371,14 +371,57 @@ def fit_serialized_logistic(
     y,
     class_labels: tuple[str, ...],
     feature_names: list[str],
+    C: float = 1.0,
 ):
     unique_classes = sorted(set(y))
     if len(unique_classes) < 2:
         return None
     _, LogisticRegression = require_sklearn_logistic()
-    model = LogisticRegression(C=0.05, max_iter=1000, random_state=42)
+    model = LogisticRegression(C=C, max_iter=2000, random_state=42)
     model.fit(X, y)
     return serialize_logistic_model(model, feature_names, class_labels)
+
+
+# --- Calibration features ----------------------------------------------------
+# The calibrators map the structural (Dixon-Coles Poisson) market probabilities
+# to corrected probabilities. They deliberately use a *low-dimensional* view of
+# those probabilities (the outcome log-probs / market logits) rather than the
+# full feature vector: a richer feature set was found to overfit and degrade
+# out-of-sample log-loss across held-out seasons, whereas this low-variance
+# parameterisation (multinomial temperature-style scaling for 1X2, Platt scaling
+# for the binary markets) generalises and beats both the raw model and the
+# previous high-dimensional calibrator. See experiments/calib*.py.
+CAL_FEATURE_NAMES = {
+    "1x2": ["log_p_home", "log_p_draw", "log_p_away"],
+    "btts": ["logit_p_yes"],
+    "total_goals": ["logit_p_over"],
+}
+# Near-unregularised binary calibrators behave like classic Platt scaling.
+CAL_C = {"1x2": 1.0, "btts": 1.0e6, "total_goals": 1.0e6}
+
+
+def _logit(probability: float) -> float:
+    p = min(max(float(probability), EPSILON), 1.0 - EPSILON)
+    return math.log(p / (1.0 - p))
+
+
+def calibration_feature_values(
+    market_key: str,
+    line: float | None,
+    context: dict[str, Any],
+) -> list[float]:
+    lookup = context["lookup"]
+    if market_key == "1x2":
+        return [
+            math.log(max(lookup[("1x2", "home", None)], EPSILON)),
+            math.log(max(lookup[("1x2", "draw", None)], EPSILON)),
+            math.log(max(lookup[("1x2", "away", None)], EPSILON)),
+        ]
+    if market_key == "btts":
+        return [_logit(lookup[("btts", "yes", None)])]
+    if market_key == "total_goals":
+        return [_logit(lookup[("total_goals", "over", line)])]
+    raise ValueError(f"No calibration features for market {market_key}")
 
 
 def sigmoid(value: float) -> float:
@@ -421,19 +464,13 @@ def fit_market_calibrators(
 ) -> CalibrationParams:
     np, _ = require_sklearn_logistic()
     contexts = [base_market_context(match, params, max_goals=max_goals) for match in matches]
-    x_base = np.asarray(
-        [
-            market_feature_values(
-                match,
-                params,
-                line=2.5,
-                context=context,
-                max_goals=max_goals,
-            )
-            for match, context in zip(matches, contexts)
-        ],
-        dtype=float,
-    )
+
+    def feature_matrix(market_key: str, line: float | None):
+        return np.asarray(
+            [calibration_feature_values(market_key, line, context) for context in contexts],
+            dtype=float,
+        )
+
     outcome_targets = [
         0 if match["home_goals"] > match["away_goals"]
         else 2 if match["away_goals"] > match["home_goals"]
@@ -446,46 +483,36 @@ def fit_market_calibrators(
     ]
     calibrators: dict[str, Any] = {}
     outcome_calibrator = fit_serialized_logistic(
-        x_base,
+        feature_matrix("1x2", None),
         outcome_targets,
         class_labels=OUTCOME_LABELS,
-        feature_names=MARKET_FEATURE_NAMES,
+        feature_names=CAL_FEATURE_NAMES["1x2"],
+        C=CAL_C["1x2"],
     )
     if outcome_calibrator is not None:
         calibrators["1x2"] = outcome_calibrator
     btts_calibrator = fit_serialized_logistic(
-        x_base,
+        feature_matrix("btts", None),
         btts_targets,
         class_labels=("no", "yes"),
-        feature_names=MARKET_FEATURE_NAMES,
+        feature_names=CAL_FEATURE_NAMES["btts"],
+        C=CAL_C["btts"],
     )
     if btts_calibrator is not None:
         calibrators["btts"] = btts_calibrator
 
     total_calibrators = {}
     for line in DEFAULT_TOTAL_LINES:
-        x_total = np.asarray(
-            [
-                market_feature_values(
-                    match,
-                    params,
-                    line=line,
-                    context=context,
-                    max_goals=max_goals,
-                )
-                for match, context in zip(matches, contexts)
-            ],
-            dtype=float,
-        )
         total_targets = [
             int(match["home_goals"] + match["away_goals"] > line)
             for match in matches
         ]
         total_calibrator = fit_serialized_logistic(
-            x_total,
+            feature_matrix("total_goals", line),
             total_targets,
             class_labels=("under", "over"),
-            feature_names=MARKET_FEATURE_NAMES,
+            feature_names=CAL_FEATURE_NAMES["total_goals"],
+            C=CAL_C["total_goals"],
         )
         if total_calibrator is not None:
             total_calibrators[str(line)] = total_calibrator
@@ -546,6 +573,56 @@ def fit_validated_market_calibrators(
     )
 
 
+def select_calibrators_by_walkforward(
+    matches: list[dict[str, Any]],
+    max_goals: int = DEFAULT_MAX_GOALS,
+    test_seasons: int = 4,
+) -> tuple[set[str], dict[str, Any]]:
+    """Robustly choose which markets to calibrate, by walk-forward evaluation.
+
+    Selecting a calibrator on a single held-out season is noisy (a market may
+    help on average yet hurt on one anomalous season, e.g. COVID 20/21). Here we
+    walk forward over the most recent seasons that have at least two seasons of
+    history: for each, fit params + calibrators on all prior seasons and compare
+    the calibrated vs uncalibrated log-loss on the held-out season. A market is
+    selected only if calibration improves the *mean* held-out log-loss.
+    """
+    season_order = sorted({str(m["season_year"]) for m in matches})
+    index = {s: i for i, s in enumerate(season_order)}
+    metric_for = {
+        "1x2": "one_x_two_log_loss",
+        "btts": "btts_log_loss",
+        "total_goals": "over_2_5_log_loss",
+    }
+    agg = {market: {"base": [], "cand": []} for market in metric_for}
+    candidates = [s for s in season_order[-test_seasons:] if index[s] >= 2]
+    for ts in candidates:
+        train = [m for m in matches if index[str(m["season_year"])] < index[ts]]
+        test = [m for m in matches if str(m["season_year"]) == ts]
+        if not train or not test:
+            continue
+        params = fit_calibration_params(train, max_goals=max_goals)
+        calibrated = fit_market_calibrators(train, params, max_goals=max_goals)
+        base_m = evaluate_matches(test, params, max_goals=max_goals)
+        cand_m = evaluate_matches(test, calibrated, max_goals=max_goals)
+        for market, metric in metric_for.items():
+            agg[market]["base"].append(base_m[metric])
+            agg[market]["cand"].append(cand_m[metric])
+    selected: set[str] = set()
+    detail = {}
+    for market, metric in metric_for.items():
+        base_vals, cand_vals = agg[market]["base"], agg[market]["cand"]
+        if not base_vals:
+            continue
+        base_mean, cand_mean = mean(base_vals), mean(cand_vals)
+        improved = cand_mean + 1e-12 < base_mean
+        if improved:
+            selected.add(market)
+        detail[market] = {"base": base_mean, "candidate": cand_mean,
+                          "selected": improved, "seasons": len(base_vals)}
+    return selected, {"test_seasons": candidates, "comparisons": detail}
+
+
 def validated_market_families(path: Path = DEFAULT_MODEL_DIR / "calibration.json") -> set[str] | None:
     if not path.exists():
         return None
@@ -570,13 +647,7 @@ def calibrated_market_rows_for_match(
     if outcome_calibrator:
         probabilities = predict_serialized_logistic(
             outcome_calibrator,
-            market_feature_values(
-                match,
-                params,
-                line=2.5,
-                context=context,
-                max_goals=max_goals,
-            ),
+            calibration_feature_values("1x2", None, context),
         )
         for selection in OUTCOME_LABELS:
             overrides[("1x2", selection, None)] = probabilities[selection]
@@ -585,13 +656,7 @@ def calibrated_market_rows_for_match(
     if btts_calibrator:
         probabilities = predict_serialized_logistic(
             btts_calibrator,
-            market_feature_values(
-                match,
-                params,
-                line=2.5,
-                context=context,
-                max_goals=max_goals,
-            ),
+            calibration_feature_values("btts", None, context),
         )
         yes_probability = probabilities["yes"]
         overrides[("btts", "yes", None)] = yes_probability
@@ -602,13 +667,7 @@ def calibrated_market_rows_for_match(
         line_value = float(line)
         probabilities = predict_serialized_logistic(
             total_calibrator,
-            market_feature_values(
-                match,
-                params,
-                line=line_value,
-                context=context,
-                max_goals=max_goals,
-            ),
+            calibration_feature_values("total_goals", line_value, context),
         )
         over_probability = probabilities["over"]
         overrides[("total_goals", "over", line_value)] = over_probability
@@ -1483,10 +1542,12 @@ def fit_final(
         fit_calibration_params(training_matches, max_goals=max_goals),
         max_goals=max_goals,
     )
-    selected_markets = validated_market_families()
-    if selected_markets is not None:
-        params = filter_market_calibrators(params, selected_markets)
+    selected_markets, walkforward_selection = select_calibrators_by_walkforward(
+        training_matches, max_goals=max_goals
+    )
+    params = filter_market_calibrators(params, selected_markets)
     metrics = {
+        "walkforward_calibrator_selection": walkforward_selection,
         "training": evaluate_matches(training_matches, params, max_goals=max_goals),
         "training_by_season": per_season_metrics(
             training_matches,
@@ -1519,9 +1580,7 @@ def fit_final(
         validation_season=None,
         extra={
             "max_goals": max_goals,
-            "selected_market_calibrators": sorted(selected_markets)
-            if selected_markets is not None
-            else sorted((params.market_calibrators or {}).keys()),
+            "selected_market_calibrators": sorted(selected_markets),
         },
     )
     paths = probability_artifact_paths(model_dir)

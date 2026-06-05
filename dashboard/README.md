@@ -27,6 +27,7 @@ PORT=8000 ./venv/bin/python dashboard/app.py
 
 | View | What it shows |
 |------|---------------|
+| **Upcoming & EV** | Scrapes bet365 for upcoming fixtures + odds, scores each with the **final models (all data)**, computes EV per selection. Empty → "No upcoming games." |
 | **Overview** | KPI counts, matches/goals per season, goal distribution, result split, recent runs |
 | **Matches** | Searchable/filterable fixture list → click into a match |
 | **Match detail** | Final score, 1X2 model-vs-sim, top scorelines, O/U & BTTS markets, team form, player props |
@@ -38,6 +39,20 @@ PORT=8000 ./venv/bin/python dashboard/app.py
 | **Sim & Runs** | Provenance + metrics for every probability and simulation run |
 | **Model Registry** | Metadata, feature counts, validation metrics for each model on disk |
 | **Knowledge Graph** | Embedded interactive `graphify` graph + node search + god nodes + report |
+
+## Upcoming & EV pipeline (`dashboard/upcoming.py`)
+
+Four stages, each reporting status; degrades gracefully:
+
+1. **scrape** — runs `bet365_web_scraper.py --json [--api]` as a subprocess and parses its JSON.
+2. **map** — maps each scraped team name to a `sofascore` `team_id` via `raw.team_name_aliases`.
+3. **model** — scores the fixture with the **final** models (`models/*_final`) by inserting a
+   temporary rolling-feature anchor (a synthetic unplayed match + two feature rows), scoring,
+   then **deleting it in a `finally` block** — nothing is persisted.
+4. **ev** — `EV = model_probability × decimal_odds − 1` for every priced 1X2 / BTTS / total-goals selection.
+
+If bet365 returns no fixtures (e.g. off-season), the screen shows **"No upcoming games."**
+`--api` mode needs valid `BET365_COOKIE`; `rendered` mode needs Playwright + a logged-in browser profile.
 
 ## Architecture
 

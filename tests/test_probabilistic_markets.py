@@ -286,7 +286,7 @@ def synthetic_calibration_matches():
     return matches
 
 
-def test_market_calibration_serializes_models_with_quality_features():
+def test_market_calibration_serializes_low_dimensional_calibrators():
     matches = synthetic_calibration_matches()
     params = CalibrationParams(
         alpha=0.0,
@@ -301,11 +301,19 @@ def test_market_calibration_serializes_models_with_quality_features():
     assert "1x2" in calibrated.market_calibrators
     assert "btts" in calibrated.market_calibrators
     assert "total_goals" in calibrated.market_calibrators
-    feature_names = calibrated.market_calibrators["1x2"]["feature_names"]
-    assert "shot_quality_home" in feature_names
-    assert "fragility_away" in feature_names
-    assert "match_tempo_index" in feature_names
-    assert "tempo_multiplier" in feature_names
+    # Calibrators map the structural probabilities (outcome log-probs / market
+    # logits) rather than the full feature vector — this low-variance form
+    # generalises better out-of-sample. See experiments/calib*.py.
+    assert calibrated.market_calibrators["1x2"]["feature_names"] == [
+        "log_p_home",
+        "log_p_draw",
+        "log_p_away",
+    ]
+    assert calibrated.market_calibrators["btts"]["feature_names"] == ["logit_p_yes"]
+    line_key = next(iter(calibrated.market_calibrators["total_goals"]))
+    assert calibrated.market_calibrators["total_goals"][line_key]["feature_names"] == [
+        "logit_p_over"
+    ]
 
 
 def test_calibrated_market_rows_override_direct_markets_but_keep_scorelines():
