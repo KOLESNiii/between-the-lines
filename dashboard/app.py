@@ -523,6 +523,19 @@ def _read_json(p: Path):
     return None
 
 
+def api_upcoming(qs):
+    """Upcoming fixtures via the bet365 scraper → final-model probabilities → EV.
+    Imported lazily because it pulls in pandas/xgboost."""
+    import upcoming as up  # dashboard/ is on sys.path at runtime
+    refresh = qs.get("refresh", ["0"])[0] in ("1", "true", "yes")
+    mode = qs.get("mode", ["api"])[0]
+    try:
+        thr = float(qs.get("ev_threshold", ["0"])[0])
+    except ValueError:
+        thr = 0.0
+    return up.build_upcoming(refresh=refresh, mode=mode, ev_threshold=thr)
+
+
 def api_graph_report(_):
     f = GRAPH_DIR / "GRAPH_REPORT.md"
     return {"markdown": f.read_text() if f.exists() else "# No graph report found"}
@@ -585,6 +598,7 @@ ROUTES = {
     "/api/runs": api_runs,
     "/api/player-props": api_player_props,
     "/api/value": api_value,
+    "/api/upcoming": api_upcoming,
     "/api/models": api_models,
     "/api/graph/report": api_graph_report,
     "/api/graph/data": api_graph_data,

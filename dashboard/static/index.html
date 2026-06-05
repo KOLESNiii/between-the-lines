@@ -116,6 +116,7 @@ const NAV = [
     ['players','Players','👤'],
   ]],
   ['Model',[
+    ['upcoming','Upcoming & EV','📅'],
     ['predictions','Predictions','🎯'],
     ['value','Value Finder','💰'],
     ['props','Player Props','🥅'],
@@ -376,6 +377,78 @@ ROUTES.players = async (main)=>{
   load();
 };
 window.goProps=(name)=>{ propState.player=name; go('props'); };
+
+// =====================================================================
+// UPCOMING & EV  (bet365 scrape -> final models -> EV)
+// =====================================================================
+const evColor = (ev)=> ev==null?'var(--mut)':(ev>0.02?'var(--good)':ev>=0?'var(--warn)':'var(--bad)');
+ROUTES.upcoming = async (main)=>{
+  main.innerHTML = `<h1>Upcoming & EV</h1>
+    <p class="sub">Scrapes bet365 for upcoming fixtures + odds, scores them with the <b>final models (trained on all data)</b>, and ranks +EV bets. EV = model probability × decimal odds − 1.</p>
+    <div class="toolbar">
+      <button class="btn pri" id="urefresh">⟳ Scrape bet365 &amp; run models</button>
+      <select id="umode"><option value="api">api mode (no browser)</option><option value="rendered">rendered (browser)</option></select>
+      <span class="muted" id="ustatus"></span>
+    </div>
+    <div id="ustages"></div>
+    <div id="ubody"><div class="loading">Loading cached result…</div></div>`;
+
+  const stagePill = (s)=>{
+    const col = s.status==='ok'?'var(--good)':s.status==='warn'?'var(--warn)':'var(--bad)';
+    return `<span class="pill" style="background:#1c2433;color:${col};border:1px solid ${col}33">
+      ${esc(s.stage)}: ${esc(s.status)}</span> <span class="muted" style="font-size:12px">${esc(s.detail||'')}</span>`;
+  };
+  const render = (d)=>{
+    $('#ustatus').textContent = d.generated_at? 'updated '+new Date(d.generated_at).toLocaleString() : '';
+    $('#ustages').innerHTML = (d.stages&&d.stages.length)
+      ? `<div class="panel" style="padding:12px 16px">${d.stages.map(s=>`<div style="margin:3px 0">${stagePill(s)}</div>`).join('')}</div>`:'';
+    if(d.message && (!d.matches || !d.matches.length)){
+      $('#ubody').innerHTML = `<div class="panel" style="text-align:center;padding:48px">
+        <div style="font-size:42px">📭</div><h2 style="margin:8px 0">${esc(d.message)}</h2>
+        <p class="muted">When bet365 lists fixtures, they'll appear here with model probabilities and EV.</p></div>`;
+      return;
+    }
+    if(!d.matches || !d.matches.length){ $('#ubody').innerHTML='<p class="muted">No fixtures.</p>'; return; }
+    $('#ubody').innerHTML = d.matches.map(m=>{
+      const mo=m.model;
+      const modelLine = mo? `<div class="muted" style="margin:6px 0">
+        1X2 <b>${pct(mo.p_home_win)}</b> / ${pct(mo.p_draw)} / <b>${pct(mo.p_away_win)}</b>
+        · BTTS ${pct(mo.p_btts_yes)} · O2.5 ${pct(mo.p_over_2_5)}
+        · λ ${fmt(mo.lambda_home,2)}–${fmt(mo.lambda_away,2)}</div>`:'';
+      const sels = (m.selections||[]).map(s=>`
+        <tr><td>${esc(s.market_key)}</td><td>${esc(s.selection)}</td>
+          <td class="num">${s.line==null?'':s.line}</td>
+          <td class="num">${fmt(s.decimal_odds,2)}</td>
+          <td class="num">${s.model_probability==null?'<span class="muted">–</span>':pct(s.model_probability)}</td>
+          <td class="num">${s.implied_probability==null?'':pct(s.implied_probability)}</td>
+          <td class="num" style="color:${evColor(s.expected_value)};font-weight:700">
+            ${s.expected_value==null?'–':(s.expected_value>=0?'+':'')+(s.expected_value*100).toFixed(1)+'%'}</td></tr>`).join('');
+      const best = m.best_ev;
+      const badge = best==null?'':`<span class="pill" style="background:${evColor(best)}22;color:${evColor(best)};border:1px solid ${evColor(best)}55">
+        best EV ${(best>=0?'+':'')+(best*100).toFixed(1)}%</span>`;
+      return `<div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <h2 style="margin:0">${esc(m.home)} vs ${esc(m.away)} ${badge}</h2>
+          <span class="muted">${esc(m.competition||'')} ${m.start_time?'· '+new Date(m.start_time).toLocaleString():''}</span>
+        </div>
+        ${modelLine}
+        ${sels? `<div class="tbl-wrap"><table><thead><tr>
+            <th>Market</th><th>Sel</th><th class="num">Line</th><th class="num">Odds</th>
+            <th class="num">Model</th><th class="num">Implied</th><th class="num">EV</th></tr></thead>
+            <tbody>${sels}</tbody></table></div>`:''}
+        ${(m.notes&&m.notes.length)? `<p class="muted" style="margin-top:8px">⚠ ${m.notes.map(esc).join(' · ')}</p>`:''}
+      </div>`;
+    }).join('');
+  };
+
+  // initial: cached
+  try{ render(await API('/api/upcoming')); }catch(e){ $('#ubody').innerHTML=`<div class="err">${esc(e.message)}</div>`; }
+  $('#urefresh').onclick=async()=>{
+    $('#ustages').innerHTML=''; $('#ubody').innerHTML='<div class="loading">Scraping bet365 and scoring models… (may take a while)</div>';
+    try{ render(await API('/api/upcoming',{refresh:1,mode:$('#umode').value})); }
+    catch(e){ $('#ubody').innerHTML=`<div class="err">${esc(e.message)}</div>`; }
+  };
+};
 
 // =====================================================================
 // PREDICTIONS (market probability browser)
