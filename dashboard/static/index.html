@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>BetPredictor · Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0c1018; --panel:#151b27; --panel2:#1c2433; --line:#2a3445;
+    --txt:#e6ecf5; --mut:#8a97ad; --acc:#4f9cf9; --acc2:#27c499;
+    --warn:#f5a623; --bad:#ef5b6b; --good:#27c499;
+    --chip:#223049;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--txt)}
+  a{color:var(--acc);text-decoration:none;cursor:pointer}
+  a:hover{text-decoration:underline}
+  #app{display:flex;min-height:100vh}
+  /* sidebar */
+  #side{width:230px;background:var(--panel);border-right:1px solid var(--line);
+        position:fixed;top:0;bottom:0;display:flex;flex-direction:column;overflow:auto}
+  #side .brand{padding:18px 18px 10px;font-weight:700;font-size:18px;letter-spacing:.3px}
+  #side .brand small{display:block;color:var(--mut);font-weight:400;font-size:11px;margin-top:3px}
+  #side nav{padding:8px}
+  #side .grp{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.8px;padding:14px 12px 4px}
+  #side a.nav{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;color:var(--txt);font-weight:500}
+  #side a.nav:hover{background:var(--panel2);text-decoration:none}
+  #side a.nav.active{background:var(--acc);color:#06223f}
+  #side a.nav .ic{width:18px;text-align:center;opacity:.9}
+  #side .dbstat{margin-top:auto;padding:12px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--mut)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:6px}
+  .dot.ok{background:var(--good)}
+  /* main */
+  #main{margin-left:230px;flex:1;padding:24px 30px;max-width:1500px}
+  h1{font-size:22px;margin:0 0 4px} h2{font-size:16px;margin:26px 0 12px}
+  .sub{color:var(--mut);margin:0 0 18px}
+  /* cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card .k{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  .card .v{font-size:26px;font-weight:700;margin-top:6px}
+  .card .v small{font-size:13px;color:var(--mut);font-weight:500}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+  @media(max-width:1000px){.grid2,.grid3{grid-template-columns:1fr}}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;
+     position:sticky;top:0;background:var(--panel);cursor:pointer}
+  tbody tr:hover{background:var(--panel2)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .tbl-wrap{max-height:70vh;overflow:auto;border-radius:10px}
+  /* controls */
+  input,select{background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+               padding:8px 10px;border-radius:8px;font:inherit}
+  input:focus,select:focus{outline:none;border-color:var(--acc)}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:8px 14px;
+       border-radius:8px;cursor:pointer;font:inherit}
+  .btn:hover{border-color:var(--acc)} .btn.pri{background:var(--acc);color:#06223f;border-color:var(--acc);font-weight:600}
+  .chip{display:inline-block;background:var(--chip);padding:2px 9px;border-radius:20px;font-size:11px;color:var(--mut)}
+  .pill{padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+  .pill.home{background:#1d3a5f;color:#9cc8ff}.pill.away{background:#3a2030;color:#ff9cb0}
+  .pill.draw{background:#2c2f3a;color:#c3c9d6}
+  .bar{height:8px;border-radius:4px;background:var(--panel2);overflow:hidden;min-width:60px}
+  .bar>span{display:block;height:100%;background:var(--acc)}
+  .muted{color:var(--mut)}
+  .right{text-align:right}
+  .loading{color:var(--mut);padding:30px;text-align:center}
+  .err{color:var(--bad);padding:14px;background:#2a1820;border-radius:8px;border:1px solid #4a2530}
+  canvas{max-height:300px}
+  .markdown{line-height:1.6} .markdown h1,.markdown h2,.markdown h3{margin:18px 0 8px}
+  .markdown code{background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:12px}
+  .markdown ul{padding-left:20px}
+  iframe.graph{width:100%;height:78vh;border:1px solid var(--line);border-radius:12px;background:#fff}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}
+  .kv .k{color:var(--mut)}
+  .tag{font-size:10px;padding:1px 6px;border-radius:5px;background:var(--chip);color:var(--mut);margin-left:6px}
+  .scorebox{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+  .clickable{cursor:pointer}
+  details summary{cursor:pointer;color:var(--mut)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="side">
+    <div class="brand">⚽ BetPredictor<small>local model dashboard</small></div>
+    <nav id="nav"></nav>
+    <div class="dbstat" id="dbstat"><span class="dot" id="dbdot"></span>connecting…</div>
+  </div>
+  <div id="main"><div class="loading">Loading…</div></div>
+</div>
+
+<script>
+const API = (p, params) => {
+  const u = new URL(p, location.origin);
+  if(params) Object.entries(params).forEach(([k,v])=>{ if(v!=null && v!=='') u.searchParams.set(k,v); });
+  return fetch(u).then(r=>r.json());
+};
+const $ = (s,el=document)=>el.querySelector(s);
+const el = (h)=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstChild;};
+const fmt = (x,d=2)=> x==null?'<span class="muted">–</span>':(typeof x==='number'?x.toFixed(d):x);
+const pct = (x)=> x==null?'<span class="muted">–</span>':(100*x).toFixed(1)+'%';
+const esc = (s)=> (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const dt  = (s)=> s? new Date(s).toLocaleString(undefined,{year:'2-digit',month:'short',day:'numeric'}):'';
+
+const NAV = [
+  ['Analyse',[
+    ['overview','Overview','📊'],
+    ['matches','Matches','🗓️'],
+    ['teams','Teams','🛡️'],
+    ['players','Players','👤'],
+  ]],
+  ['Model',[
+    ['predictions','Predictions','🎯'],
+    ['value','Value Finder','💰'],
+    ['props','Player Props','🥅'],
+    ['simulations','Sim & Runs','🎲'],
+    ['models','Model Registry','🧠'],
+  ]],
+  ['Knowledge',[
+    ['graph','Knowledge Graph','🕸️'],
+  ]],
+];
+
+function renderNav(){
+  const n = $('#nav'); n.innerHTML='';
+  NAV.forEach(([grp,items])=>{
+    n.appendChild(el(`<div class="grp">${grp}</div>`));
+    items.forEach(([id,label,ic])=>{
+      const a = el(`<a class="nav" data-v="${id}"><span class="ic">${ic}</span>${label}</a>`);
+      a.onclick=()=>go(id);
+      n.appendChild(a);
+    });
+  });
+}
+function setActive(v){ document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.v===v.split('/')[0])); }
+
+// ---- router ----
+const ROUTES = {};
+function go(route){ location.hash = '#'+route; }
+async function route(){
+  const hash = location.hash.slice(1) || 'overview';
+  const [view,...rest] = hash.split('/');
+  setActive(view);
+  const main = $('#main');
+  main.innerHTML = '<div class="loading">Loading…</div>';
+  const fn = ROUTES[view] || ROUTES.overview;
+  try{ await fn(main, rest); }
+  catch(e){ main.innerHTML = `<div class="err">Error: ${esc(e.message)}<br><small>${esc(e.stack||'')}</small></div>`; }
+}
+window.addEventListener('hashchange', route);
+
+// generic sortable table
+function table(rows, cols){
+  if(!rows || !rows.length) return '<p class="muted">No rows.</p>';
+  const head = cols.map(c=>`<th class="${c.num?'num':''}" data-k="${c.k}">${c.h}</th>`).join('');
+  const body = rows.map(r=>'<tr>'+cols.map(c=>{
+    const v = c.render? c.render(r[c.k],r): (c.num?fmt(r[c.k],c.d??2):esc(r[c.k]));
+    return `<td class="${c.num?'num':''}">${v==null?'':v}</td>`;
+  }).join('')+'</tr>').join('');
+  return `<div class="tbl-wrap"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+let charts=[];
+function chart(canvas,cfg){ charts.push(new Chart(canvas,cfg)); }
+function killCharts(){ charts.forEach(c=>{try{c.destroy()}catch(e){}}); charts=[]; }
+
+const GRID = {grid:{color:'#222b3a'},ticks:{color:'#8a97ad'}};
+const CO = {responsive:true,plugins:{legend:{labels:{color:'#e6ecf5'}}},scales:{x:GRID,y:GRID}};
+
+// =====================================================================
+// OVERVIEW
+// =====================================================================
+ROUTES.overview = async (main)=>{
+  killCharts();
+  const d = await API('/api/overview');
+  const c = d.counts;
+  main.innerHTML = `
+    <h1>Overview</h1>
+    <p class="sub">EPL betting model · data ${dt(d.range.first_match)} → ${dt(d.range.last_match)} · default run #${d.default_run}</p>
+    <div class="cards" id="kpis"></div>
+    <div class="grid2">
+      <div class="panel"><h2 style="margin-top:0">Matches & goals per season</h2><canvas id="cSeason"></canvas></div>
+      <div class="panel"><h2 style="margin-top:0">Goals-per-match distribution</h2><canvas id="cGoals"></canvas></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h2 style="margin-top:0">Result split</h2><canvas id="cRes"></canvas></div>
+      <div class="panel"><h2 style="margin-top:0">Recent model runs</h2><div id="runs"></div></div>
+    </div>`;
+  const kpi=(k,v,s='')=>`<div class="card"><div class="k">${k}</div><div class="v">${v} <small>${s}</small></div></div>`;
+  $('#kpis').innerHTML = [
+    kpi('Matches', c.matches.toLocaleString(), `${c.played} played`),
+    kpi('Teams', c.teams), kpi('Players', c.players.toLocaleString()),
+    kpi('Team features', c.team_features.toLocaleString()),
+    kpi('Prob. runs', c.prob_runs),
+    kpi('Probabilities', (c.probabilities/1e6).toFixed(1)+'M'),
+    kpi('Sim runs', c.sim_runs),
+    kpi('Player props', (c.player_props/1e6).toFixed(2)+'M'),
+  ].join('');
+  chart($('#cSeason'),{type:'bar',data:{labels:d.by_season.map(r=>r.season_year),
+    datasets:[{label:'matches',data:d.by_season.map(r=>r.matches),backgroundColor:'#4f9cf9'},
+      {label:'avg goals',type:'line',yAxisID:'y2',data:d.by_season.map(r=>r.avg_goals),borderColor:'#27c499',backgroundColor:'#27c499'}]},
+    options:{...CO,scales:{x:GRID,y:GRID,y2:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#27c499'}}}}});
+  chart($('#cGoals'),{type:'bar',data:{labels:d.goals.map(r=>r.total_goals),
+    datasets:[{label:'matches',data:d.goals.map(r=>r.n),backgroundColor:'#4f9cf9'}]},options:CO});
+  chart($('#cRes'),{type:'doughnut',data:{labels:d.results.map(r=>r.result),
+    datasets:[{data:d.results.map(r=>r.n),backgroundColor:['#4f9cf9','#27c499','#ef5b6b']}]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#e6ecf5'}}}}});
+  $('#runs').innerHTML = table(d.recent_runs,[
+    {k:'id',h:'#',num:true,d:0},{k:'mode',h:'Mode',render:v=>`<span class="chip">${esc(v)}</span>`},
+    {k:'validation_season',h:'Val season'},{k:'created_at',h:'Created',render:v=>dt(v)}]);
+};
+
+// =====================================================================
+// MATCHES
+// =====================================================================
+let mState={season:'',team:'',q:'',offset:0};
+ROUTES.matches = async (main)=>{
+  main.innerHTML = `
+    <h1>Matches</h1><p class="sub">Browse all fixtures. Click a row to open the match analysis.</p>
+    <div class="toolbar">
+      <input id="mq" placeholder="Search team…" value="${esc(mState.q)}" style="min-width:220px"/>
+      <select id="mseason"></select>
+      <button class="btn pri" id="mgo">Search</button>
+      <span class="muted" id="mcount"></span>
+    </div>
+    <div id="mtbl"><div class="loading">Loading…</div></div>
+    <div class="toolbar" style="justify-content:center"><button class="btn" id="mprev">← Prev</button><button class="btn" id="mnext">Next →</button></div>`;
+  const seasons = (await API('/api/overview')).by_season.map(r=>r.season_year);
+  $('#mseason').innerHTML = `<option value="">All seasons</option>`+seasons.map(s=>`<option ${s===mState.season?'selected':''}>${s}</option>`).join('');
+  const load = async()=>{
+    $('#mtbl').innerHTML='<div class="loading">Loading…</div>';
+    const d = await API('/api/matches',{season:mState.season,q:mState.q,limit:100,offset:mState.offset});
+    $('#mcount').textContent = `${d.total.toLocaleString()} matches`;
+    $('#mtbl').innerHTML = table(d.rows,[
+      {k:'start_datetime',h:'Date',render:v=>dt(v)},
+      {k:'season_year',h:'Season'},
+      {k:'home',h:'Home',render:(v,r)=>`<a onclick="go('match/${r.id}')">${esc(v)}</a>`},
+      {k:'score',h:'',render:(_,r)=> r.home_score!=null?`<b>${r.home_score}–${r.away_score}</b>`:'<span class="muted">–</span>'},
+      {k:'away',h:'Away',render:(v,r)=>`<a onclick="go('match/${r.id}')">${esc(v)}</a>`},
+      {k:'id',h:'',render:(v)=>`<a onclick="go('match/${v}')">open →</a>`},
+    ]);
+  };
+  $('#mgo').onclick=()=>{mState.q=$('#mq').value;mState.season=$('#mseason').value;mState.offset=0;load();};
+  $('#mq').onkeydown=(e)=>{if(e.key==='Enter')$('#mgo').click();};
+  $('#mprev').onclick=()=>{mState.offset=Math.max(0,mState.offset-100);load();};
+  $('#mnext').onclick=()=>{mState.offset+=100;load();};
+  load();
+};
+
+// =====================================================================
+// MATCH DETAIL
+// =====================================================================
+ROUTES.match = async (main,[id])=>{
+  killCharts();
+  const d = await API('/api/match',{id});
+  const m = d.match;
+  if(!m){ main.innerHTML='<div class="err">Match not found.</div>'; return; }
+  const probMap={}; d.probabilities.forEach(p=>{probMap[p.market_key]=probMap[p.market_key]||[];probMap[p.market_key].push(p);});
+  const simMap={}; d.simulations.forEach(p=>{const k=p.market_key+'|'+p.selection+'|'+(p.line??'');simMap[k]=p.simulated_probability;});
+
+  const oneX2 = (probMap['1x2']||[]);
+  const order = {home:0,draw:1,away:2};
+  oneX2.sort((a,b)=>order[a.selection]-order[b.selection]);
+
+  main.innerHTML = `
+    <a onclick="history.back()" class="muted">← back</a>
+    <h1 style="margin-top:8px">${esc(m.home)} vs ${esc(m.away)}</h1>
+    <p class="sub">${esc(m.tournament_name||'')} · ${esc(m.season_year)} · ${dt(m.start_datetime)} · run #${d.run}</p>
+    <div class="grid3">
+      <div class="panel" style="text-align:center">
+        <div class="muted">Final score</div>
+        <div class="scorebox">${m.home_score!=null?`${m.home_score} – ${m.away_score}`:'<span class="muted">not played</span>'}</div>
+        <div class="muted">${esc(m.status_description||'')}</div>
+      </div>
+      <div class="panel"><h2 style="margin-top:0">Match result (1X2)</h2><canvas id="c1x2"></canvas></div>
+      <div class="panel"><h2 style="margin-top:0">Most likely scorelines</h2><div id="scores"></div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h2 style="margin-top:0">Goal markets — model vs simulation</h2><div id="goals"></div></div>
+      <div class="panel"><h2 style="margin-top:0">Team form (this match)</h2><div id="feat"></div></div>
+    </div>
+    <div class="panel"><h2 style="margin-top:0">Player props (top by expected volume)</h2><div id="props"></div></div>`;
+
+  // 1x2 chart
+  chart($('#c1x2'),{type:'bar',data:{labels:oneX2.map(p=>p.selection),
+    datasets:[{label:'model',data:oneX2.map(p=>p.probability),backgroundColor:'#4f9cf9'},
+      {label:'sim',data:oneX2.map(p=>simMap['1x2|'+p.selection+'|']),backgroundColor:'#27c499'}]},
+    options:{...CO,scales:{x:GRID,y:{...GRID,max:1}}}});
+
+  $('#scores').innerHTML = table(d.exact_scores,[
+    {k:'selection',h:'Score'},{k:'probability',h:'Prob',num:true,render:v=>pct(v)}]);
+
+  // goal markets table
+  const goalsRows=[];
+  (probMap['total_goals']||[]).forEach(p=>goalsRows.push({mkt:`O/U ${p.line}`,sel:p.selection,model:p.probability,sim:simMap['total_goals|'+p.selection+'|'+(p.line??'')]}));
+  (probMap['btts']||[]).forEach(p=>goalsRows.push({mkt:'BTTS',sel:p.selection,model:p.probability,sim:simMap['btts|'+p.selection+'|']}));
+  $('#goals').innerHTML = table(goalsRows,[
+    {k:'mkt',h:'Market'},{k:'sel',h:'Sel'},
+    {k:'model',h:'Model',num:true,render:v=>pct(v)},
+    {k:'sim',h:'Sim',num:true,render:v=>pct(v)}]);
+
+  $('#feat').innerHTML = table(d.features,[
+    {k:'side',h:'Side',render:v=>`<span class="pill ${v==='home'?'home':'away'}">${esc(v)}</span>`},
+    {k:'team_name',h:'Team'},{k:'xg',h:'xG',num:true},{k:'xg_against',h:'xGA',num:true},
+    {k:'total_shots',h:'Shots',num:true,d:0},{k:'shots_on_target',h:'SoT',num:true,d:0},
+    {k:'big_chances',h:'BigCh',num:true,d:0},{k:'possession_proxy',h:'Poss',num:true}]);
+
+  $('#props').innerHTML = table(d.player_props,[
+    {k:'player_name',h:'Player'},{k:'player_position',h:'Pos'},
+    {k:'market_key',h:'Market',render:v=>esc(v.replace('player_',''))},
+    {k:'line',h:'Line',num:true,d:1},
+    {k:'simulated_mean',h:'Exp',num:true,render:v=>fmt(v,2)},
+    {k:'simulated_probability',h:'P(over)',num:true,render:v=>pct(v)}]);
+};
+
+// =====================================================================
+// TEAMS
+// =====================================================================
+ROUTES.teams = async (main)=>{
+  const d = await API('/api/teams');
+  main.innerHTML = `<h1>Teams</h1><p class="sub">Career averages from engineered team-match features. Click a team for detail.</p>
+    <div class="panel" id="ttbl"></div>`;
+  $('#ttbl').innerHTML = table(d.rows,[
+    {k:'name',h:'Team',render:(v,r)=>`<a onclick="go('team/${r.id}')">${esc(v)}</a>`},
+    {k:'matches',h:'Matches',num:true,d:0},
+    {k:'gf',h:'GF',num:true},{k:'ga',h:'GA',num:true},
+    {k:'xg',h:'xG',num:true},{k:'xga',h:'xGA',num:true},
+    {k:'shots',h:'Shots',num:true,d:1}]);
+};
+ROUTES.team = async (main,[id])=>{
+  killCharts();
+  const d = await API('/api/team',{id});
+  const t=d.team;
+  main.innerHTML = `<a onclick="history.back()" class="muted">← back</a>
+    <h1 style="margin-top:8px">${esc(t.name)}</h1><p class="sub">${esc(t.country_name||'')} · ${d.form.length} matches with features</p>
+    <div class="panel"><h2 style="margin-top:0">Rolling xG for / against (per match, chronological)</h2><canvas id="cForm"></canvas></div>
+    <div class="grid2">
+      <div class="panel"><h2 style="margin-top:0">Per-season averages</h2><div id="tagg"></div></div>
+      <div class="panel"><h2 style="margin-top:0">Goals scored vs conceded by season</h2><canvas id="cGoals"></canvas></div>
+    </div>`;
+  const roll=(arr,w=6)=>arr.map((_,i)=>{const s=arr.slice(Math.max(0,i-w+1),i+1);return s.reduce((a,b)=>a+(b||0),0)/s.length;});
+  const xg=d.form.map(f=>+f.xg||0), xga=d.form.map(f=>+f.xg_against||0);
+  chart($('#cForm'),{type:'line',data:{labels:d.form.map(f=>dt(f.match_date)),
+    datasets:[{label:'xG (roll6)',data:roll(xg),borderColor:'#27c499',pointRadius:0,tension:.3},
+      {label:'xGA (roll6)',data:roll(xga),borderColor:'#ef5b6b',pointRadius:0,tension:.3}]},
+    options:{...CO,scales:{x:{...GRID,ticks:{color:'#8a97ad',maxTicksLimit:12}},y:GRID}}});
+  $('#tagg').innerHTML = table(d.by_season,[
+    {k:'season_year',h:'Season'},{k:'matches',h:'P',num:true,d:0},
+    {k:'gf',h:'GF',num:true},{k:'ga',h:'GA',num:true},{k:'xg',h:'xG',num:true},{k:'xga',h:'xGA',num:true}]);
+  chart($('#cGoals'),{type:'bar',data:{labels:d.by_season.map(r=>r.season_year),
+    datasets:[{label:'GF',data:d.by_season.map(r=>r.gf),backgroundColor:'#4f9cf9'},
+      {label:'GA',data:d.by_season.map(r=>r.ga),backgroundColor:'#ef5b6b'}]},options:CO});
+};
+
+// =====================================================================
+// PLAYERS
+// =====================================================================
+ROUTES.players = async (main)=>{
+  main.innerHTML = `<h1>Players</h1><p class="sub">Search the player pool, then jump to their simulated prop lines.</p>
+    <div class="toolbar"><input id="pq" placeholder="Search player…" style="min-width:240px"/><button class="btn pri" id="pgo">Search</button></div>
+    <div class="panel" id="ptbl"></div>`;
+  const load=async()=>{
+    $('#ptbl').innerHTML='<div class="loading">Loading…</div>';
+    const d=await API('/api/players',{q:$('#pq').value,limit:200});
+    $('#ptbl').innerHTML = table(d.rows,[
+      {k:'name',h:'Name'},{k:'position',h:'Pos'},{k:'country_name',h:'Country'},
+      {k:'id',h:'Props',render:(v,r)=>`<a onclick="goProps('${esc(r.name).replace(/'/g,'')}')">props →</a>`}]);
+  };
+  $('#pgo').onclick=load; $('#pq').onkeydown=(e)=>{if(e.key==='Enter')load();};
+  load();
+};
+window.goProps=(name)=>{ propState.player=name; go('props'); };
+
+// =====================================================================
+// PREDICTIONS (market probability browser)
+// =====================================================================
+let predState={market:'1x2',match:'',offset:0,run:''};
+ROUTES.predictions = async (main)=>{
+  const ov = await API('/api/overview');
+  predState.run = predState.run || ov.default_run;
+  main.innerHTML = `<h1>Predictions</h1><p class="sub">Calibrated market probabilities from the model. Run #${predState.run}.</p>
+    <div class="toolbar">
+      <select id="pmkt">
+        ${['1x2','btts','total_goals'].map(m=>`<option ${m===predState.market?'selected':''}>${m}</option>`).join('')}
+      </select>
+      <input id="pmatch" placeholder="match id (optional)" value="${esc(predState.match)}" style="width:160px"/>
+      <button class="btn pri" id="pgo">Apply</button>
+      <span class="muted" id="pcount"></span>
+    </div>
+    <div class="panel" id="ptbl"></div>
+    <div class="toolbar" style="justify-content:center"><button class="btn" id="pprev">← Prev</button><button class="btn" id="pnext">Next →</button></div>`;
+  const load=async()=>{
+    $('#ptbl').innerHTML='<div class="loading">Loading…</div>';
+    const d=await API('/api/probabilities',{run:predState.run,market:predState.market,match:predState.match,limit:200,offset:predState.offset});
+    $('#pcount').textContent=`${d.total.toLocaleString()} rows`;
+    $('#ptbl').innerHTML = table(d.rows,[
+      {k:'match_id',h:'Match',render:(v,r)=>`<a onclick="go('match/${v}')">${esc(r.home)} v ${esc(r.away)}</a>`},
+      {k:'season_year',h:'Season'},
+      {k:'selection',h:'Selection'},{k:'line',h:'Line',num:true,d:1},
+      {k:'probability',h:'Prob',num:true,render:v=>`<div style="display:flex;gap:8px;align-items:center;justify-content:flex-end">
+         <div class="bar" style="width:80px"><span style="width:${(v*100).toFixed(0)}%"></span></div>${pct(v)}</div>`},
+      {k:'home_score',h:'Result',render:(_,r)=> r.home_score!=null?`${r.home_score}–${r.away_score}`:'<span class="muted">–</span>'}]);
+  };
+  $('#pgo').onclick=()=>{predState.market=$('#pmkt').value;predState.match=$('#pmatch').value;predState.offset=0;load();};
+  $('#pprev').onclick=()=>{predState.offset=Math.max(0,predState.offset-200);load();};
+  $('#pnext').onclick=()=>{predState.offset+=200;load();};
+  load();
+};
+
+// =====================================================================
+// VALUE FINDER
+// =====================================================================
+ROUTES.value = async (main)=>{
+  const ov = await API('/api/overview');
+  main.innerHTML = `<h1>Value Finder</h1>
+    <p class="sub">Two lenses: model↔simulation disagreement (model risk / mispricing signal) and the model's strongest convictions. Plus a manual EV calculator.</p>
+    <div class="toolbar"><select id="vmkt">${['1x2','btts','total_goals'].map(m=>`<option>${m}</option>`).join('')}</select>
+      <button class="btn pri" id="vgo">Refresh</button></div>
+    <div class="panel">
+      <h2 style="margin-top:0">⚖️ EV calculator</h2>
+      <div class="toolbar">
+        <label class="muted">Model prob % <input id="ev_p" type="number" value="62" style="width:90px"></label>
+        <label class="muted">Decimal odds <input id="ev_o" type="number" step="0.01" value="1.80" style="width:90px"></label>
+        <label class="muted">Stake <input id="ev_s" type="number" value="10" style="width:90px"></label>
+        <button class="btn" id="ev_go">Compute</button>
+        <span id="ev_out" style="font-weight:600"></span>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h2 style="margin-top:0">🔺 Biggest model↔sim disagreements</h2><div id="vdis"></div></div>
+      <div class="panel"><h2 style="margin-top:0">💪 Strongest model convictions</h2><div id="vcon"></div></div>
+    </div>`;
+  const evcalc=()=>{
+    const p=+$('#ev_p').value/100, o=+$('#ev_o').value, s=+$('#ev_s').value;
+    const ev=p*o-1, profit=ev*s, imp=1/o;
+    const color = ev>0?'var(--good)':'var(--bad)';
+    $('#ev_out').innerHTML = `<span style="color:${color}">EV ${(ev*100).toFixed(1)}% · ${profit>=0?'+':''}${profit.toFixed(2)} per ${s}</span>
+      <span class="muted">(market implies ${(imp*100).toFixed(1)}%, edge ${((p-imp)*100).toFixed(1)}pts)</span>`;
+  };
+  $('#ev_go').onclick=evcalc; evcalc();
+  const load=async()=>{
+    const mkt=$('#vmkt').value;
+    $('#vdis').innerHTML='<div class="loading">…</div>';$('#vcon').innerHTML='';
+    const d=await API('/api/value',{market:mkt,limit:60});
+    $('#vdis').innerHTML = table(d.disagreements,[
+      {k:'match_id',h:'Match',render:(v,r)=>`<a onclick="go('match/${v}')">${esc(r.home)} v ${esc(r.away)}</a>`},
+      {k:'selection',h:'Sel'},{k:'line',h:'L',num:true,d:1},
+      {k:'model_p',h:'Model',num:true,render:v=>pct(v)},
+      {k:'sim_p',h:'Sim',num:true,render:v=>pct(v)},
+      {k:'gap',h:'Gap',num:true,render:v=>`<b style="color:var(--warn)">${pct(v)}</b>`}]);
+    $('#vcon').innerHTML = table(d.convictions,[
+      {k:'match_id',h:'Match',render:(v,r)=>`<a onclick="go('match/${v}')">${esc(r.home)} v ${esc(r.away)}</a>`},
+      {k:'selection',h:'Sel'},{k:'line',h:'L',num:true,d:1},
+      {k:'probability',h:'Prob',num:true,render:v=>`<b>${pct(v)}</b>`},
+      {k:'home_score',h:'Result',render:(_,r)=>r.home_score!=null?`${r.home_score}–${r.away_score}`:'–'}]);
+  };
+  $('#vgo').onclick=load; load();
+};
+
+// =====================================================================
+// PLAYER PROPS
+// =====================================================================
+let propState={player:'',match:'',market:''};
+ROUTES.props = async (main)=>{
+  main.innerHTML = `<h1>Player Props</h1><p class="sub">Monte-Carlo simulated shot & shots-on-target lines per player.</p>
+    <div class="toolbar">
+      <input id="ppl" placeholder="player name" value="${esc(propState.player)}" style="width:200px"/>
+      <input id="pmt" placeholder="match id" value="${esc(propState.match)}" style="width:140px"/>
+      <select id="pmk"><option value="">All markets</option><option value="player_shots">shots</option><option value="player_shots_on_target">shots on target</option></select>
+      <button class="btn pri" id="pgo">Search</button>
+      <span class="muted">tip: enter a player or a match id</span>
+    </div>
+    <div class="panel" id="ptbl"></div>`;
+  const load=async()=>{
+    $('#ptbl').innerHTML='<div class="loading">Loading…</div>';
+    const d=await API('/api/player-props',{player:$('#ppl').value,match:$('#pmt').value,market:$('#pmk').value,limit:300});
+    $('#ptbl').innerHTML = table(d.rows,[
+      {k:'player_name',h:'Player'},{k:'player_position',h:'Pos'},
+      {k:'match_id',h:'Match',render:v=>`<a onclick="go('match/${v}')">#${v}</a>`},
+      {k:'market_key',h:'Market',render:v=>esc(v.replace('player_',''))},
+      {k:'line',h:'Line',num:true,d:1},
+      {k:'simulated_mean',h:'Exp',num:true},
+      {k:'simulated_probability',h:'P(over)',num:true,render:v=>pct(v)}]);
+  };
+  $('#pgo').onclick=load; $('#ppl').onkeydown=e=>{if(e.key==='Enter')load();};
+  load();
+};
+
+// =====================================================================
+// SIMULATIONS & RUNS
+// =====================================================================
+ROUTES.simulations = async (main)=>{
+  const d = await API('/api/runs');
+  const metrics = (m)=> m? '<details><summary>metrics</summary><pre style="white-space:pre-wrap;font-size:11px;color:#8a97ad">'+esc(JSON.stringify(m,null,1)).slice(0,2000)+'</pre></details>':'<span class="muted">–</span>';
+  main.innerHTML = `<h1>Simulation & Runs</h1><p class="sub">Provenance of every probability and simulation run stored in the database.</p>
+    <div class="panel"><h2 style="margin-top:0">Probability runs (${d.probability_runs.length})</h2>
+      ${table(d.probability_runs,[
+        {k:'id',h:'#',num:true,d:0},{k:'run_name',h:'Name',render:v=>`<span style="font-size:12px">${esc(v)}</span>`},
+        {k:'mode',h:'Mode',render:v=>`<span class="chip">${esc(v)}</span>`},
+        {k:'validation_season',h:'Val'},{k:'created_at',h:'Created',render:dt},
+        {k:'metrics',h:'Metrics',render:metrics}])}</div>
+    <div class="panel"><h2 style="margin-top:0">Simulation runs (${d.simulation_runs.length})</h2>
+      ${table(d.simulation_runs,[
+        {k:'id',h:'#',num:true,d:0},{k:'run_name',h:'Name',render:v=>`<span style="font-size:12px">${esc(v)}</span>`},
+        {k:'mode',h:'Mode',render:v=>`<span class="chip">${esc(v)}</span>`},
+        {k:'draws',h:'Draws',num:true,d:0},
+        {k:'probability_run_id',h:'Prob run',num:true,d:0},
+        {k:'created_at',h:'Created',render:dt},
+        {k:'metrics',h:'Metrics',render:metrics}])}</div>`;
+};
+
+// =====================================================================
+// MODEL REGISTRY
+// =====================================================================
+ROUTES.models = async (main)=>{
+  const d = await API('/api/models');
+  main.innerHTML = `<h1>Model Registry</h1><p class="sub">${d.models.length} model artifact directories on disk.</p>
+    <div class="cards">${d.models.map((m,i)=>`
+      <div class="card clickable" onclick="document.getElementById('md${i}').scrollIntoView({behavior:'smooth'})">
+        <div class="k">${m.has_calibration?'🎚️ calibrated':'model'}</div>
+        <div class="v" style="font-size:15px">${esc(m.name)}</div>
+        <div class="muted">${m.n_features?m.n_features+' features':''} · ${m.files.length} files</div>
+      </div>`).join('')}</div>
+    <div id="mdlist"></div>`;
+  const fmtMetrics=(o)=>{
+    if(!o) return '';
+    const flat={}; (function walk(p,x){Object.entries(x||{}).forEach(([k,v])=>{
+      if(v&&typeof v==='object'&&!Array.isArray(v)) walk(p+k+'.',v); else flat[p+k]=v;});})('',o);
+    const rows=Object.entries(flat).filter(([k,v])=>typeof v==='number').slice(0,40);
+    return table(rows.map(([k,v])=>({k,v})),[{k:'k',h:'Metric'},{k:'v',h:'Value',num:true,render:v=>fmt(v,4)}]);
+  };
+  $('#mdlist').innerHTML = d.models.map((m,i)=>`
+    <div class="panel" id="md${i}"><h2 style="margin-top:0">${esc(m.name)}
+      ${m.has_calibration?'<span class="tag">calibrated</span>':''}
+      ${m.n_features?`<span class="tag">${m.n_features} feats</span>`:''}</h2>
+      ${m.validation_metrics?'<h3>Validation metrics</h3>'+fmtMetrics(m.validation_metrics):''}
+      ${m.metadata?'<details><summary>metadata.json</summary><pre style="white-space:pre-wrap;font-size:11px;color:#8a97ad">'+esc(JSON.stringify(m.metadata,null,2)).slice(0,3000)+'</pre></details>':'<p class="muted">no metadata.json</p>'}
+    </div>`).join('');
+};
+
+// =====================================================================
+// KNOWLEDGE GRAPH (graphify)
+// =====================================================================
+ROUTES.graph = async (main)=>{
+  const data = await API('/api/graph/data');
+  main.innerHTML = `<h1>Knowledge Graph</h1>
+    <p class="sub">Built by <code>graphify</code> · ${data.n_nodes.toLocaleString()} nodes · ${data.n_edges.toLocaleString()} edges. Interactive view below; search the codebase entities and read the full report.</p>
+    <div class="toolbar">
+      <input id="gq" placeholder="Search nodes (functions, classes, docs…)" style="min-width:320px"/>
+      <button class="btn pri" id="ggo">Search</button>
+      <a class="btn" href="/graph" target="_blank">↗ Open full graph</a>
+      <a class="btn" id="grep">📄 Toggle report</a>
+    </div>
+    <div id="gsearch"></div>
+    <div class="panel"><h2 style="margin-top:0">Interactive graph</h2>
+      <iframe class="graph" src="/graph"></iframe></div>
+    <div class="grid2">
+      <div class="panel"><h2 style="margin-top:0">🌟 God nodes (most connected)</h2>
+        ${table(data.god_nodes,[
+          {k:'label',h:'Node'},{k:'type',h:'Type'},
+          {k:'degree',h:'Edges',num:true,d:0},
+          {k:'file',h:'File',render:v=>`<span class="muted" style="font-size:11px">${esc(v||'')}</span>`}])}</div>
+      <div class="panel" id="greport" style="display:none"><h2 style="margin-top:0">Graph report</h2><div class="markdown" id="grepbody">Loading…</div></div>
+    </div>`;
+  const search=async()=>{
+    const r=await API('/api/graph/data',{q:$('#gq').value});
+    $('#gsearch').innerHTML = `<div class="panel"><h2 style="margin-top:0">${r.count} matches</h2>${table(r.results,[
+      {k:'label',h:'Node'},{k:'type',h:'Type'},{k:'community',h:'Comm',num:true,d:0},
+      {k:'file',h:'File',render:v=>`<span class="muted" style="font-size:11px">${esc(v||'')}</span>`}])}</div>`;
+  };
+  $('#ggo').onclick=search; $('#gq').onkeydown=e=>{if(e.key==='Enter')search();};
+  $('#grep').onclick=async()=>{
+    const p=$('#greport'); p.style.display = p.style.display==='none'?'block':'none';
+    if(p.style.display!=='none' && !p.dataset.loaded){
+      const md=(await API('/api/graph/report')).markdown;
+      $('#grepbody').innerHTML = miniMd(md); p.dataset.loaded='1';
+    }
+  };
+};
+// tiny markdown renderer (headings, lists, code, bold, links-as-text)
+function miniMd(md){
+  return md.split('\n').map(l=>{
+    if(/^### /.test(l)) return '<h3>'+esc(l.slice(4))+'</h3>';
+    if(/^## /.test(l)) return '<h2>'+esc(l.slice(3))+'</h2>';
+    if(/^# /.test(l)) return '<h1>'+esc(l.slice(2))+'</h1>';
+    if(/^- /.test(l)) return '<li>'+inlineMd(l.slice(2))+'</li>';
+    if(/^\d+\. /.test(l)) return '<li>'+inlineMd(l.replace(/^\d+\. /,''))+'</li>';
+    if(l.trim()==='') return '<br>';
+    return '<p style="margin:4px 0">'+inlineMd(l)+'</p>';
+  }).join('');
+}
+function inlineMd(s){
+  return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+    .replace(/\[\[([^\]|]+)\|?([^\]]*)\]\]/g,(m,a,b)=>'<span class="chip">'+(b||a)+'</span>');
+}
+
+// ---- boot ----
+renderNav();
+API('/api/overview').then(()=>{ $('#dbdot').classList.add('ok'); $('#dbstat').innerHTML='<span class="dot ok"></span>DB connected · :5433'; })
+  .catch(()=>{ $('#dbstat').innerHTML='<span class="dot"></span>DB unreachable'; });
+route();
+</script>
+</body>
+</html>
