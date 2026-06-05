@@ -20,3 +20,9 @@ graphify-out/*/
 # graphify-out/cache/         # optional: commit for speed, skip to keep repo small
 .graphify_python
 graphify-out/.graphify_python
+
+# dashboard runtime cache
+dashboard/.upcoming_cache.json
+
+# model experiment cache
+experiments/*.pkl
