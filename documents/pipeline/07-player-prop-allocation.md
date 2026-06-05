@@ -66,3 +66,5 @@ Use `--player-minutes-run-id` to pin a specific minutes prediction run. If omitt
 ## Downstream Boundary
 
 Player prop probabilities do not enter `ev_pipeline.py` yet. EV joins should wait until odds normalisation supports prop market lines, selection names, and stable player identity matching.
+
+The [match simulation](08-match-simulation.md) stage consumes the persisted `expected_value` means for paired `player_shots` and `player_shots_on_target` rows. Its V1 shot chain keeps simulated shots on target at or below simulated shots.

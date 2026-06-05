@@ -132,5 +132,6 @@ Detailed notes should live in smaller files under `documents/pipeline/`:
 - existing stages `01` through `05b` cover ingestion, team features, rate models, probabilities, odds, and EV
 - this file covers the player minutes model
 - `07-player-prop-allocation.md` covers implemented player shots and shots-on-target prop allocation
+- `08-match-simulation.md` covers summary simulations from team score probabilities and player shot props
 - future team count or corners markets should get their own stage file instead of expanding the high-level index
-- future simulation, uncertainty, and bet-filter layers should each get separate stage files when selected from the roadmap
+- future uncertainty and bet-filter layers should each get separate stage files when selected from the roadmap

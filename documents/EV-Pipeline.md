@@ -45,6 +45,21 @@ raw player appearances and lineup context
 
 The player minutes model feeds the implemented player prop allocation stage. Player prop probabilities are generated separately from EV candidate generation until bookmaker prop odds can be matched by player identity.
 
+## Simulation Extension
+
+```text
+probabilistic team markets
+    -> exact-score distribution
+player prop allocation
+    -> player shot/SOT expected values
+    -> match simulation summaries
+       - goal market frequencies
+       - player shots over/under frequencies
+       - player shots-on-target over/under frequencies
+```
+
+The simulation engine consumes persisted probability and player prop runs. It writes summary frequencies for downstream analysis and does not replace calibrated market probabilities or EV candidate generation.
+
 ## Stage Order
 
 1. [Data ingestion](pipeline/01-data-ingestion.md)
@@ -57,6 +72,7 @@ The player minutes model feeds the implemented player prop allocation stage. Pla
    - [EV candidate generation](pipeline/05b-ev-candidate-generation.md)
 6. [Player minutes model](pipeline/06-player-minutes-model.md)
 7. [Player prop allocation](pipeline/07-player-prop-allocation.md)
+8. [Match simulation](pipeline/08-match-simulation.md)
 
 ## Documentation Rules
 

@@ -88,3 +88,5 @@ Database tables:
 Team count markets should consume `shots_for_hat` and `shots_against_hat` after distribution choice and validation are added. Do not make those models required by the current goal-market scorer until count-market probability outputs exist.
 
 Player prop probabilities are generated in [player prop allocation](07-player-prop-allocation.md), not in this team market stage. Keep team goal markets and player prop probability outputs separate until a shared market abstraction is needed.
+
+The [match simulation](08-match-simulation.md) stage consumes persisted `exact_score` rows from this stage as the V1 goal-score draw distribution.

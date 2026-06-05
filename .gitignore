@@ -7,3 +7,16 @@ models/*
 models/visualisations/*
 !models/visualisations/*.png
 !models/visualisations/match_4514
+
+graphify-out/**/manifest.json
+graphify-out/**/cost.json
+graphify-out/manifest.json
+graphify-out/cost.json
+graphify-out/.graphify_root
+.codex
+.claude
+graphify-out/*/
+!graphify-out/cache
+# graphify-out/cache/         # optional: commit for speed, skip to keep repo small
+.graphify_python
+graphify-out/.graphify_python

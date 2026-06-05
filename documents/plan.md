@@ -239,43 +239,7 @@ Dixon-Coles adjustment
 Final score matrix
 ```
 
-# 3. SIMULATION ENGINE
-
-## ✅ What This Is
-
-Monte Carlo match simulation.
-
-
-## ✅ What It Improves
-
-Allows:
-
-- same-game parlays
-- correlated markets
-- player correlations
-- portfolio betting
-
-
-## ✅ Inputs
-
-```text
-goal distributions
-player distributions
-tempo distributions
-```
-
-
-## ✅ Outputs
-
-Simulated match universe.
-
-
-## ✅ Recommendation
-
-Do AFTER calibration.
-
-
-# 4. UNCERTAINTY MODELLING
+# 3. UNCERTAINTY MODELLING
 
 ## ✅ What This Is
 
@@ -322,7 +286,7 @@ Prediction intervals
 Probability distributions
 ```
 
-# 5. FEATURE IMPROVEMENTS
+# 4. FEATURE IMPROVEMENTS
 
 ## ✅ Tempo Features
 
@@ -353,7 +317,7 @@ Especially:
 - over/under
 
 
-# 6. META-MODEL / BET FILTER
+# 5. META-MODEL / BET FILTER
 
 ## ✅ What This Is
 
@@ -398,23 +362,17 @@ Essential before serious EV betting.
 
 ## 🥈 Tier 2 — HIGH VALUE
 
-### 2. Simulation engine
-
-Needed for correlated betting.
+### 2. Quantile uncertainty models
 
 ---
 
 ## 🥉 Tier 3 — ADVANCED
 
-### 3. Quantile uncertainty models
+### 3. Meta-model / bet filter
 
 ---
 
-### 4. Meta-model / bet filter
-
----
-
-### 5. Advanced dependency structures
+### 4. Advanced dependency structures
 
 Only after everything else works well.
 
@@ -445,8 +403,6 @@ Dixon-Coles Adjustment
 Probability Layer
     ↓
 Calibration Layer
-    ↓
-Simulation Engine
     ↓
 Market Probabilities
     ↓
